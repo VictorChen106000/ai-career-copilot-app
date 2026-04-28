@@ -417,7 +417,7 @@ function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [
             <ResumeUploadCard key={item.id} item={item} uploading />
           ))}
           {resumes.slice(0, 3).map((resume) => (
-            <ResumeUploadCard key={resume.id} item={resume} onOpen={() => onOpenResume(resume)} onDelete={() => onDeleteResume(resume.id)} />
+            <ResumeUploadCard key={resume.id} item={resume} onOpen={() => onOpenResume(resume, "resumeUpload")} onDelete={() => onDeleteResume(resume.id)} />
           ))}
           {resumes.length > 3 && (
             <button onClick={() => go("resumes")} className="w-full rounded-2xl bg-white/30 py-3 text-sm font-semibold text-blue-600 transition hover:bg-white/45">
@@ -1135,7 +1135,7 @@ function ResumesScreen({ go, resumes = [], uploadQueue = [], onUploadResume = ()
 
         <div className="space-y-3">
           {uploadQueue.map((item) => <ResumeUploadCard key={item.id} item={item} uploading />)}
-          {resumes.map((resume) => <ResumeUploadCard key={resume.id} item={resume} onOpen={() => onOpenResume(resume)} onDelete={() => onDeleteResume(resume.id)} />)}
+          {resumes.map((resume) => <ResumeUploadCard key={resume.id} item={resume} onOpen={() => onOpenResume(resume, "resumes")} onDelete={() => onDeleteResume(resume.id)} />)}
           {uploadQueue.length === 0 && resumes.length === 0 && (
             <Card className="text-center">
               <div className={`mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-blue-100/70 text-blue-600 ${neoIn}`}>
@@ -1153,14 +1153,14 @@ function ResumesScreen({ go, resumes = [], uploadQueue = [], onUploadResume = ()
 
 
 
-function ResumePreviewScreen({ go, resume, onDeleteResume = () => {} }) {
+function ResumePreviewScreen({ go, resume, backTarget = "resumes", onDeleteResume = () => {} }) {
   const canPreviewPdf = resume?.url && isPdfResume(resume);
 
   return (
     <PhoneShell>
       <Screen>
         <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-4 flex items-center justify-between bg-transparent px-6 pb-3 pt-12 backdrop-blur-sm">
-          <button onClick={() => go("resumes")} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-slate-800 shadow-sm transition hover:bg-white/80">
+          <button onClick={() => go(backTarget)} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-slate-800 shadow-sm transition hover:bg-white/80">
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1 px-3 text-center">
@@ -1172,7 +1172,7 @@ function ResumePreviewScreen({ go, resume, onDeleteResume = () => {} }) {
               type="button"
               onClick={() => {
                 onDeleteResume(resume.id);
-                go("resumes");
+                go(backTarget);
               }}
               className="grid h-10 w-10 place-items-center rounded-full bg-white/60 text-slate-500 shadow-sm transition hover:bg-red-50 hover:text-red-500"
               aria-label="Delete resume"
@@ -1463,6 +1463,7 @@ export default function App() {
   const [screen, setScreen] = useState("landing");
   const [selectedJob, setSelectedJob] = useState(jobs[0]);
   const [selectedResume, setSelectedResume] = useState(null);
+  const [resumePreviewBackTarget, setResumePreviewBackTarget] = useState("resumes");
   const [viewMode, setViewMode] = useState("mobile");
   const [chatMode, setChatMode] = useState("setPreferences");
   const [appliedJobs, setAppliedJobs] = useState([]);
@@ -1542,8 +1543,9 @@ export default function App() {
     setSelectedResume((prev) => (prev?.id === resumeId ? null : prev));
   };
 
-  const handleOpenResume = (resume) => {
+  const handleOpenResume = (resume, backTarget = "resumes") => {
     setSelectedResume(resume);
+    setResumePreviewBackTarget(backTarget);
     setScreen("resumePreview");
   };
 
@@ -1586,11 +1588,11 @@ export default function App() {
       case "submitted": return <Submitted go={go} selectedJob={selectedJob} onApply={handleApplyJob} />;
       case "tracker": return <Tracker go={go} />;
       case "resumes": return <ResumesScreen go={go} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onOpenResume={handleOpenResume} onDeleteResume={handleDeleteResume} />;
-      case "resumePreview": return <ResumePreviewScreen go={go} resume={selectedResume} onDeleteResume={handleDeleteResume} />;
+      case "resumePreview": return <ResumePreviewScreen go={go} resume={selectedResume} backTarget={resumePreviewBackTarget} onDeleteResume={handleDeleteResume} />;
       case "profile": return <Profile go={go} noNav appliedCount={appliedJobs.length} savedCount={savedJobs.length} jobsCount={jobs.length} resumesCount={resumes.length} />;
       default: return <Landing go={go} />;
     }
-  }, [screen, selectedJob, selectedResume, chatMode, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
+  }, [screen, selectedJob, selectedResume, resumePreviewBackTarget, chatMode, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
 
   const insideAppTransition = screen !== "landing";
   const tabbedScreens = ["dashboard", "profile", "tracker", "aiChatbot"];
