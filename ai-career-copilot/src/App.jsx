@@ -1157,19 +1157,19 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
     { key: "applied", label: "Applied", icon: CheckCircle2 },
   ];
 
-  const filteredJobs = jobs.filter((job) => {
-    if (dashboardFilter === "saved") return savedJobs.includes(job.id);
-    if (dashboardFilter === "applied") return appliedJobs.includes(job.id);
-    if (dashboardFilter === "recent") return true;
-    return true;
-  });
-
   const jobDateLabels = {
     1: "Today · Apr 28",
     2: "Today · Apr 28",
     3: "Yesterday · Apr 27",
     4: "Apr 26",
   };
+
+  const filteredJobs = jobs.filter((job) => {
+    if (dashboardFilter === "saved") return savedJobs.includes(job.id);
+    if (dashboardFilter === "applied") return appliedJobs.includes(job.id);
+    if (dashboardFilter === "recent") return jobDateLabels[job.id]?.startsWith("Today");
+    return true;
+  });
 
   const groupedFilteredJobs = filteredJobs.reduce((groups, job) => {
     const dateLabel = jobDateLabels[job.id] || "Earlier";
