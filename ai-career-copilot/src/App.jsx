@@ -639,10 +639,10 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
       "Question 1 of 5: What target role or internship are you applying for?"
     ],
     "i'll type it out": [
-      "Perfect. I’ll give you a simple structure so you can type your information naturally.",
-      "Please send it like this: 1) Education, 2) Skills, 3) Projects, 4) Experience, 5) Target role.",
-      "Don’t worry about perfect wording. I’ll clean it, shorten it, and convert it into resume-ready bullet points.",
-      "Start with your education and one project. I’ll analyze the content as you type."
+      "Perfect. You can type everything in your own words, and I’ll turn it into a clean resume draft.",
+      "Send one message with anything you already have: target role, education, skills, projects, experience, achievements, links, or even rough notes.",
+      "Don’t worry about grammar or formatting. After you send it, I’ll organize it into resume sections and create the resume in the background.",
+      "Paste or type your rough resume information now."
     ],
     "use my linkedin": [
       "Great choice. I’ll simulate importing your LinkedIn profile for this prototype demo.",
@@ -738,6 +738,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
   const [isTyping, setIsTyping] = useState(false);
   const [helpWriteStep, setHelpWriteStep] = useState(null);
   const [helpWriteAnswers, setHelpWriteAnswers] = useState([]);
+  const [typeItOutActive, setTypeItOutActive] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -782,9 +783,35 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
   };
 
   const startHelpWriteFlow = (userText) => {
+    setTypeItOutActive(false);
     setHelpWriteAnswers([]);
     setHelpWriteStep(0);
     addAgentSequence(userText, createResumeFlows["help me write it"]);
+  };
+
+  const startTypeItOutFlow = (userText) => {
+    setHelpWriteAnswers([]);
+    setHelpWriteStep(null);
+    setTypeItOutActive(true);
+    addAgentSequence(userText, createResumeFlows["i'll type it out"]);
+  };
+
+  const handleTypeItOutAnswer = (userText) => {
+    setTypeItOutActive(false);
+    const typedResumeAnswers = [
+      { question: "Typed resume information", answer: userText },
+      { question: "Education and background", answer: userText },
+      { question: "Projects and experience", answer: userText },
+      { question: "Skills and tools", answer: userText },
+      { question: "Achievements and links", answer: userText },
+    ];
+    onStartBackgroundResume(typedResumeAnswers);
+    addAgentSequence(userText, [
+      "Got it. I received your rough resume information and I’m extracting the key details now.",
+      "I’m organizing it into resume sections: Summary, Education, Skills, Projects, Experience, and Achievements.",
+      "Now I’m rewriting your notes into concise, ATS-friendly bullet points in the background.",
+      "You can leave this screen and keep using the app. I’ll notify you when the resume is ready.",
+    ]);
   };
 
   const handleHelpWriteAnswer = (userText) => {
@@ -824,10 +851,17 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
       return;
     }
 
+    if (chatMode === "createResume" && typeItOutActive) {
+      handleTypeItOutAnswer(userText);
+      return;
+    }
+
     const flow = getFlowForPrompt(userText);
     if (flow) {
       if (chatMode === "createResume" && normalizePrompt(userText) === "help me write it") {
         startHelpWriteFlow(userText);
+      } else if (chatMode === "createResume" && normalizePrompt(userText) === "i'll type it out") {
+        startTypeItOutFlow(userText);
       } else {
         addAgentSequence(userText, flow);
       }
@@ -871,6 +905,10 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
     if (isTyping) return;
     if (chatMode === "createResume" && normalizePrompt(reply) === "help me write it") {
       startHelpWriteFlow(reply);
+      return;
+    }
+    if (chatMode === "createResume" && normalizePrompt(reply) === "i'll type it out") {
+      startTypeItOutFlow(reply);
       return;
     }
     const flow = getFlowForPrompt(reply);
