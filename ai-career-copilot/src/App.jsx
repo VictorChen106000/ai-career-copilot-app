@@ -36,6 +36,7 @@ import {
   Wifi,
   Battery,
   Signal,
+  Trash2,
 } from "lucide-react";
 
 const jobs = [
@@ -90,6 +91,32 @@ const applications = [
   { company: "Stripe", role: "Frontend Intern", date: "Apr 27", resume: "Frontend Resume v1", status: "Interviewing" },
   { company: "Notion", role: "Product Design Intern", date: "Apr 25", resume: "Design Resume v3", status: "Saved" },
 ];
+
+const isResumeFile = (file) => {
+  const name = file?.name?.toLowerCase?.() || "";
+  return name.endsWith(".pdf") || name.endsWith(".doc") || name.endsWith(".docx");
+};
+
+const formatFileSize = (bytes = 0) => {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 KB";
+  const units = ["B", "KB", "MB", "GB"];
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / 1024 ** index;
+  return `${value >= 10 || index === 0 ? Math.round(value) : value.toFixed(1)} ${units[index]}`;
+};
+
+const formatUploadDate = (dateValue) => {
+  if (!dateValue) return "just now";
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "just now";
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const neoOut = "shadow-[12px_12px_28px_rgba(59,130,246,0.16),-12px_-12px_28px_rgba(255,255,255,0.78),inset_1px_1px_0_rgba(255,255,255,0.72)]";
 const neoIn = "shadow-[inset_6px_6px_14px_rgba(59,130,246,0.14),inset_-6px_-6px_14px_rgba(255,255,255,0.78)]";
 const ViewModeContext = React.createContext("mobile");
@@ -297,8 +324,25 @@ function Login({ go }) {
   );
 }
 
-function ResumeUpload({ go, fromDashboard = false }) {
-  const [uploaded, setUploaded] = useState(false);
+function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [], onUploadResume = () => {}, onDeleteResume = () => {} }) {
+  const [uploaded, setUploaded] = useState(resumes.length > 0 || uploadQueue.length > 0);
+  const fileInputRef = useRef(null);
+
+  const handleFiles = (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    setUploaded(true);
+    onUploadResume(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  };
+
+  const latestResume = resumes[0];
+
   return (
     <PhoneShell><Screen>
       {/* Back / Skip header */}
@@ -315,34 +359,67 @@ function ResumeUpload({ go, fromDashboard = false }) {
       <h1 className="text-xl font-semibold text-slate-900">Your Resume</h1>
       <p className="mt-2 text-sm text-slate-600">Upload your existing resume or create a brand new one with AI assistance.</p>
 
-      {/* Upload Resume Option */}
+      {/* Upload Resume Option - this only reveals/selects the upload section now */}
       <button
-        onClick={() => { setUploaded(true); }}
+        type="button"
+        onClick={() => setUploaded(true)}
         className={`mt-6 flex w-full items-center gap-4 rounded-3xl border border-white/60 p-5 text-left transition ${uploaded ? `bg-blue-50/50 border-blue-300/60 ${neoIn}` : `bg-white/30 ${neoOut} hover:bg-white/40`} backdrop-blur-xl`}
       >
         <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${uploaded ? "bg-blue-600 text-white shadow-[8px_8px_18px_rgba(37,99,235,0.30)]" : `bg-blue-100/60 text-blue-600 ${neoIn}`}`}>
           <Upload className="h-6 w-6" />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-slate-900">Upload Resume</h3>
-          <p className="mt-1 text-xs text-slate-500">I already have a resume (PDF, DOCX)</p>
+          <p className="mt-1 text-xs text-slate-500">I already have a resume (PDF, DOC, DOCX)</p>
+          {latestResume && <p className="mt-2 truncate text-xs font-semibold text-blue-600">Selected: {latestResume.name}</p>}
         </div>
         {uploaded && <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-blue-600" />}
       </button>
 
-      {/* Upload drop zone - shown when upload is selected */}
+      {/* Upload drop zone - only this area opens the file picker */}
       {uploaded && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           className="overflow-hidden"
         >
-          <div className={`mt-3 flex h-32 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-300/60 bg-blue-50/30 text-blue-700 ${neoIn} backdrop-blur-xl`}>
-            <Upload className="mb-2 h-6 w-6" />
-            <span className="text-sm font-medium">Tap to upload or drag & drop</span>
-            <span className="mt-1 text-xs text-slate-500">PDF, DOCX up to 5MB</span>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            className={`mt-3 flex h-36 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-300/70 bg-blue-50/30 text-blue-700 ${neoIn} backdrop-blur-xl transition hover:bg-blue-50/45`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="hidden"
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+            <Upload className="mb-2 h-7 w-7" />
+            <span className="text-sm font-semibold">Tap to upload or drag & drop</span>
+            <span className="mt-1 text-xs text-slate-500">PDF, DOC, DOCX up to 5MB</span>
           </div>
         </motion.div>
+      )}
+
+      {(uploadQueue.length > 0 || resumes.length > 0) && (
+        <div className="mt-4 space-y-3">
+          {uploadQueue.map((item) => (
+            <ResumeUploadCard key={item.id} item={item} uploading />
+          ))}
+          {resumes.slice(0, 3).map((resume) => (
+            <ResumeUploadCard key={resume.id} item={resume} onDelete={() => onDeleteResume(resume.id)} />
+          ))}
+          {resumes.length > 3 && (
+            <button onClick={() => go("resumes")} className="w-full rounded-2xl bg-white/30 py-3 text-sm font-semibold text-blue-600 transition hover:bg-white/45">
+              View all {resumes.length} resumes
+            </button>
+          )}
+        </div>
       )}
 
       {/* Create New Resume Option */}
@@ -363,7 +440,7 @@ function ResumeUpload({ go, fromDashboard = false }) {
       {/* Continue with uploaded resume */}
       <div className="mt-8 space-y-3">
         <PrimaryButton
-          disabled={!uploaded}
+          disabled={resumes.length === 0}
           onClick={() => go("aiChatbot", null, "setPreferences")}
         >
           Continue with Resume <ArrowRight className="h-4 w-4" />
@@ -371,6 +448,74 @@ function ResumeUpload({ go, fromDashboard = false }) {
         <button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-slate-500 transition hover:text-slate-700">Skip for now</button>
       </div>
     </Screen></PhoneShell>
+  );
+}
+
+function ResumeUploadCard({ item, uploading = false, onDelete }) {
+  const progress = item.progress ?? 100;
+  const isError = item.status === "error";
+  const isDone = !uploading || item.status === "done" || progress >= 100;
+  const fileLabel = item.name?.split(".").pop()?.toUpperCase() || "FILE";
+
+  return (
+    <div className={`rounded-3xl border ${isError ? "border-red-400/70 bg-red-50/30" : "border-white/60 bg-white/30"} p-4 ${neoOut} backdrop-blur-xl`}>
+      <div className="flex items-center gap-3">
+        <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${isError ? "bg-red-500" : "bg-blue-100/70"} ${isError ? "text-white" : "text-blue-600"} ${neoIn}`}>
+          <FileText className="h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h4 className="truncate text-sm font-semibold text-slate-900">{item.name}</h4>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {formatFileSize(item.size)} {uploading && !isDone && <> · uploading {progress}%</>}
+            {!uploading && <> · uploaded {formatUploadDate(item.uploadedAt)}</>}
+          </p>
+        </div>
+        <span className="rounded-xl bg-white/40 px-2 py-1 text-[10px] font-bold text-slate-500">{fileLabel}</span>
+        {!uploading && item.url && (
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl bg-white/35 px-3 py-2 text-xs font-semibold text-blue-600 transition hover:bg-white/55"
+          >
+            Open
+          </a>
+        )}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="grid h-9 w-9 place-items-center rounded-xl bg-white/35 text-slate-500 transition hover:bg-red-50 hover:text-red-500"
+            aria-label={`Delete ${item.name}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {uploading && (
+        <div className="mt-3">
+          {isError ? (
+            <div className="text-xs font-semibold text-red-500">Upload failed. Please try again.</div>
+          ) : (
+            <>
+              <div className={`h-2 overflow-hidden rounded-full bg-white/40 ${neoIn}`}>
+                <motion.div
+                  className="h-full rounded-full bg-blue-600"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                <span>{isDone ? "Upload complete" : "Uploading resume..."}</span>
+                <span className={isDone ? "font-semibold text-emerald-600" : ""}>{isDone ? "100%" : `${progress}%`}</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -423,7 +568,8 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false }) {
 
   const handleSend = () => {
     if (!inputText.trim()) return;
-    const newMessages = [...messages, { from: "user", text: inputText }];
+    const userText = inputText.trim();
+    const newMessages = [...messages, { from: "user", text: userText }];
     setInputText("");
 
     if (isChatOpen) {
@@ -440,16 +586,14 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false }) {
       newMessages.push({ from: "ai", text: questions[step] });
       setMessages(newMessages);
       setStep(step + 1);
+    } else if (chatMode === "createResume") {
+      newMessages.push({ from: "ai", text: "Great! I have everything I need. Let me now ask about your preferences. What kind of job are you looking for?" });
+      setMessages(newMessages);
+      setStep(step + 1);
     } else {
-      if (chatMode === "createResume") {
-        newMessages.push({ from: "ai", text: "Great! I have everything I need. Let me now ask about your preferences. What kind of job are you looking for?" });
-        setMessages(newMessages);
-        setStep(step + 1);
-      } else {
-        newMessages.push({ from: "ai", text: "Perfect! I've saved your preferences. Let me find the best matches for you. Redirecting to your dashboard..." });
-        setMessages(newMessages);
-        setTimeout(() => go("dashboard"), 2000);
-      }
+      newMessages.push({ from: "ai", text: "Perfect! I've saved your preferences. Let me find the best matches for you. Redirecting to your dashboard..." });
+      setMessages(newMessages);
+      setTimeout(() => go("dashboard"), 2000);
     }
   };
 
@@ -459,42 +603,47 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false }) {
     ? ["Help me write it", "I'll type it out", "Use my LinkedIn"]
     : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
 
+  const handleQuickReply = (reply) => {
+    setInputText(reply);
+  };
+
   return (
     <PhoneShell>
-      <div className="flex h-full min-h-0 flex-1 flex-col px-6 pb-[118px] pt-14">
-        {/* Back / Skip header */}
-        <div className="mb-4 flex shrink-0 items-center justify-between">
-          <button onClick={() => go(isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")} className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition hover:text-slate-900">
-            <ArrowLeft className="h-4 w-4" /> Back
-          </button>
-          {!isChatOpen && (
-            <button onClick={() => go("dashboard")} className="text-sm font-medium text-slate-500 transition hover:text-blue-600">
-              Skip <ArrowRight className="inline h-3.5 w-3.5" />
+      <div className="flex h-full min-h-0 flex-1 flex-col px-6 pb-28 pt-8">
+        {/* Fixed top area */}
+        <div className="shrink-0">
+          <div className="mb-4 flex items-center justify-between">
+            <button onClick={() => go(isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")} className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition hover:text-slate-900">
+              <ArrowLeft className="h-4 w-4" /> Back
             </button>
-          )}
+            {!isChatOpen && (
+              <button onClick={() => go("dashboard")} className="text-sm font-medium text-slate-500 transition hover:text-blue-600">
+                Skip <ArrowRight className="inline h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="mb-4 flex items-center gap-3">
+            <div className={`grid h-10 w-10 place-items-center rounded-full border border-white/70 bg-purple-100/55 text-lg ${neoOut}`}>🤖</div>
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Syncra AI</h2>
+              <p className="text-xs text-blue-700">Online · {isChatOpen ? "Chat" : chatMode === "createResume" ? "Building Resume" : "Setting Preferences"}</p>
+            </div>
+            <div className="ml-auto">
+              <StepPill>{isChatOpen ? "Chat" : chatMode === "createResume" ? "Resume" : "Preferences"}</StepPill>
+            </div>
+          </div>
         </div>
 
-        {/* Chat header */}
-        <div className="mb-4 flex shrink-0 items-center gap-3">
-          <div className={`grid h-10 w-10 place-items-center rounded-full border border-white/70 bg-purple-100/55 text-lg ${neoOut}`}>🤖</div>
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">Syncra AI</h2>
-            <p className="text-xs text-blue-700">Online · {isChatOpen ? "Chat" : chatMode === "createResume" ? "Building Resume" : "Setting Preferences"}</p>
-          </div>
-          <div className="ml-auto">
-            <StepPill>{isChatOpen ? "Chat" : chatMode === "createResume" ? "Resume" : "Preferences"}</StepPill>
-          </div>
-        </div>
-
-        {/* Messages stay in the flexible middle area. The input below never moves. */}
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 pr-1 no-scrollbar">
-          <div className="space-y-3">
+        {/* Scrollable message area. Input stays at the bottom like ChatGPT. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar py-2 pr-1">
+          <div className="space-y-3 pb-4">
             {messages.map((msg, i) => (
               <motion.div
                 key={`${msg.from}-${i}-${msg.text.slice(0, 12)}`}
-                initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                 className={msg.from === "ai"
                   ? `max-w-[85%] rounded-2xl rounded-tl-sm border border-white/60 bg-white/45 p-4 text-sm leading-6 text-slate-800 ${neoOut} backdrop-blur-xl`
                   : "ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-blue-600 p-4 text-sm leading-6 text-white shadow-[8px_8px_18px_rgba(37,99,235,0.25)]"
@@ -507,13 +656,13 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false }) {
           </div>
         </div>
 
-        {/* Bottom composer area, ChatGPT-style: fixed at bottom of app screen */}
-        <div className="shrink-0 pt-3">
-          <div className="mb-2 flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+        {/* Fixed bottom composer */}
+        <div className="shrink-0 border-t border-white/20 pt-3">
+          <div className="mb-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {quickReplies.map((q) => (
               <button
                 key={q}
-                onClick={() => { setInputText(q); }}
+                onClick={() => handleQuickReply(q)}
                 className={`shrink-0 rounded-full border border-white/60 bg-white/45 px-4 py-2 text-xs font-semibold text-slate-700 ${neoOut} transition hover:bg-white/55`}
               >
                 {q}
@@ -521,8 +670,8 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false }) {
             ))}
           </div>
 
-          <div className={`rounded-2xl border border-white/60 bg-white/35 p-2 ${neoIn} backdrop-blur-xl`}>
-            <div className="flex items-center gap-2 rounded-xl bg-transparent px-2 py-1 text-sm">
+          <div className={`rounded-3xl border border-white/60 bg-white/35 p-2 ${neoIn} backdrop-blur-xl`}>
+            <div className="flex items-center gap-2 rounded-2xl bg-transparent px-2 py-1 text-sm">
               <input
                 type="text"
                 value={inputText}
@@ -533,7 +682,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false }) {
               />
               <button
                 onClick={handleSend}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -933,7 +1082,73 @@ function Tracker({ go }) {
   return <PhoneShell><Screen nav go={go} activeTab="jobs"><Header title="Application Tracker" subtitle="Track every opportunity" icon={<GlassIcon className="h-12 w-12 rounded-2xl"><ClipboardList className="h-6 w-6 text-blue-600" /></GlassIcon>} /><div className="mb-4 flex gap-2 overflow-x-auto pb-2">{statuses.map((s) => <button key={s} className={`shrink-0 rounded-full border border-white/60 bg-white/35 px-4 py-2 text-xs font-semibold text-slate-700 ${neoOut}`}>{s}</button>)}</div><div className="space-y-3">{applications.map((a) => <Card key={a.company}><div className="flex items-start justify-between"><div><h3 className="font-semibold text-slate-900">{a.company}</h3><p className="text-sm text-slate-600">{a.role}</p></div><StepPill>{a.status}</StepPill></div><p className="mt-3 text-xs text-slate-500">Applied {a.date} · {a.resume}</p><div className="mt-4 grid grid-cols-3 gap-2"><button className={`rounded-xl bg-white/30 py-2 text-xs font-semibold ${neoOut}`}>Update</button><button className="rounded-xl bg-blue-600 py-2 text-xs font-semibold text-white shadow-[6px_6px_14px_rgba(37,99,235,0.25)]">Interview</button><button className={`rounded-xl bg-white/30 py-2 text-xs font-semibold ${neoOut}`}>Resume</button></div></Card>)}</div></Screen></PhoneShell>;
 }
 
-function Profile({ go, noNav = false, appliedCount, savedCount, jobsCount }) {
+function ResumesScreen({ go, resumes = [], uploadQueue = [], onUploadResume = () => {}, onDeleteResume = () => {} }) {
+  const fileInputRef = useRef(null);
+  const handleFiles = (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    onUploadResume(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+  const handleDrop = (event) => {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  };
+
+  return (
+    <PhoneShell>
+      <Screen>
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center justify-between bg-transparent px-6 pb-4 pt-12 backdrop-blur-sm">
+          <button onClick={() => go("profile")} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-slate-800 shadow-sm transition hover:bg-white/80">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-lg font-semibold text-slate-900">Resumes</h1>
+          <button onClick={() => fileInputRef.current?.click()} className="grid h-10 w-10 place-items-center rounded-full bg-blue-600 text-white shadow-sm transition hover:bg-blue-700">
+            <Plus className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && fileInputRef.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          className={`mb-4 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-300/70 bg-blue-50/30 text-blue-700 ${neoIn} backdrop-blur-xl transition hover:bg-blue-50/45`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+          <Upload className="mb-2 h-7 w-7" />
+          <span className="text-sm font-semibold">Tap to upload or drag & drop</span>
+          <span className="mt-1 text-xs text-slate-500">PDF, DOC, DOCX up to 5MB</span>
+        </div>
+
+        <div className="space-y-3">
+          {uploadQueue.map((item) => <ResumeUploadCard key={item.id} item={item} uploading />)}
+          {resumes.map((resume) => <ResumeUploadCard key={resume.id} item={resume} onDelete={() => onDeleteResume(resume.id)} />)}
+          {uploadQueue.length === 0 && resumes.length === 0 && (
+            <Card className="text-center">
+              <div className={`mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-blue-100/70 text-blue-600 ${neoIn}`}>
+                <FileText className="h-7 w-7" />
+              </div>
+              <h3 className="font-semibold text-slate-900">No resumes yet</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Upload a resume to use it for AI matching, tailoring, and applications.</p>
+            </Card>
+          )}
+        </div>
+      </Screen>
+    </PhoneShell>
+  );
+}
+
+
+function Profile({ go, noNav = false, appliedCount, savedCount, jobsCount, resumesCount = 0 }) {
   const accountRows = [
     { icon: Settings, label: "Account Settings" },
   ];
@@ -982,6 +1197,17 @@ function Profile({ go, noNav = false, appliedCount, savedCount, jobsCount }) {
         {/* Career Overview (replaces Matches, Saved, Applied) */}
         <h3 className="mb-2 ml-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Career</h3>
         <div className={`mb-6 overflow-hidden rounded-[1.25rem] bg-white/40 ${neoOut}`}>
+          <button onClick={() => go("resumes")} className="flex w-full items-center justify-between p-4 hover:bg-white/20 transition-colors">
+             <div className="flex items-center gap-3">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500 text-white shadow-sm"><FileText className="h-4 w-4" /></div>
+                <span className="text-sm font-medium text-slate-700">Resumes</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-500">{resumesCount}</span>
+                <ChevronRight className="h-4 w-4 text-slate-400" />
+             </div>
+          </button>
+          <div className="h-px w-full bg-white/40" />
           <button onClick={() => go("dashboard", null, null, "all")} className="flex w-full items-center justify-between p-4 hover:bg-white/20 transition-colors">
              <div className="flex items-center gap-3">
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-500 text-white shadow-sm"><Briefcase className="h-4 w-4" /></div>
@@ -1165,6 +1391,77 @@ export default function App() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [hasReachedDashboard, setHasReachedDashboard] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("all");
+  const [resumes, setResumes] = useState([]);
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const uploadTimers = useRef([]);
+  const resumesRef = useRef([]);
+
+  useEffect(() => {
+    resumesRef.current = resumes;
+  }, [resumes]);
+
+  useEffect(() => {
+    return () => {
+      uploadTimers.current.forEach((timer) => clearInterval(timer));
+      resumesRef.current.forEach((resume) => resume.url && URL.revokeObjectURL(resume.url));
+    };
+  }, []);
+
+  const handleUploadResume = (files) => {
+    Array.from(files || []).forEach((file) => {
+      const id = `${file.name}-${file.lastModified}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const baseItem = {
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        progress: 0,
+        status: "uploading",
+        uploadedAt: new Date().toISOString(),
+      };
+
+      if (!isResumeFile(file) || file.size > 5 * 1024 * 1024) {
+        setUploadQueue((prev) => [
+          { ...baseItem, status: "error", progress: 0, error: "Please upload a PDF, DOC, or DOCX file under 5MB." },
+          ...prev,
+        ]);
+        setTimeout(() => setUploadQueue((prev) => prev.filter((item) => item.id !== id)), 3500);
+        return;
+      }
+
+      setUploadQueue((prev) => [{ ...baseItem, progress: 8 }, ...prev]);
+
+      let progress = 8;
+      const timer = setInterval(() => {
+        progress = Math.min(100, progress + Math.floor(Math.random() * 16) + 8);
+        setUploadQueue((prev) => prev.map((item) => item.id === id ? { ...item, progress, status: progress >= 100 ? "done" : "uploading" } : item));
+
+        if (progress >= 100) {
+          clearInterval(timer);
+          const resume = {
+            id,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadedAt: new Date().toISOString(),
+            url: URL.createObjectURL(file),
+          };
+          setResumes((prev) => [resume, ...prev]);
+          setTimeout(() => setUploadQueue((prev) => prev.filter((item) => item.id !== id)), 800);
+        }
+      }, 260);
+
+      uploadTimers.current.push(timer);
+    });
+  };
+
+  const handleDeleteResume = (resumeId) => {
+    setResumes((prev) => {
+      const target = prev.find((resume) => resume.id === resumeId);
+      if (target?.url) URL.revokeObjectURL(target.url);
+      return prev.filter((resume) => resume.id !== resumeId);
+    });
+  };
 
   const handleSaveJob = (jobId) => {
     setSavedJobs((prev) => prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]);
@@ -1186,7 +1483,7 @@ export default function App() {
     switch (screen) {
       case "landing": return <Landing go={go} />;
       case "login": return <Login go={go} />;
-      case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} />;
+      case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onDeleteResume={handleDeleteResume} />;
       case "aiChatbot": return <AIChatbot key={chatMode} go={go} chatMode={chatMode} fromDashboard={hasReachedDashboard} />;
       case "setup": return <Setup go={go} />;
       case "resumeInput": return <ResumeInput go={go} />;
@@ -1204,10 +1501,11 @@ export default function App() {
       case "review": return <Review go={go} selectedJob={selectedJob} />;
       case "submitted": return <Submitted go={go} selectedJob={selectedJob} onApply={handleApplyJob} />;
       case "tracker": return <Tracker go={go} />;
-      case "profile": return <Profile go={go} noNav appliedCount={appliedJobs.length} savedCount={savedJobs.length} jobsCount={jobs.length} />;
+      case "resumes": return <ResumesScreen go={go} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onDeleteResume={handleDeleteResume} />;
+      case "profile": return <Profile go={go} noNav appliedCount={appliedJobs.length} savedCount={savedJobs.length} jobsCount={jobs.length} resumesCount={resumes.length} />;
       default: return <Landing go={go} />;
     }
-  }, [screen, selectedJob, chatMode, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter]);
+  }, [screen, selectedJob, chatMode, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
 
   const insideAppTransition = screen !== "landing";
   const tabbedScreens = ["dashboard", "profile", "tracker", "aiChatbot"];
