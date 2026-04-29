@@ -321,18 +321,28 @@ function BottomNav({ go = () => {}, activeTab = "home" }) {
     { icon: User, label: "Profile", key: "profile", target: "profile" },
   ];
   return (
-    <div className="flex w-full items-center rounded-full bg-[#000100] p-1.5">
+    <div className="grid w-full grid-cols-3 items-center rounded-full bg-[#000100] p-1.5">
       {items.map((item) => {
         const Icon = item.icon;
         const active = activeTab === item.key;
         return (
           <button
             key={item.key}
-            onClick={() => go(item.target, null, item.mode)}
-            className={`flex items-center justify-center rounded-full transition-all duration-300 ease-out ${
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              const scrollPosition = typeof window !== "undefined" ? { x: window.scrollX, y: window.scrollY } : null;
+              go(item.target, null, item.mode);
+              if (scrollPosition) {
+                requestAnimationFrame(() => {
+                  window.scrollTo(scrollPosition.x, scrollPosition.y);
+                  requestAnimationFrame(() => window.scrollTo(scrollPosition.x, scrollPosition.y));
+                });
+              }
+            }}
+            className={`flex min-w-0 items-center justify-center rounded-full px-3 py-3 transition-all duration-300 ease-out ${
               active
-                ? "gap-1.5 bg-[#a0fe08] px-5 py-3 text-[#000100]"
-                : "flex-1 gap-0 py-3 text-white/50 hover:text-white"
+                ? "gap-1.5 bg-[#a0fe08] text-[#000100]"
+                : "gap-0 text-white/50 hover:text-white"
             }`}
           >
             <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={active ? 2.4 : 1.8} />
@@ -518,7 +528,17 @@ function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [
 
       {/* Create New Resume Option */}
       <button
-        onClick={() => go("aiChatbot", null, "createResume")}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => {
+          const scrollPosition = typeof window !== "undefined" ? { x: window.scrollX, y: window.scrollY } : null;
+          go("aiChatbot", null, "createResume");
+          if (scrollPosition) {
+            requestAnimationFrame(() => {
+              window.scrollTo(scrollPosition.x, scrollPosition.y);
+              requestAnimationFrame(() => window.scrollTo(scrollPosition.x, scrollPosition.y));
+            });
+          }
+        }}
         className="mt-3 flex w-full items-center gap-4 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-5 text-left transition hover:bg-[#eaeceb]"
       >
         <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#000100] text-white">
@@ -723,16 +743,27 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
       return {
         messages: [{ from: "ai", text: "Hi! I'm Syncra AI. How can I help you today? You can ask me about jobs, resumes, career advice, or anything else." }],
         step: 0,
+        helpWriteStep: null,
       };
     }
 
-    const initial = chatMode === "createResume"
-      ? { from: "user", text: "I want to create a resume" }
-      : { from: "user", text: "I want to set my preferences" };
+    if (chatMode === "createResume") {
+      return {
+        messages: [
+          { from: "user", text: "I want to create a resume" },
+          ...createResumeFlows["help me write it"].map((text) => ({ from: "ai", text })),
+        ],
+        step: 0,
+        helpWriteStep: 0,
+      };
+    }
+
+    const initial = { from: "user", text: "I want to set my preferences" };
 
     return {
       messages: [initial, { from: "ai", text: questions[0] }],
       step: 1,
+      helpWriteStep: null,
     };
   }, [agentResumeNotice, chatMode, isChatOpen, questions]);
 
@@ -740,7 +771,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
   const [inputText, setInputText] = useState("");
   const [step, setStep] = useState(initialChatState.step);
   const [isTyping, setIsTyping] = useState(false);
-  const [helpWriteStep, setHelpWriteStep] = useState(null);
+  const [helpWriteStep, setHelpWriteStep] = useState(initialChatState.helpWriteStep ?? null);
   const [helpWriteAnswers, setHelpWriteAnswers] = useState([]);
   const [typeItOutActive, setTypeItOutActive] = useState(false);
 
@@ -940,7 +971,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
   const quickReplies = isChatOpen
     ? ["Find me jobs", "Improve my resume", "Career advice", "Salary insights"]
     : chatMode === "createResume"
-    ? ["Help me write it", "I'll type it out", "Use my LinkedIn"]
+    ? ["I'll type it out", "Use my LinkedIn"]
     : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
 
   const handleQuickReply = (reply) => {
