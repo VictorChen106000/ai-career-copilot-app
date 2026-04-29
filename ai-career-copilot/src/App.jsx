@@ -1053,7 +1053,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
   const quickReplies = isChatOpen
     ? ["Find me jobs", "Improve my resume", "Career advice", "Salary insights"]
     : chatMode === "createResume"
-    ? ["Help me write it", "I'll type it out", "Use my LinkedIn"]
+    ? ["I'll type it out", "Use my LinkedIn"]
     : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
 
   const handleQuickReply = (reply) => {
