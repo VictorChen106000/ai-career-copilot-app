@@ -1741,7 +1741,7 @@ function Profile({ go, noNav = false, appliedCount, savedCount, jobsCount, resum
           ))}
         </div>
 
-        <button className="mb-4 flex w-full items-center justify-center gap-2 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm font-bold text-red-500 transition-colors hover:bg-red-50">
+        <button onClick={() => go("login")} className="mb-4 flex w-full items-center justify-center gap-2 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm font-bold text-red-500 transition-colors hover:bg-red-50">
           <LogOut className="h-5 w-5" /> Sign Out
         </button>
       </Screen>
