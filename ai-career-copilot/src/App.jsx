@@ -413,6 +413,57 @@ function SplashScreen() {
   );
 }
 
+function LoginLoadingScreen({ go }) {
+  useEffect(() => {
+    const loginTimer = setTimeout(() => go("login"), 2300);
+    return () => clearTimeout(loginTimer);
+  }, [go]);
+
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#eaeceb] px-8 text-[#000100]">
+      <div className="flex w-full flex-col items-center text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.86, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mb-7 grid place-items-center"
+        >
+          <motion.div
+            className="absolute h-56 w-56 rounded-full bg-[#a0fe08]/25 blur-3xl"
+            animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.65, 0.35] }}
+            transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.img
+            src={syncraLogoPng}
+            alt="Syncra AI logo"
+            className="relative z-10 h-52 w-52 object-contain drop-shadow-[0_18px_35px_rgba(0,1,0,0.18)]"
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.5 }}
+          className="text-xs font-bold tracking-[0.24em] text-[#000100]"
+        >
+          SYNCING YOUR CAREER PATH
+        </motion.p>
+
+        <div className="mt-5 h-2 w-52 overflow-hidden rounded-full bg-[#d1d3d2]">
+          <motion.div
+            className="h-full rounded-full bg-[#a0fe08]"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 2.1, ease: "easeInOut" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Landing({ go }) {
   return (
     <div className="grid min-h-screen gap-10 bg-[#eaeceb] px-6 py-8 text-[#000100] lg:grid-cols-[1.05fr_.95fr] lg:px-16">
@@ -423,8 +474,8 @@ function Landing({ go }) {
         <h1 className="max-w-3xl text-5xl font-black tracking-tight text-[#000100] md:text-7xl">Let AI handle your job hunting journey.</h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-[#666666]">Build an ATS-friendly resume, discover roles that match your goals, tailor every application, and approve auto-apply actions before anything is submitted.</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <button onClick={() => go("login")} className="rounded-xl bg-[#000100] px-7 py-4 font-bold text-white transition active:opacity-80">Get Started</button>
-          <button onClick={() => go("login")} className="rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-7 py-4 font-bold text-[#000100]">I already have an account</button>
+          <button onClick={() => go("loginLoading")} className="rounded-xl bg-[#000100] px-7 py-4 font-bold text-white transition active:opacity-80">Get Started</button>
+          <button onClick={() => go("loginLoading")} className="rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-7 py-4 font-bold text-[#000100]">I already have an account</button>
         </div>
         <div className="mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
           {[[FileText, "AI Resume Builder", "Turn your story into a polished resume."], [Search, "Smart Job Matching", "Rank roles by fit, goals, and missing skills."], [Send, "Auto Apply Assistant", "Prepare applications after your approval."]].map(([Icon, title, copy]) => (
@@ -1964,7 +2015,7 @@ function ViewSwitchButton({ viewMode, onToggle }) {
 
 export default function App() {
   const [screen, setScreen] = useState("landing");
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [selectedJob, setSelectedJob] = useState(jobs[0]);
   const [selectedResume, setSelectedResume] = useState(null);
   const [resumePreviewBackTarget, setResumePreviewBackTarget] = useState("resumes");
@@ -2114,6 +2165,7 @@ export default function App() {
   const component = useMemo(() => {
     switch (screen) {
       case "landing": return <Landing go={go} />;
+      case "loginLoading": return <LoginLoadingScreen go={go} />;
       case "login": return <Login go={go} />;
       case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onOpenResume={handleOpenResume} onDeleteResume={handleDeleteResume} />;
       case "aiChatbot": return <AIChatbot key={`${chatMode}-${agentResumeNotice?.timestamp || "normal"}`} go={go} chatMode={chatMode} fromDashboard={hasReachedDashboard} onStartBackgroundResume={handleStartBackgroundResume} agentResumeNotice={agentResumeNotice} />;
