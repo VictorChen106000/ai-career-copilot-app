@@ -213,7 +213,7 @@ const ShellStripContext = React.createContext(false);
 
 
 const StepPill = ({ children, accent = false }) => (
-  <span className={`rounded-full px-3 py-1 text-xs font-bold ${accent ? "bg-[#FF5C00] text-[#000100]" : "border border-[#d1d3d2] bg-[#ffffff] text-[#000100]"}`}>
+  <span className={`rounded-full px-3 py-1 text-xs font-bold ${accent ? "bg-[#a0fe08] text-[#000100]" : "border border-[#d1d3d2] bg-[#ffffff] text-[#000100]"}`}>
     {children}
   </span>
 );
@@ -250,7 +250,7 @@ const Card = ({ children, className = "" }) => (
 const SoftInput = ({ icon, placeholder, type = "text", value, onChange }) => {
   const Icon = icon;
   return (
-    <label className="flex items-center gap-3 rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-4 py-4 text-sm text-[#666666] focus-within:ring-2 focus-within:ring-[#FF5C00]">
+    <label className="flex items-center gap-3 rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-4 py-4 text-sm text-[#666666] focus-within:ring-2 focus-within:ring-[#a0fe08]">
       <Icon className="h-5 w-5 shrink-0 text-[#000100]" />
       <input type={type} value={value} onChange={onChange} placeholder={placeholder} className="w-full bg-transparent text-[#000100] outline-none placeholder:text-[#999999]" />
     </label>
@@ -317,26 +317,39 @@ const Screen = ({ children, nav, floatingNav, className = "", go = () => {}, act
 function BottomNav({ go = () => {}, activeTab = "home" }) {
   const items = [
     { icon: Home, label: "Home", key: "home", target: "dashboard" },
-    { icon: Bot, label: "", key: "aiChatbot", target: "aiChatbot", mode: "chatOpen" },
+    { icon: Bot, label: "AI Chat", key: "aiChatbot", target: "aiChatbot", mode: "chatOpen" },
     { icon: User, label: "Profile", key: "profile", target: "profile" },
   ];
   return (
-    <div className="grid grid-cols-3 items-center rounded-full bg-[#000100] p-2">
-      {items.map((item, i) => {
+    <div className="flex w-full items-center rounded-full bg-[#000100] p-1.5">
+      {items.map((item) => {
         const Icon = item.icon;
         const active = activeTab === item.key;
-        if (i === 1) {
-          return (
-            <button key={item.key} onClick={() => go(item.target, null, item.mode)} className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#FF5C00] text-[#000100] transition active:opacity-80">
-              <Icon className="h-5 w-5" />
-            </button>
-          );
-        }
         return (
-          <button key={item.key} onClick={() => go(item.target)} className={`flex flex-col items-center gap-1 rounded-full py-2 text-[10px] font-bold transition ${active ? "text-[#FF5C00]" : "text-white/70"}`}>
-            <Icon className="h-4 w-4" />
-            {item.label}
-          </button>
+          <motion.button
+            key={item.key}
+            onClick={() => go(item.target, null, item.mode)}
+            layout
+            transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.8 }}
+            className={`flex items-center justify-center gap-2.5 rounded-full transition-colors ${
+              active
+                ? "bg-[#a0fe08] px-5 py-3 text-[#000100]"
+                : "flex-1 py-3 text-white/50 hover:text-white"
+            }`}
+          >
+            <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={active ? 2.4 : 1.8} />
+            {active && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30, delay: 0.06 }}
+                className="overflow-hidden whitespace-nowrap text-[13px] font-bold"
+              >
+                {item.label}
+              </motion.span>
+            )}
+          </motion.button>
         );
       })}
     </div>
@@ -460,7 +473,7 @@ function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [
           <p className="mt-1 text-xs text-[#666666]">I already have a resume (PDF, DOC, DOCX)</p>
           {latestResume && <p className="mt-2 truncate text-xs font-bold text-[#000100]">Selected: {latestResume.name}</p>}
         </div>
-        {uploaded && <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-[#FF5C00]" />}
+        {uploaded && <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-[#a0fe08]" />}
       </button>
 
       {/* Upload drop zone */}
@@ -595,7 +608,7 @@ function ResumeUploadCard({ item, uploading = false, onOpen, onDelete }) {
               </div>
               <div className="mt-2 flex items-center justify-between text-[11px] text-[#666666]">
                 <span>{isDone ? "Upload complete" : "Uploading resume..."}</span>
-                <span className={isDone ? "font-bold text-[#FF5C00]" : ""}>{isDone ? "100%" : `${progress}%`}</span>
+                <span className={isDone ? "font-bold text-[#a0fe08]" : ""}>{isDone ? "100%" : `${progress}%`}</span>
               </div>
             </>
           )}
@@ -983,7 +996,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
             <div className="grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-lg text-white">🤖</div>
             <div>
               <h2 className="text-sm font-bold text-[#000100]">Syncra AI</h2>
-              <p className="text-xs font-medium text-[#FF5C00]">Online · {isChatOpen ? "Chat" : chatMode === "createResume" ? "Building Resume" : "Setting Preferences"}</p>
+              <p className="text-xs font-medium text-[#a0fe08]">Online · {isChatOpen ? "Chat" : chatMode === "createResume" ? "Building Resume" : "Setting Preferences"}</p>
             </div>
             <div className="ml-auto">
               <StepPill>{isChatOpen ? "Chat" : chatMode === "createResume" ? "Resume" : "Preferences"}</StepPill>
@@ -1070,7 +1083,7 @@ function Setup({ go }) {
   const fields = ["Desired role", "Industry", "Job type", "Location", "Salary", "Company culture", "Skills to use", "Skills to avoid"];
   return (
     <PhoneShell><Screen>
-      <div className="mx-auto mb-6 w-fit"><GlassIcon><Star className="h-9 w-9 fill-[#FF5C00] text-[#FF5C00]" /></GlassIcon></div>
+      <div className="mx-auto mb-6 w-fit"><GlassIcon><Star className="h-9 w-9 fill-[#a0fe08] text-[#a0fe08]" /></GlassIcon></div>
       <p className="text-xs text-[#666666]">Step 1 of 2</p><h1 className="mt-2 text-xl font-bold text-[#000100]">AI Career Setup</h1><p className="mt-2 text-sm text-[#666666]">Tell Syncra AI what kind of job journey you want.</p>
       <div className="mt-6 grid gap-3">{fields.map((field) => <div key={field} className={`rounded-2xl border border-[#d1d3d2] bg-[#ffffff] px-4 py-3 text-sm text-[#666666] ${neoIn} `}>{field}</div>)}</div>
       <div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("resumeInput")}>Continue <ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={() => go("story")}>Let AI help me fill this <Sparkles className="h-4 w-4" /></SecondaryButton><button onClick={() => go("resumeInput")} className="w-full py-2 text-sm text-[#666666]">Skip for now</button></div>
@@ -1081,7 +1094,7 @@ function Setup({ go }) {
 function ResumeInput({ go }) {
   return (
     <PhoneShell><Screen>
-      <div className="mx-auto mb-8 w-fit"><GlassIcon><Star className="h-9 w-9 fill-[#FF5C00] text-[#FF5C00]" /></GlassIcon></div>
+      <div className="mx-auto mb-8 w-fit"><GlassIcon><Star className="h-9 w-9 fill-[#a0fe08] text-[#a0fe08]" /></GlassIcon></div>
       <p className="text-xs text-[#666666]">Step 2 of 2</p><h1 className="mt-2 text-xl font-bold text-[#000100]">Upload your resume</h1><p className="mt-2 text-sm text-[#666666]">Drop your PDF and we&apos;ll match you with the right roles.</p>
       <button onClick={() => go("builder")} className={`mt-8 flex h-40 w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#d1d3d2] bg-[#ffffff] text-[#000100] ${neoIn} `}><div className={`mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#eaeceb] ${neoOut}`}><Upload className="h-7 w-7" /></div><span className="text-sm font-bold">Tap to upload PDF</span><span className="mt-1 text-xs text-[#666666]">or drag & drop here</span></button>
       <div className="mt-8 space-y-3"><PrimaryButton onClick={() => go("builder")}>Continue <ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={() => go("story")}>Tell Your Story <Bot className="h-4 w-4" /></SecondaryButton><button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666]">Skip for now</button></div>
@@ -1107,7 +1120,7 @@ function Builder({ go }) {
   return (
     <PhoneShell><Screen>
       <Header title="AI Resume Builder" subtitle="Syncra AI is working" icon={<GlassIcon className="h-12 w-12 rounded-2xl"><Wand2 className="h-6 w-6 text-white" /></GlassIcon>} />
-      <Card><h3 className="font-bold text-[#000100]">Generating your ATS-friendly resume</h3><div className="mt-4 space-y-3">{messages.map((m, i) => <div key={m} className="flex items-center gap-3 text-sm text-[#000100]"><CheckCircle2 className={`h-5 w-5 ${i < 3 ? "text-[#FF5C00]" : "text-blue-500"}`} />{m}</div>)}</div></Card>
+      <Card><h3 className="font-bold text-[#000100]">Generating your ATS-friendly resume</h3><div className="mt-4 space-y-3">{messages.map((m, i) => <div key={m} className="flex items-center gap-3 text-sm text-[#000100]"><CheckCircle2 className={`h-5 w-5 ${i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"}`} />{m}</div>)}</div></Card>
       <Card className="mt-4"><div className="mb-3 flex items-center justify-between"><h3 className="font-bold text-[#000100]">Resume Preview</h3><StepPill>ATS ready</StepPill></div><div className={`space-y-2 rounded-2xl bg-[#ffffff] p-4 ${neoIn}`}><div className="h-4 w-32 rounded bg-slate-800" /><div className="h-2 w-44 rounded bg-slate-300" /><div className="mt-4 h-3 w-20 rounded bg-[#d1d3d2]" /><div className="h-2 w-full rounded bg-slate-300" /><div className="h-2 w-5/6 rounded bg-slate-300" /><div className="mt-4 h-3 w-24 rounded bg-[#d1d3d2]" /><div className="h-2 w-full rounded bg-slate-300" /><div className="h-2 w-4/5 rounded bg-slate-300" /></div></Card>
       <div className="mt-5 grid gap-3"><PrimaryButton onClick={() => go("analysis")}>Analyze Resume <BarChart3 className="h-4 w-4" /></PrimaryButton><div className="grid grid-cols-2 gap-3"><SecondaryButton>Improve with AI</SecondaryButton><SecondaryButton>Edit Manually</SecondaryButton></div><SecondaryButton onClick={() => go("dashboard")}>Save Resume</SecondaryButton></div>
     </Screen></PhoneShell>
@@ -1247,15 +1260,16 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
             syncra
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={() => go("resumeUpload")} className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white">
-            <Plus className="h-4 w-4" />
+        <div className="flex items-center overflow-hidden rounded-full bg-[#000100]">
+          <button onClick={() => go("resumeUpload")} className="grid h-9 w-10 place-items-center text-white transition active:opacity-70">
+            <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
           </button>
+          <div className="h-4 w-px bg-white/20" />
           <div className="relative">
-            <button className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white">
-              <Bell className="h-3.5 w-3.5" />
+            <button className="grid h-9 w-10 place-items-center text-white transition active:opacity-70">
+              <Bell className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </button>
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[#FF5C00]" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#a0fe08]" />
           </div>
         </div>
       </div>
@@ -1306,13 +1320,13 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
               const BIcon = b.icon;
               return (
                 <div key={i} className="flex min-w-full items-center gap-3 bg-[#000100] px-3.5 py-2.5 text-white">
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#FF5C00] text-[#000100]">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#a0fe08] text-[#000100]">
                     <BIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-xs font-bold">{b.title}</h3>
-                      <span className="rounded-full bg-[#FF5C00] px-1.5 py-0.5 text-[10px] font-bold leading-none text-[#000100]">{b.value}</span>
+                      <span className="rounded-full bg-[#a0fe08] px-1.5 py-0.5 text-[10px] font-bold leading-none text-[#000100]">{b.value}</span>
                     </div>
                     <p className="mt-0.5 text-[11px] leading-4 text-white/70">{b.desc}</p>
                   </div>
@@ -1333,7 +1347,7 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
             <button key={f.key} onClick={() => setDashboardFilter(f.key)} className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${active ? "bg-[#000100] text-white" : "border border-[#d1d3d2] bg-[#ffffff] text-[#000100]"}`}>
               <FIcon className="h-3.5 w-3.5" />
               {f.label}
-              {count !== null && count > 0 && <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active ? "bg-[#FF5C00] text-[#000100]" : "bg-[#eaeceb] text-[#000100]"}`}>{count}</span>}
+              {count !== null && count > 0 && <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${active ? "bg-[#a0fe08] text-[#000100]" : "bg-[#eaeceb] text-[#000100]"}`}>{count}</span>}
             </button>
           );
         })}
@@ -1402,7 +1416,7 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
                       </div>
                       <div className="mt-4 grid grid-cols-3 gap-2">
                         <button onClick={() => go("detail", job)} className="rounded-xl bg-[#000100] py-2 text-xs font-bold text-white">Details</button>
-                        <button onClick={() => onSaveJob(job.id)} className={`rounded-xl border py-2 text-xs font-bold ${isSaved ? "border-[#FF5C00] bg-[#FF5C00] text-[#000100]" : "border-[#d1d3d2] bg-[#ffffff] text-[#000100]"}`}>{isSaved ? "Saved ✓" : "Save"}</button>
+                        <button onClick={() => onSaveJob(job.id)} className={`rounded-xl border py-2 text-xs font-bold ${isSaved ? "border-[#a0fe08] bg-[#a0fe08] text-[#000100]" : "border-[#d1d3d2] bg-[#ffffff] text-[#000100]"}`}>{isSaved ? "Saved ✓" : "Save"}</button>
                         <button onClick={() => go("tailor", job)} className="rounded-xl border border-[#d1d3d2] bg-[#ffffff] py-2 text-xs font-bold text-[#000100]">Apply</button>
                       </div>
                     </>
@@ -1433,7 +1447,7 @@ function Running({ go }) {
   return (
     <PhoneShell><Screen><Header title="AI Agent Running" subtitle="Background job search" icon={<GlassIcon className="h-12 w-12 rounded-2xl"><Bot className="h-6 w-6 text-white" /></GlassIcon>} />
       <Card className="text-center"><div className="mx-auto mb-5 grid h-24 w-24 place-items-center rounded-full bg-[#000100] text-white "><Sparkles className="h-10 w-10" /></div><h3 className="font-bold text-[#000100]">Searching jobs in the background</h3><p className="mt-2 text-sm leading-6 text-[#666666]">You can close the app. I&apos;ll notify you when the search is complete.</p></Card>
-      <div className="mt-4 space-y-3">{steps.map((s, i) => <Card key={s} className="flex items-center gap-3 py-4"><CheckCircle2 className={`h-5 w-5 ${i < 3 ? "text-[#FF5C00]" : "text-blue-500"}`} /><span className="text-sm font-medium text-[#000100]">{s}</span></Card>)}</div>
+      <div className="mt-4 space-y-3">{steps.map((s, i) => <Card key={s} className="flex items-center gap-3 py-4"><CheckCircle2 className={`h-5 w-5 ${i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"}`} /><span className="text-sm font-medium text-[#000100]">{s}</span></Card>)}</div>
       <div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("complete")}>Notify Me When Done</PrimaryButton><SecondaryButton onClick={() => go("results")}>View Live Progress</SecondaryButton><button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666]">Cancel Search</button></div>
     </Screen></PhoneShell>
   );
@@ -1455,7 +1469,7 @@ function Results({ go }) {
 
 function Detail({ go, selectedJob }) {
   const job = selectedJob || jobs[0];
-  return <PhoneShell><Screen><Header title={job.title} subtitle={job.company} icon={<GlassIcon className="h-12 w-12 rounded-2xl"><Briefcase className="h-6 w-6 text-white" /></GlassIcon>} /><Card><div className="flex items-center justify-between"><h3 className="font-bold text-[#000100]">Match analysis</h3><span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">{job.match}%</span></div><p className="mt-3 text-sm leading-6 text-[#666666]">{job.why}</p></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Requirement checklist</h3><div className="mt-3 space-y-3">{["Resume includes relevant projects", "Location and job type match", "Strong design/coding keywords", ...job.missing.map((m) => `Needs improvement: ${m}`)].map((r, i) => <div key={r} className="flex items-center gap-2 text-sm text-[#000100]"><CheckCircle2 className={`h-4 w-4 ${i < 3 ? "text-[#FF5C00]" : "text-amber-500"}`} />{r}</div>)}</div></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Recommended resume changes</h3><p className="mt-2 text-sm leading-6 text-[#666666]">Add role-specific keywords, strengthen project impact, and rewrite one bullet to show measurable results.</p></Card><div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("tailor", job)}>Tailor Resume for This Job</PrimaryButton><SecondaryButton onClick={() => go("review", job)}>Apply with Current Resume</SecondaryButton><SecondaryButton>Save Job</SecondaryButton><button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666]">Back to Home</button></div></Screen></PhoneShell>;
+  return <PhoneShell><Screen><Header title={job.title} subtitle={job.company} icon={<GlassIcon className="h-12 w-12 rounded-2xl"><Briefcase className="h-6 w-6 text-white" /></GlassIcon>} /><Card><div className="flex items-center justify-between"><h3 className="font-bold text-[#000100]">Match analysis</h3><span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">{job.match}%</span></div><p className="mt-3 text-sm leading-6 text-[#666666]">{job.why}</p></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Requirement checklist</h3><div className="mt-3 space-y-3">{["Resume includes relevant projects", "Location and job type match", "Strong design/coding keywords", ...job.missing.map((m) => `Needs improvement: ${m}`)].map((r, i) => <div key={r} className="flex items-center gap-2 text-sm text-[#000100]"><CheckCircle2 className={`h-4 w-4 ${i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"}`} />{r}</div>)}</div></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Recommended resume changes</h3><p className="mt-2 text-sm leading-6 text-[#666666]">Add role-specific keywords, strengthen project impact, and rewrite one bullet to show measurable results.</p></Card><div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("tailor", job)}>Tailor Resume for This Job</PrimaryButton><SecondaryButton onClick={() => go("review", job)}>Apply with Current Resume</SecondaryButton><SecondaryButton>Save Job</SecondaryButton><button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666]">Back to Home</button></div></Screen></PhoneShell>;
 }
 
 function Tailor({ go, selectedJob }) {
@@ -1471,7 +1485,7 @@ function Review({ go, selectedJob }) {
 function Submitted({ go, selectedJob, onApply = () => {} }) {
   const job = selectedJob || jobs[0];
   useEffect(() => { onApply(job.id); }, [job.id, onApply]);
-  return <PhoneShell><Screen><div className="flex min-h-[610px] flex-col justify-center"><Card className="text-center"><div className={`mx-auto mb-5 grid h-24 w-24 place-items-center rounded-full bg-[#FF5C00] text-[#000100] ${neoOut}`}><CheckCircle2 className="h-12 w-12" /></div><h1 className="text-xl font-bold text-[#000100]">Application submitted</h1><p className="mt-3 text-sm leading-6 text-[#666666]">{job.company} · {job.title}</p><div className={`mt-4 rounded-2xl bg-[#ffffff] p-4 text-left text-sm text-[#666666] ${neoIn}`}><p><b className="text-[#000100]">Resume:</b> Job-tailored Resume v3</p><p><b className="text-[#000100]">Submitted:</b> Today</p></div><div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("dashboard")}>Back to Home</PrimaryButton><SecondaryButton onClick={() => go("dashboard")}>Browse More Jobs</SecondaryButton></div></Card></div></Screen></PhoneShell>;
+  return <PhoneShell><Screen><div className="flex min-h-[610px] flex-col justify-center"><Card className="text-center"><div className={`mx-auto mb-5 grid h-24 w-24 place-items-center rounded-full bg-[#a0fe08] text-[#000100] ${neoOut}`}><CheckCircle2 className="h-12 w-12" /></div><h1 className="text-xl font-bold text-[#000100]">Application submitted</h1><p className="mt-3 text-sm leading-6 text-[#666666]">{job.company} · {job.title}</p><div className={`mt-4 rounded-2xl bg-[#ffffff] p-4 text-left text-sm text-[#666666] ${neoIn}`}><p><b className="text-[#000100]">Resume:</b> Job-tailored Resume v3</p><p><b className="text-[#000100]">Submitted:</b> Today</p></div><div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("dashboard")}>Back to Home</PrimaryButton><SecondaryButton onClick={() => go("dashboard")}>Browse More Jobs</SecondaryButton></div></Card></div></Screen></PhoneShell>;
 }
 
 function Tracker({ go }) {
@@ -1793,7 +1807,7 @@ function AgentResumeNotification({ job, onClick }) {
       transition={{ type: "spring", stiffness: 360, damping: 28 }}
       className="absolute left-4 right-4 top-16 z-[80] flex items-center gap-3 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-left"
     >
-      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#FF5C00] text-[#000100]">
+      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#a0fe08] text-[#000100]">
         <CheckCircle2 className="h-6 w-6" />
       </div>
       <div className="min-w-0 flex-1">
