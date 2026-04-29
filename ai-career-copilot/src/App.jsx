@@ -1428,14 +1428,10 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
               const isSaved = savedJobs.includes(job.id);
               return (
                 <Card key={job.id} className="mb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex gap-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-4">
                       <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#000100] text-sm font-bold text-white">{job.company[0]}</div>
-                      <div>
-                        <h3 className="font-bold text-[#000100]">{job.company}</h3>
-                        <p className="text-sm text-[#666666]">{job.title}</p>
-                        <p className="mt-1 flex items-center gap-1 text-xs text-[#666666]"><MapPin className="h-3 w-3" /> {job.location}</p>
-                      </div>
+                      <h3 className="min-w-0 truncate text-2xl font-black leading-none tracking-tight text-[#000100]">{job.company}</h3>
                     </div>
                     {isApplied ? (
                       <span className="rounded-full bg-[#000100] px-3 py-1 text-xs font-bold text-white">Applied</span>
@@ -1443,6 +1439,10 @@ function Dashboard({ go = () => {}, mini = false, appliedJobs = [], savedJobs = 
                       <span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">{job.match}%</span>
                     )}
                   </div>
+
+                  <p className="mt-3 text-sm font-medium leading-5 text-[#666666]">
+                    {job.title} <span className="mx-1 text-[#999999]">·</span> {job.location}
+                  </p>
 
                   {isApplied ? (
                     <>
