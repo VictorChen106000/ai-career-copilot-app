@@ -529,7 +529,38 @@ function Login({ go }) {
             <div className="my-6 flex items-center gap-3 text-xs text-[#666666]"><span className="h-px flex-1 bg-[#d1d3d2]" /> or continue with <span className="h-px flex-1 bg-[#d1d3d2]" /></div>
             <div className="grid grid-cols-2 gap-3"><SecondaryButton onClick={() => go("resumeUpload")}>Google</SecondaryButton><SecondaryButton onClick={() => go("resumeUpload")}>Demo Mode</SecondaryButton></div>
           </div>
-          <p className="pb-2 text-center text-sm text-[#666666]">Don&apos;t have an account? <button type="button" onClick={() => go("resumeUpload")} className="font-bold text-[#000100]">Sign up</button></p>
+          <p className="pb-2 text-center text-sm text-[#666666]">Don&apos;t have an account? <button type="button" onClick={() => go("signup")} className="font-bold text-[#000100]">Sign up</button></p>
+        </form>
+      </Screen>
+    </PhoneShell>
+  );
+}
+
+function SignUp({ go }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const handleSubmit = (e) => { e.preventDefault(); go("resumeUpload"); };
+  return (
+    <PhoneShell>
+      <Screen>
+        <form onSubmit={handleSubmit} className="mx-auto flex h-full min-h-[610px] w-full max-w-[430px] flex-col">
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="mx-auto mb-8"><GlassIcon><Sparkles className="h-8 w-8 text-[#a0fe08]" /></GlassIcon></div>
+            <h1 className="text-lg font-bold text-[#000100]">Create your account</h1>
+            <p className="mb-8 mt-2 text-sm text-[#666666]">Start building your AI-powered career profile</p>
+            <div className="space-y-3">
+              <SoftInput icon={User} placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+              <SoftInput icon={Mail} placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <SoftInput icon={Lock} placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <SoftInput icon={Lock} placeholder="Confirm password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            </div>
+            <PrimaryButton className="mt-7" onClick={handleSubmit}>Create account <ArrowRight className="h-4 w-4" /></PrimaryButton>
+            <div className="my-6 flex items-center gap-3 text-xs text-[#666666]"><span className="h-px flex-1 bg-[#d1d3d2]" /> or sign up with <span className="h-px flex-1 bg-[#d1d3d2]" /></div>
+            <div className="grid grid-cols-2 gap-3"><SecondaryButton onClick={() => go("resumeUpload")}>Google</SecondaryButton><SecondaryButton onClick={() => go("resumeUpload")}>Demo Mode</SecondaryButton></div>
+          </div>
+          <p className="pb-2 text-center text-sm text-[#666666]">Already have an account? <button type="button" onClick={() => go("login")} className="font-bold text-[#000100]">Sign in</button></p>
         </form>
       </Screen>
     </PhoneShell>
@@ -2225,6 +2256,7 @@ export default function App() {
       case "landing": return <Landing go={go} />;
       case "loginLoading": return <LoginLoadingScreen go={go} />;
       case "login": return <Login go={go} />;
+      case "signup": return <SignUp go={go} />;
       case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} backTarget={resumeUploadBackTarget} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onOpenResume={handleOpenResume} onDeleteResume={handleDeleteResume} />;
       case "aiChatbot": return <AIChatbot key={`${chatMode}-${agentResumeNotice?.timestamp || "normal"}`} go={go} chatMode={chatMode} fromDashboard={hasReachedDashboard} backTarget={chatBackTarget} hideBottomNav={chatMode === "createResume" && chatBackTarget === "resumeUpload" && resumeUploadBackTarget === "login"} onStartBackgroundResume={handleStartBackgroundResume} agentResumeNotice={agentResumeNotice} />;
       case "setup": return <Setup go={go} />;
