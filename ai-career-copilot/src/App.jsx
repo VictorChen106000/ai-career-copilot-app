@@ -2162,8 +2162,8 @@ export default function App() {
     const savedScrollY = shouldKeepWindowScroll && typeof window !== "undefined" ? window.scrollY : 0;
 
     if (job) setSelectedJob(job);
-    if (next === "resumeUpload" && screen !== "resumeUpload") {
-      setResumeUploadBackTarget(screen === "dashboard" ? "dashboard" : "login");
+    if (next === "resumeUpload" && screen !== "resumeUpload" && (screen === "dashboard" || screen === "login")) {
+      setResumeUploadBackTarget(screen);
     }
     if (next === "aiChatbot" && screen !== "aiChatbot") {
       setChatBackTarget(screen === "landing" ? "dashboard" : screen);
