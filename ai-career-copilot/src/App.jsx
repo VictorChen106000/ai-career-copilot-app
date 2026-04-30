@@ -547,7 +547,6 @@ function SignUp({ go }) {
       <Screen>
         <form onSubmit={handleSubmit} className="mx-auto flex h-full min-h-[610px] w-full max-w-[430px] flex-col">
           <div className="flex flex-1 flex-col justify-center">
-            <div className="mx-auto mb-8"><GlassIcon><Sparkles className="h-8 w-8 text-[#a0fe08]" /></GlassIcon></div>
             <h1 className="text-lg font-bold text-[#000100]">Create your account</h1>
             <p className="mb-8 mt-2 text-sm text-[#666666]">Start building your AI-powered career profile</p>
             <div className="space-y-3">
