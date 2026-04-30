@@ -646,7 +646,7 @@ function ResumeUpload({ go, fromDashboard = false, backTarget = null, resumes = 
               />
               <Upload className="mb-2 h-7 w-7" />
               <span className="text-sm font-bold">Tap to upload or drag & drop</span>
-              <span className="mt-1 text-xs text-[#666666]">PDF, DOC, DOCX up to 5MB</span>
+              <span className="mt-1 text-xs text-[#666666]">PDF up to 5MB</span>
             </div>
           </motion.div>
         )}
