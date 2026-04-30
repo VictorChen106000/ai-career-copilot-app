@@ -518,7 +518,14 @@ function Login({ go }) {
               <SoftInput icon={Mail} placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               <SoftInput icon={Lock} placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <PrimaryButton className="mt-7" onClick={handleSubmit}>Sign in <ArrowRight className="h-4 w-4" /></PrimaryButton>
+            <button
+              type="button"
+              onClick={() => {}}
+              className="mt-2 self-end text-sm font-bold text-[#000100] transition hover:opacity-70"
+            >
+              Forgot password?
+            </button>
+            <PrimaryButton className="mt-5" onClick={handleSubmit}>Sign in <ArrowRight className="h-4 w-4" /></PrimaryButton>
             <div className="my-6 flex items-center gap-3 text-xs text-[#666666]"><span className="h-px flex-1 bg-[#d1d3d2]" /> or continue with <span className="h-px flex-1 bg-[#d1d3d2]" /></div>
             <div className="grid grid-cols-2 gap-3"><SecondaryButton onClick={() => go("resumeUpload")}>Google</SecondaryButton><SecondaryButton onClick={() => go("resumeUpload")}>Demo Mode</SecondaryButton></div>
           </div>
