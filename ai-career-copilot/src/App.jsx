@@ -529,7 +529,7 @@ function Login({ go }) {
   );
 }
 
-function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [], onUploadResume = () => {}, onOpenResume = () => {}, onDeleteResume = () => {} }) {
+function ResumeUpload({ go, fromDashboard = false, backTarget = null, resumes = [], uploadQueue = [], onUploadResume = () => {}, onOpenResume = () => {}, onDeleteResume = () => {} }) {
   const [uploaded, setUploaded] = useState(resumes.length > 0 || uploadQueue.length > 0);
   const fileInputRef = useRef(null);
 
@@ -552,7 +552,7 @@ function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [
     <PhoneShell><Screen>
       {/* Back / Skip header */}
       <div className="mb-4 mt-4 flex items-center justify-between">
-        <TopNavButton onClick={() => go(fromDashboard ? "dashboard" : "login")}>
+        <TopNavButton onClick={() => go(backTarget || (fromDashboard ? "dashboard" : "login"))}>
           <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
         </TopNavButton>
         <TopNavButton onClick={() => go("dashboard")}>
@@ -2037,6 +2037,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState("mobile");
   const [chatMode, setChatMode] = useState("setPreferences");
   const [chatBackTarget, setChatBackTarget] = useState("dashboard");
+  const [resumeUploadBackTarget, setResumeUploadBackTarget] = useState("login");
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [savedJobs, setSavedJobs] = useState([]);
   const [hasReachedDashboard, setHasReachedDashboard] = useState(false);
@@ -2161,6 +2162,9 @@ export default function App() {
     const savedScrollY = shouldKeepWindowScroll && typeof window !== "undefined" ? window.scrollY : 0;
 
     if (job) setSelectedJob(job);
+    if (next === "resumeUpload" && screen !== "resumeUpload") {
+      setResumeUploadBackTarget(screen === "dashboard" ? "dashboard" : "login");
+    }
     if (next === "aiChatbot" && screen !== "aiChatbot") {
       setChatBackTarget(screen === "landing" ? "dashboard" : screen);
     }
@@ -2186,7 +2190,7 @@ export default function App() {
       case "landing": return <Landing go={go} />;
       case "loginLoading": return <LoginLoadingScreen go={go} />;
       case "login": return <Login go={go} />;
-      case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onOpenResume={handleOpenResume} onDeleteResume={handleDeleteResume} />;
+      case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} backTarget={resumeUploadBackTarget} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onOpenResume={handleOpenResume} onDeleteResume={handleDeleteResume} />;
       case "aiChatbot": return <AIChatbot key={`${chatMode}-${agentResumeNotice?.timestamp || "normal"}`} go={go} chatMode={chatMode} fromDashboard={hasReachedDashboard} backTarget={chatBackTarget} onStartBackgroundResume={handleStartBackgroundResume} agentResumeNotice={agentResumeNotice} />;
       case "setup": return <Setup go={go} />;
       case "resumeInput": return <ResumeInput go={go} />;
@@ -2210,7 +2214,7 @@ export default function App() {
       case "profile": return <Profile go={go} noNav appliedCount={appliedJobs.length} savedCount={savedJobs.length} jobsCount={jobs.length} resumesCount={resumes.length} />;
       default: return <Landing go={go} />;
     }
-  }, [screen, selectedJob, selectedResume, resumePreviewBackTarget, chatMode, chatBackTarget, agentResumeNotice, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
+  }, [screen, selectedJob, selectedResume, resumePreviewBackTarget, chatMode, chatBackTarget, resumeUploadBackTarget, agentResumeNotice, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
 
   const insideAppTransition = screen !== "landing";
   const tabbedScreens = ["dashboard", "profile", "tracker", "aiChatbot"];
