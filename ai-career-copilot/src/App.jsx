@@ -244,6 +244,16 @@ const SecondaryButton = ({ children, onClick, className = "" }) => (
   </button>
 );
 
+const TopNavButton = ({ children, onClick, className = "" }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`inline-flex items-center justify-center gap-1.5 rounded-full bg-[#000100] px-4 py-2 text-sm font-bold text-white transition active:opacity-80 ${className}`}
+  >
+    {children}
+  </button>
+);
+
 const Card = ({ children, className = "" }) => (
   <div className={`rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-5 ${className}`}>{children}</div>
 );
@@ -541,13 +551,13 @@ function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [
   return (
     <PhoneShell><Screen>
       {/* Back / Skip header */}
-      <div className="mb-4 flex items-center justify-between">
-        <button onClick={() => go(fromDashboard ? "dashboard" : "login")} className="flex items-center gap-1.5 text-sm font-bold text-[#000100]">
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
-        <button onClick={() => go("dashboard")} className="text-sm font-medium text-[#666666]">
-          Skip <ArrowRight className="inline h-3.5 w-3.5" />
-        </button>
+      <div className="mb-4 mt-4 flex items-center justify-between">
+        <TopNavButton onClick={() => go(fromDashboard ? "dashboard" : "login")}>
+          <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
+        </TopNavButton>
+        <TopNavButton onClick={() => go("dashboard")}>
+          Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
+        </TopNavButton>
       </div>
 
       <div className="mx-auto mb-6 w-fit"><GlassIcon><FileText className="h-8 w-8 text-white" /></GlassIcon></div>
@@ -641,7 +651,7 @@ function ResumeUpload({ go, fromDashboard = false, resumes = [], uploadQueue = [
         >
           Continue with Resume <ArrowRight className="h-4 w-4" />
         </PrimaryButton>
-        <button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666] transition hover:text-[#000100]">Skip for now</button>
+        <TopNavButton onClick={() => go("dashboard")} className="w-full py-3">Skip for now <ArrowRight className="h-4 w-4 text-[#a0fe08]" /></TopNavButton>
       </div>
     </Screen></PhoneShell>
   );
@@ -1080,14 +1090,14 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
       <div className="flex h-full min-h-0 flex-1 flex-col px-6 pb-28 pt-8">
         {/* Fixed top area */}
         <div className="shrink-0">
-          <div className="mb-4 flex items-center justify-between">
-            <button onClick={() => go(isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")} className="flex items-center gap-1.5 text-sm font-bold text-[#000100]">
-              <ArrowLeft className="h-4 w-4" /> Back
-            </button>
+          <div className="mb-4 mt-4 flex items-center justify-between">
+            <TopNavButton onClick={() => go(isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")}>
+              <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
+            </TopNavButton>
             {!isChatOpen && (
-              <button onClick={() => go("dashboard")} className="text-sm font-medium text-[#666666]">
-                Skip <ArrowRight className="inline h-3.5 w-3.5" />
-              </button>
+              <TopNavButton onClick={() => go("dashboard")}>
+                Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
+              </TopNavButton>
             )}
           </div>
 
@@ -1185,7 +1195,7 @@ function Setup({ go }) {
       <div className="mx-auto mb-6 w-fit"><GlassIcon><Star className="h-9 w-9 fill-[#a0fe08] text-[#a0fe08]" /></GlassIcon></div>
       <p className="text-xs text-[#666666]">Step 1 of 2</p><h1 className="mt-2 text-xl font-bold text-[#000100]">AI Career Setup</h1><p className="mt-2 text-sm text-[#666666]">Tell Syncra AI what kind of job journey you want.</p>
       <div className="mt-6 grid gap-3">{fields.map((field) => <div key={field} className={`rounded-2xl border border-[#d1d3d2] bg-[#ffffff] px-4 py-3 text-sm text-[#666666] ${neoIn} `}>{field}</div>)}</div>
-      <div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("resumeInput")}>Continue <ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={() => go("story")}>Let AI help me fill this <Sparkles className="h-4 w-4" /></SecondaryButton><button onClick={() => go("resumeInput")} className="w-full py-2 text-sm text-[#666666]">Skip for now</button></div>
+      <div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("resumeInput")}>Continue <ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={() => go("story")}>Let AI help me fill this <Sparkles className="h-4 w-4" /></SecondaryButton><TopNavButton onClick={() => go("resumeInput")} className="w-full py-3">Skip for now <ArrowRight className="h-4 w-4 text-[#a0fe08]" /></TopNavButton></div>
     </Screen></PhoneShell>
   );
 }
@@ -1196,7 +1206,7 @@ function ResumeInput({ go }) {
       <div className="mx-auto mb-8 w-fit"><GlassIcon><Star className="h-9 w-9 fill-[#a0fe08] text-[#a0fe08]" /></GlassIcon></div>
       <p className="text-xs text-[#666666]">Step 2 of 2</p><h1 className="mt-2 text-xl font-bold text-[#000100]">Upload your resume</h1><p className="mt-2 text-sm text-[#666666]">Drop your PDF and we&apos;ll match you with the right roles.</p>
       <button onClick={() => go("builder")} className={`mt-8 flex h-40 w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#d1d3d2] bg-[#ffffff] text-[#000100] ${neoIn} `}><div className={`mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#eaeceb] ${neoOut}`}><Upload className="h-7 w-7" /></div><span className="text-sm font-bold">Tap to upload PDF</span><span className="mt-1 text-xs text-[#666666]">or drag & drop here</span></button>
-      <div className="mt-8 space-y-3"><PrimaryButton onClick={() => go("builder")}>Continue <ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={() => go("story")}>Tell Your Story <InfinityIcon className="h-4 w-4" /></SecondaryButton><button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666]">Skip for now</button></div>
+      <div className="mt-8 space-y-3"><PrimaryButton onClick={() => go("builder")}>Continue <ArrowRight className="h-4 w-4" /></PrimaryButton><SecondaryButton onClick={() => go("story")}>Tell Your Story <InfinityIcon className="h-4 w-4" /></SecondaryButton><TopNavButton onClick={() => go("dashboard")} className="w-full py-3">Skip for now <ArrowRight className="h-4 w-4 text-[#a0fe08]" /></TopNavButton></div>
     </Screen></PhoneShell>
   );
 }
@@ -1205,7 +1215,7 @@ function Story({ go }) {
   const quick = ["What roles fit me?", "Improve my resume", "Salary expectations", "Find internships"];
   return (
     <PhoneShell><Screen>
-      <div className="mb-6 flex items-center justify-between"><div className="flex items-center gap-3"><div className={`grid h-10 w-10 place-items-center rounded-full border border-[#d1d3d2] bg-[#000100] text-lg ${neoOut}`}>🤖</div><div><h2 className="text-sm font-bold text-[#000100]">Syncra AI</h2><p className="text-xs text-[#000100]">Online · Step 1 of 6</p></div></div><button onClick={() => go("dashboard")} className="text-sm text-[#000100]">Skip <ArrowRight className="inline h-4 w-4" /></button></div>
+      <div className="mb-6 mt-4 flex items-center justify-between"><div className="flex items-center gap-3"><div className={`grid h-10 w-10 place-items-center rounded-full border border-[#d1d3d2] bg-[#000100] text-lg ${neoOut}`}>🤖</div><div><h2 className="text-sm font-bold text-[#000100]">Syncra AI</h2><p className="text-xs text-[#000100]">Online · Step 1 of 6</p></div></div><TopNavButton onClick={() => go("dashboard")}>Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" /></TopNavButton></div>
       <div className="space-y-3"><div className={`max-w-[82%] rounded-2xl rounded-tl-sm border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm leading-6 text-[#000100] ${neoOut} `}>Hi Chris, I&apos;ve reviewed your goal. Tell me what you&apos;re looking for and I&apos;ll tailor matches.</div><div className="ml-auto max-w-[82%] rounded-2xl rounded-tr-sm bg-[#000100] p-4 text-sm leading-6 text-white ">I want an entry-level UX or frontend role where I can use design and coding skills.</div><div className={`max-w-[86%] rounded-2xl rounded-tl-sm border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm leading-6 text-[#000100] ${neoOut} `}>Great. I&apos;ll ask about your education, projects, skills, experience, achievements, and target role.</div></div>
       <div className="mt-48 flex gap-2 overflow-x-auto pb-3">{quick.map((q) => <button key={q} className={`shrink-0 rounded-full border border-[#d1d3d2] bg-[#ffffff] px-4 py-2 text-xs font-bold text-[#000100] ${neoOut}`}>{q}</button>)}</div>
       <div className={`rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-2 ${neoIn} `}><div className="flex items-center gap-2 rounded-xl bg-transparent px-2 py-1 text-sm text-[#666666]"><span className="flex-1">Ask anything...</span><button className="grid h-11 w-11 place-items-center rounded-2xl bg-[#000100] text-white "><Send className="h-4 w-4" /></button></div></div>
@@ -1621,7 +1631,7 @@ function Results({ go }) {
 
 function Detail({ go, selectedJob }) {
   const job = selectedJob || jobs[0];
-  return <PhoneShell><Screen><Header title={job.title} subtitle={job.company} icon={<GlassIcon className="h-12 w-12 rounded-2xl"><Briefcase className="h-6 w-6 text-white" /></GlassIcon>} /><Card><div className="flex items-center justify-between"><h3 className="font-bold text-[#000100]">Match analysis</h3><span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">{job.match}%</span></div><p className="mt-3 text-sm leading-6 text-[#666666]">{job.why}</p></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Requirement checklist</h3><div className="mt-3 space-y-3">{["Resume includes relevant projects", "Location and job type match", "Strong design/coding keywords", ...job.missing.map((m) => `Needs improvement: ${m}`)].map((r, i) => <div key={r} className="flex items-center gap-2 text-sm text-[#000100]"><CheckCircle2 className={`h-4 w-4 ${i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"}`} />{r}</div>)}</div></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Recommended resume changes</h3><p className="mt-2 text-sm leading-6 text-[#666666]">Add role-specific keywords, strengthen project impact, and rewrite one bullet to show measurable results.</p></Card><div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("tailor", job)}>Tailor Resume for This Job</PrimaryButton><SecondaryButton onClick={() => go("review", job)}>Apply with Current Resume</SecondaryButton><SecondaryButton>Save Job</SecondaryButton><button onClick={() => go("dashboard")} className="w-full py-2 text-sm text-[#666666]">Back to Home</button></div></Screen></PhoneShell>;
+  return <PhoneShell><Screen><Header title={job.title} subtitle={job.company} icon={<GlassIcon className="h-12 w-12 rounded-2xl"><Briefcase className="h-6 w-6 text-white" /></GlassIcon>} /><Card><div className="flex items-center justify-between"><h3 className="font-bold text-[#000100]">Match analysis</h3><span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">{job.match}%</span></div><p className="mt-3 text-sm leading-6 text-[#666666]">{job.why}</p></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Requirement checklist</h3><div className="mt-3 space-y-3">{["Resume includes relevant projects", "Location and job type match", "Strong design/coding keywords", ...job.missing.map((m) => `Needs improvement: ${m}`)].map((r, i) => <div key={r} className="flex items-center gap-2 text-sm text-[#000100]"><CheckCircle2 className={`h-4 w-4 ${i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"}`} />{r}</div>)}</div></Card><Card className="mt-4"><h3 className="font-bold text-[#000100]">Recommended resume changes</h3><p className="mt-2 text-sm leading-6 text-[#666666]">Add role-specific keywords, strengthen project impact, and rewrite one bullet to show measurable results.</p></Card><div className="mt-6 space-y-3"><PrimaryButton onClick={() => go("tailor", job)}>Tailor Resume for This Job</PrimaryButton><SecondaryButton onClick={() => go("review", job)}>Apply with Current Resume</SecondaryButton><SecondaryButton>Save Job</SecondaryButton><TopNavButton onClick={() => go("dashboard")} className="w-full py-3"><ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back to Home</TopNavButton></div></Screen></PhoneShell>;
 }
 
 function Tailor({ go, selectedJob }) {
@@ -1661,8 +1671,8 @@ function ResumesScreen({ go, resumes = [], uploadQueue = [], onUploadResume = ()
   return (
     <PhoneShell>
       <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center justify-between bg-transparent px-6 pb-4 pt-12 ">
-          <button onClick={() => go("profile")} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ffffff] text-[#000100]  transition hover:bg-[#eaeceb]">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center justify-between bg-transparent px-6 pb-4 pt-14 ">
+          <button onClick={() => go("profile")} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000100] text-[#a0fe08] transition active:opacity-80">
             <ChevronLeft className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-bold text-[#000100]">Resumes</h1>
@@ -1717,8 +1727,8 @@ function ResumePreviewScreen({ go, resume, backTarget = "resumes", onDeleteResum
   return (
     <PhoneShell>
       <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-4 flex items-center justify-between bg-transparent px-6 pb-3 pt-12 ">
-          <button onClick={() => go(backTarget)} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ffffff] text-[#000100]  transition hover:bg-[#eaeceb]">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-4 flex items-center justify-between bg-transparent px-6 pb-3 pt-14 ">
+          <button onClick={() => go(backTarget)} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000100] text-[#a0fe08] transition active:opacity-80">
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1 px-3 text-center">
@@ -1802,8 +1812,8 @@ function Profile({ go, noNav = false, appliedCount, savedCount, jobsCount, resum
   return (
     <PhoneShell>
       <Screen nav={!noNav} floatingNav={noNav} go={go} activeTab="profile">
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-12">
-           <button onClick={() => go("dashboard")} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000100] text-white">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
+           <button onClick={() => go("dashboard")} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000100] text-[#a0fe08]">
               <ChevronLeft className="h-5 w-5" />
            </button>
            <h1 className="text-lg font-bold text-[#000100]">Settings</h1>
