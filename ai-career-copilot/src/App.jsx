@@ -820,6 +820,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, bac
   const isChatOpen = chatMode === "chatOpen";
   const questions = chatMode === "createResume" ? createQuestions : prefQuestions;
   const messagesEndRef = useRef(null);
+  const messagesScrollRef = useRef(null);
   const timersRef = useRef([]);
 
   const initialChatState = useMemo(() => {
@@ -869,7 +870,15 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, bac
   const [typeItOutActive, setTypeItOutActive] = useState(false);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const scrollContainer = messagesScrollRef.current;
+    if (!scrollContainer) return;
+
+    requestAnimationFrame(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: "smooth",
+      });
+    });
   }, [messages, isTyping]);
 
   useEffect(() => {
@@ -1126,7 +1135,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, bac
         </div>
 
         {/* Scrollable message area */}
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar py-2 pr-1">
+        <div ref={messagesScrollRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar py-2 pr-1">
           <div className="space-y-3 pb-4">
             {messages.map((msg, i) => (
               <motion.div
