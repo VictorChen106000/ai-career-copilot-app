@@ -724,7 +724,7 @@ function ResumeUploadCard({ item, uploading = false, onOpen, onDelete }) {
   );
 }
 
-function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onStartBackgroundResume = () => {}, agentResumeNotice = null }) {
+function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, backTarget = null, onStartBackgroundResume = () => {}, agentResumeNotice = null }) {
   const prefQuestions = [
     "What kind of job are you looking for? (e.g. UX Designer, Frontend Developer, Product Manager)",
     "What's your preferred location? (e.g. Remote, San Francisco, New York)",
@@ -1091,7 +1091,7 @@ function AIChatbot({ go, chatMode = "setPreferences", fromDashboard = false, onS
         {/* Fixed top area */}
         <div className="shrink-0">
           <div className="mb-4 mt-4 flex items-center justify-between">
-            <TopNavButton onClick={() => go(isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")}>
+            <TopNavButton onClick={() => go(backTarget || (isChatOpen || fromDashboard ? "dashboard" : "resumeUpload"))}>
               <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
             </TopNavButton>
             {!isChatOpen && (
@@ -1912,13 +1912,8 @@ function Profile({ go, noNav = false, appliedCount, savedCount, jobsCount, resum
         <motion.button
           type="button"
           onClick={() => go("login")}
-          whileTap={{
-            scale: 0.97,
-            y: 6,
-            boxShadow: "inset 0 8px 18px rgba(127,29,29,0.45), 0 0 10px rgba(239,68,68,0.45)",
-          }}
-          transition={{ type: "spring", stiffness: 780, damping: 18, mass: 0.45 }}
-          className="mb-4 flex w-full items-center justify-center gap-2 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm font-bold text-red-500 transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-[0_0_18px_rgba(239,68,68,0.65),0_0_42px_rgba(239,68,68,0.35)] active:translate-y-1 active:border-red-500 active:bg-red-500 active:text-white"
+          whileTap={{ scale: 0.96 }}
+          className="mb-4 flex w-full items-center justify-center gap-2 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm font-bold text-red-500 transition-all duration-150 hover:border-red-200 hover:bg-red-50 active:border-red-300 active:bg-red-100 active:shadow-inner"
         >
           <LogOut className="h-5 w-5" /> Sign Out
         </motion.button>
@@ -2041,6 +2036,7 @@ export default function App() {
   const [resumePreviewBackTarget, setResumePreviewBackTarget] = useState("resumes");
   const [viewMode, setViewMode] = useState("mobile");
   const [chatMode, setChatMode] = useState("setPreferences");
+  const [chatBackTarget, setChatBackTarget] = useState("dashboard");
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [savedJobs, setSavedJobs] = useState([]);
   const [hasReachedDashboard, setHasReachedDashboard] = useState(false);
@@ -2165,6 +2161,9 @@ export default function App() {
     const savedScrollY = shouldKeepWindowScroll && typeof window !== "undefined" ? window.scrollY : 0;
 
     if (job) setSelectedJob(job);
+    if (next === "aiChatbot" && screen !== "aiChatbot") {
+      setChatBackTarget(screen === "landing" ? "dashboard" : screen);
+    }
     if (mode) {
       setChatMode(mode);
       setAgentResumeNotice(null);
@@ -2188,7 +2187,7 @@ export default function App() {
       case "loginLoading": return <LoginLoadingScreen go={go} />;
       case "login": return <Login go={go} />;
       case "resumeUpload": return <ResumeUpload go={go} fromDashboard={hasReachedDashboard} resumes={resumes} uploadQueue={uploadQueue} onUploadResume={handleUploadResume} onOpenResume={handleOpenResume} onDeleteResume={handleDeleteResume} />;
-      case "aiChatbot": return <AIChatbot key={`${chatMode}-${agentResumeNotice?.timestamp || "normal"}`} go={go} chatMode={chatMode} fromDashboard={hasReachedDashboard} onStartBackgroundResume={handleStartBackgroundResume} agentResumeNotice={agentResumeNotice} />;
+      case "aiChatbot": return <AIChatbot key={`${chatMode}-${agentResumeNotice?.timestamp || "normal"}`} go={go} chatMode={chatMode} fromDashboard={hasReachedDashboard} backTarget={chatBackTarget} onStartBackgroundResume={handleStartBackgroundResume} agentResumeNotice={agentResumeNotice} />;
       case "setup": return <Setup go={go} />;
       case "resumeInput": return <ResumeInput go={go} />;
       case "story": return <Story go={go} />;
@@ -2211,7 +2210,7 @@ export default function App() {
       case "profile": return <Profile go={go} noNav appliedCount={appliedJobs.length} savedCount={savedJobs.length} jobsCount={jobs.length} resumesCount={resumes.length} />;
       default: return <Landing go={go} />;
     }
-  }, [screen, selectedJob, selectedResume, resumePreviewBackTarget, chatMode, agentResumeNotice, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
+  }, [screen, selectedJob, selectedResume, resumePreviewBackTarget, chatMode, chatBackTarget, agentResumeNotice, appliedJobs, savedJobs, hasReachedDashboard, dashboardFilter, resumes, uploadQueue]);
 
   const insideAppTransition = screen !== "landing";
   const tabbedScreens = ["dashboard", "profile", "tracker", "aiChatbot"];
