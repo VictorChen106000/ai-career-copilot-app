@@ -1377,9 +1377,62 @@ function AIChatbot({
     );
   };
 
+  const isResumeOrCareerShortcutPrompt = (text) => {
+    const key = normalizePrompt(text);
+    return Boolean(
+      createResumeFlows[key] ||
+        careerPromptFlows[key] ||
+        key.includes("linkedin") ||
+        key.includes("find me job") ||
+        key.includes("find jobs") ||
+        key.includes("find internships") ||
+        key.includes("search jobs") ||
+        key.includes("job search") ||
+        key.includes("look for jobs") ||
+        ((key.includes("improve") ||
+          key.includes("review") ||
+          key.includes("fix")) &&
+          key.includes("resume")) ||
+        key.includes("salary") ||
+        key.includes("career advice") ||
+        key.includes("career path")
+    );
+  };
+
+  const resetCreateResumeSubFlows = () => {
+    setHelpWriteAnswers([]);
+    setHelpWriteStep(null);
+    setTypeItOutActive(false);
+  };
+
+  const runPromptFlow = (userText, flow) => {
+    const key = normalizePrompt(userText);
+    if (chatMode === "createResume" && key === "help me write it") {
+      startHelpWriteFlow(userText);
+    } else if (chatMode === "createResume" && key === "i'll type it out") {
+      startTypeItOutFlow(userText);
+    } else if (chatMode === "createResume" && key === "use my linkedin") {
+      startLinkedInFlow(userText);
+    } else {
+      addAgentSequence(userText, flow);
+    }
+  };
+
   const handleSend = () => {
     if (!inputText.trim() || isTyping) return;
     const userText = inputText.trim();
+    const flow = getFlowForPrompt(userText);
+
+    if (
+      chatMode === "createResume" &&
+      flow &&
+      (helpWriteStep !== null || typeItOutActive) &&
+      isResumeOrCareerShortcutPrompt(userText)
+    ) {
+      resetCreateResumeSubFlows();
+      runPromptFlow(userText, flow);
+      return;
+    }
 
     if (chatMode === "createResume" && helpWriteStep !== null) {
       handleHelpWriteAnswer(userText);
@@ -1391,26 +1444,8 @@ function AIChatbot({
       return;
     }
 
-    const flow = getFlowForPrompt(userText);
     if (flow) {
-      if (
-        chatMode === "createResume" &&
-        normalizePrompt(userText) === "help me write it"
-      ) {
-        startHelpWriteFlow(userText);
-      } else if (
-        chatMode === "createResume" &&
-        normalizePrompt(userText) === "i'll type it out"
-      ) {
-        startTypeItOutFlow(userText);
-      } else if (
-        chatMode === "createResume" &&
-        normalizePrompt(userText) === "use my linkedin"
-      ) {
-        startLinkedInFlow(userText);
-      } else {
-        addAgentSequence(userText, flow);
-      }
+      runPromptFlow(userText, flow);
       return;
     }
 
@@ -1453,35 +1488,30 @@ function AIChatbot({
   const quickReplies = isChatOpen
     ? ["Find me jobs", "Improve my resume", "Career advice", "Salary insights"]
     : chatMode === "createResume"
-    ? []
+    ? [
+        "I'll type it out",
+        "Use my LinkedIn",
+        "Find me jobs",
+        "Improve my resume",
+        "Career advice",
+        "Salary insights",
+      ]
     : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
 
   const handleQuickReply = (reply) => {
     if (isTyping) return;
-    if (
-      chatMode === "createResume" &&
-      normalizePrompt(reply) === "help me write it"
-    ) {
-      startHelpWriteFlow(reply);
-      return;
-    }
-    if (
-      chatMode === "createResume" &&
-      normalizePrompt(reply) === "i'll type it out"
-    ) {
-      startTypeItOutFlow(reply);
-      return;
-    }
-    if (
-      chatMode === "createResume" &&
-      normalizePrompt(reply) === "use my linkedin"
-    ) {
-      startLinkedInFlow(reply);
-      return;
-    }
     const flow = getFlowForPrompt(reply);
-    if (flow) addAgentSequence(reply, flow);
-    else setInputText(reply);
+    if (flow) {
+      if (
+        chatMode === "createResume" &&
+        isResumeOrCareerShortcutPrompt(reply)
+      ) {
+        resetCreateResumeSubFlows();
+      }
+      runPromptFlow(reply, flow);
+    } else {
+      setInputText(reply);
+    }
   };
 
   const renderMessageText = (text) => (
