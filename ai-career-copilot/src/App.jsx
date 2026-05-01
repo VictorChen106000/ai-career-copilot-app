@@ -2354,7 +2354,7 @@ function Dashboard({
                       <button
                         key={resume.id}
                         onClick={() => {
-                          onSelectResume(resume.id);
+                          onSelectResume(isSelected ? null : resume.id);
                           setIsResumeModalOpen(false);
                         }}
                         className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
