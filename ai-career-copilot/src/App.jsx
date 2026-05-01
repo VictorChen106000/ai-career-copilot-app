@@ -1128,7 +1128,7 @@ function AIChatbot({
     ],
   };
 
-  const openChatFlows = {
+  const careerPromptFlows = {
     "find me jobs": [
       "Starting an agentic job search now. I’ll use your resume, preferences, and skill profile to rank opportunities.",
       "Searching demo sources: LinkedIn, Indeed, company career pages, and internship platforms…",
@@ -1175,7 +1175,6 @@ function AIChatbot({
     ],
   };
 
-  const isChatOpen = chatMode === "chatOpen";
   const questions =
     chatMode === "createResume" ? createQuestions : prefQuestions;
   const messagesEndRef = useRef(null);
@@ -1198,18 +1197,6 @@ function AIChatbot({
           },
         ],
         step: questions.length + 1,
-      };
-    }
-
-    if (isChatOpen) {
-      return {
-        messages: [
-          {
-            from: "ai",
-            text: "Hi! I'm Syncra AI. How can I help you today? You can ask me about jobs, resumes, career advice, or anything else.",
-          },
-        ],
-        step: 0,
       };
     }
 
@@ -1237,7 +1224,7 @@ function AIChatbot({
       messages: [initial, { from: "ai", text: questions[0] }],
       step: 1,
     };
-  }, [agentResumeNotice, chatMode, isChatOpen, questions]);
+  }, [agentResumeNotice, chatMode, questions]);
 
   const [messages, setMessages] = useState(initialChatState.messages);
   const [inputText, setInputText] = useState("");
@@ -1272,13 +1259,29 @@ function AIChatbot({
     const key = normalizePrompt(text);
     if (chatMode === "createResume" && createResumeFlows[key])
       return createResumeFlows[key];
-    if (isChatOpen && openChatFlows[key]) return openChatFlows[key];
-    if (!isChatOpen && chatMode !== "createResume" && preferenceFlows[key])
+    if (careerPromptFlows[key]) return careerPromptFlows[key];
+    if (chatMode !== "createResume" && preferenceFlows[key])
       return preferenceFlows[key];
 
-    if (isChatOpen && key.includes("job")) return openChatFlows["find me jobs"];
-    if (isChatOpen && key.includes("resume"))
-      return openChatFlows["improve my resume"];
+    if (
+      key.includes("find me job") ||
+      key.includes("find jobs") ||
+      key.includes("find internships") ||
+      key.includes("search jobs") ||
+      key.includes("job search") ||
+      key.includes("look for jobs")
+    ) {
+      return careerPromptFlows["find me jobs"];
+    }
+    if (
+      (key.includes("improve") || key.includes("review") || key.includes("fix")) &&
+      key.includes("resume")
+    ) {
+      return careerPromptFlows["improve my resume"];
+    }
+    if (key.includes("salary")) return careerPromptFlows["salary insights"];
+    if (key.includes("career advice") || key.includes("career path"))
+      return careerPromptFlows["career advice"];
     if (chatMode === "createResume" && key.includes("linkedin"))
       return createResumeFlows["use my linkedin"];
     if (chatMode === "createResume" && key.includes("write"))
@@ -1418,16 +1421,6 @@ function AIChatbot({
     if (!inputText.trim() || isTyping) return;
     const userText = inputText.trim();
 
-    if (chatMode === "createResume" && helpWriteStep !== null) {
-      handleHelpWriteAnswer(userText);
-      return;
-    }
-
-    if (chatMode === "createResume" && typeItOutActive) {
-      handleTypeItOutAnswer(userText);
-      return;
-    }
-
     const flow = getFlowForPrompt(userText);
     if (flow) {
       if (
@@ -1451,22 +1444,20 @@ function AIChatbot({
       return;
     }
 
+    if (chatMode === "createResume" && helpWriteStep !== null) {
+      handleHelpWriteAnswer(userText);
+      return;
+    }
+
+    if (chatMode === "createResume" && typeItOutActive) {
+      handleTypeItOutAnswer(userText);
+      return;
+    }
+
     const newMessages = [...messages, { from: "user", text: userText }];
     setInputText("");
 
-    if (isChatOpen) {
-      const replies = [
-        "I understand. I’ll treat that as new career context and use it when ranking jobs and improving your resume.",
-        "That helps. I can turn this into resume wording, job search filters, or application preparation.",
-        "Based on that, I’d recommend focusing on roles where your design, frontend, and AI prototype experience are visible.",
-        "Would you like me to search jobs, improve your resume, or prepare a job-specific application next?",
-      ];
-      newMessages.push({
-        from: "ai",
-        text: replies[messages.length % replies.length],
-      });
-      setMessages(newMessages);
-    } else if (step < questions.length) {
+    if (step < questions.length) {
       newMessages.push({ from: "ai", text: questions[step] });
       setMessages(newMessages);
       setStep(step + 1);
@@ -1487,11 +1478,10 @@ function AIChatbot({
     }
   };
 
-  const quickReplies = isChatOpen
-    ? ["Find me jobs", "Improve my resume", "Career advice", "Salary insights"]
-    : chatMode === "createResume"
-    ? []
-    : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
+  const quickReplies =
+    chatMode === "createResume"
+      ? []
+      : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
 
   const handleQuickReply = (reply) => {
     if (isTyping) return;
@@ -1548,17 +1538,15 @@ function AIChatbot({
               onClick={() =>
                 go(
                   backTarget ||
-                    (isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")
+                    (fromDashboard ? "dashboard" : "resumeUpload")
                 )
               }
             >
               <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
             </TopNavButton>
-            {!isChatOpen && (
-              <TopNavButton onClick={() => go("dashboard")}>
-                Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
-              </TopNavButton>
-            )}
+            <TopNavButton onClick={() => go("dashboard")}>
+              Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
+            </TopNavButton>
           </div>
 
           <div className="mb-4 flex items-center gap-3">
@@ -1569,18 +1557,14 @@ function AIChatbot({
               <h2 className="text-sm font-bold text-[#000100]">Syncra AI</h2>
               <p className="text-xs font-medium text-[#a0fe08]">
                 Online ·{" "}
-                {isChatOpen
-                  ? "Chat"
-                  : chatMode === "createResume"
+                {chatMode === "createResume"
                   ? "Building Resume"
                   : "Setting Preferences"}
               </p>
             </div>
             <div className="ml-auto">
               <StepPill>
-                {isChatOpen
-                  ? "Chat"
-                  : chatMode === "createResume"
+                {chatMode === "createResume"
                   ? "Resume"
                   : "Preferences"}
               </StepPill>
@@ -4234,7 +4218,7 @@ export default function App() {
 
   const go = (next, job, mode, filterParam) => {
     const shouldKeepWindowScroll =
-      next === "aiChatbot" && (mode === "chatOpen" || mode === "createResume");
+      next === "aiChatbot" && mode === "createResume";
     const savedScrollX =
       shouldKeepWindowScroll && typeof window !== "undefined"
         ? window.scrollX
