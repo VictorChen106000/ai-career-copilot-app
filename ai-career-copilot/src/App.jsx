@@ -829,10 +829,10 @@ function ResumeUpload({
   const resumeCount = resumes.length;
   const uploadResumeDescription =
     resumeCount === 0
-      ? "No resume yet"
+      ? "No resume uploaded yet"
       : resumeCount === 1
-      ? "I already have a resume"
-      : `I already have ${resumeCount} resumes`;
+      ? "1 resume uploaded"
+      : `${resumeCount} resumes uploaded`;
 
   return (
     <PhoneShell>
