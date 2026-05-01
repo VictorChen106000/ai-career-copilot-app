@@ -397,7 +397,7 @@ const Screen = ({
 }) => (
   <div className={`flex h-full min-h-0 flex-1 flex-col ${className}`}>
     <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar">
-      <div className={`px-6 pt-8 ${floatingNav ? "pb-28" : "pb-5"}`}>
+      <div className={`px-6 pt-14 ${floatingNav ? "pb-28" : "pb-6"}`}>
         {children}
       </div>
     </div>
@@ -839,14 +839,15 @@ function ResumeUpload({
     <PhoneShell>
       <Screen>
         {/* Back / Skip header */}
-        <div className="mb-4 mt-4 flex items-center justify-between">
-          <TopNavButton
+        <div className="mb-6 flex items-center justify-between">
+          <button
             onClick={() =>
               go(backTarget || (fromDashboard ? "dashboard" : "login"))
             }
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
           >
-            <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
-          </TopNavButton>
+            <ChevronLeft className="h-5 w-5" />
+          </button>
         </div>
 
         <div className="mx-auto mb-6 w-fit">
@@ -1537,23 +1538,24 @@ function AIChatbot({
   return (
     <PhoneShell>
       <div
-        className={`flex h-full min-h-0 flex-1 flex-col px-6 pt-8 ${
+        className={`flex h-full min-h-0 flex-1 flex-col px-6 pt-14 ${
           hideBottomNav ? "pb-6" : "pb-28"
         }`}
       >
         {/* Fixed top area */}
         <div className="shrink-0">
-          <div className="mb-4 mt-4 flex items-center justify-between">
-            <TopNavButton
+          <div className="mb-6 flex items-center justify-between">
+            <button
               onClick={() =>
                 go(
                   backTarget ||
                     (isChatOpen || fromDashboard ? "dashboard" : "resumeUpload")
                 )
               }
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
             >
-              <ArrowLeft className="h-4 w-4 text-[#a0fe08]" /> Back
-            </TopNavButton>
+              <ChevronLeft className="h-5 w-5" />
+            </button>
             {!isChatOpen && (
               <TopNavButton onClick={() => go("dashboard")}>
                 Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
@@ -1784,7 +1786,7 @@ function Story({ go }) {
   return (
     <PhoneShell>
       <Screen>
-        <div className="mb-6 mt-4 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className={`grid h-10 w-10 place-items-center rounded-full border border-[#d1d3d2] bg-[#000100] text-lg ${neoOut}`}
@@ -2112,14 +2114,31 @@ function AnalyzingScreen({ go }) {
   );
 }
 
-function Dashboard({ go = () => {}, mini = false, noNav = false }) {
+function Dashboard({
+  go = () => {},
+  mini = false,
+  noNav = false,
+  resumes = [],
+}) {
+  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState(null);
+
+  // Auto-select the first uploaded resume if none is selected
+  useEffect(() => {
+    if (!selectedResumeId && resumes.length > 0) {
+      setSelectedResumeId(resumes[0].id);
+    }
+  }, [resumes, selectedResumeId]);
+
+  const selectedResume = resumes.find((r) => r.id === selectedResumeId);
+
   const agentUpdates = [
     {
       id: 1,
       time: "09:30",
       sub: "AM",
       title: "New Match Found!",
-      desc: "We found a 98% match for a Senior Product Designer role at TechFlow.",
+      desc: "We found a 98% Match for a Senior Product Designer role at TechFlow.",
       active: true,
     },
     {
@@ -2141,35 +2160,32 @@ function Dashboard({ go = () => {}, mini = false, noNav = false }) {
   ];
 
   return (
-    <Screen nav={!mini && !noNav} floatingNav={noNav} go={go} activeTab="home">
+    <Screen
+      nav={!mini && !noNav}
+      floatingNav={noNav}
+      go={go}
+      activeTab="home"
+      className="relative"
+    >
       {/* Header with profile + notification */}
-      <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex items-center justify-between bg-[#eaeceb] px-6 pb-3 pt-12">
-        <div className="flex items-center gap-2">
+      <div className="sticky top-0 z-50 -mx-6 -mt-14 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => go("profile")}
-            className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white"
+            className="grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
           >
-            <span className="text-sm">🪙</span>
+            <span className="text-base">🪙</span>
           </button>
-          <div className="flex items-center gap-0.5 text-base font-black tracking-tight text-[#000100]">
+          <div className="flex items-center gap-0.5 text-xl font-black tracking-tight text-[#000100]">
             syncra
           </div>
         </div>
-        <div className="flex items-center overflow-hidden rounded-full bg-[#000100]">
-          <button
-            onClick={() => go("resumeUpload")}
-            className="grid h-9 w-10 place-items-center text-white transition active:opacity-70"
-          >
-            <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
-          </button>
-          <div className="h-4 w-px bg-white/20" />
-          <div className="relative">
-            <button className="grid h-9 w-10 place-items-center text-white transition active:opacity-70">
-              <Bell className="h-[18px] w-[18px]" strokeWidth={1.8} />
-            </button>
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#a0fe08]" />
-          </div>
-        </div>
+        <button
+          onClick={() => go("resumeUpload")}
+          className="grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white shadow-sm transition active:scale-90"
+        >
+          <Plus className="h-5 w-5" strokeWidth={2.5} />
+        </button>
       </div>
 
       {/* AI Profile Summary */}
@@ -2220,12 +2236,39 @@ function Dashboard({ go = () => {}, mini = false, noNav = false }) {
       {/* AI Agent Goal Input */}
       <div className="mb-8">
         <h2 className="mb-3 text-lg font-bold text-[#000100]">AI Agent</h2>
-        <div className="flex items-center gap-3 rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-2 pl-4 shadow-sm focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
-          <input
-            type="text"
-            placeholder="Set your agent goals..."
-            className="w-full bg-transparent text-sm text-[#000100] outline-none placeholder:text-[#999999]"
-          />
+        <div className="flex items-center gap-2 rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-2 shadow-sm focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
+          <button
+            onClick={() => setIsResumeModalOpen(true)}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaeceb] text-[#000100] transition active:opacity-70"
+            title="Select Resume"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+
+          <div className="flex flex-1 items-center gap-2 overflow-hidden">
+            {selectedResume && (
+              <div
+                onClick={() => setIsResumeModalOpen(true)}
+                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 transition active:bg-[#eaeceb]"
+              >
+                <FileText className="h-3.5 w-3.5 text-[#000100]" />
+                <span className="max-w-[70px] truncate text-xs font-bold text-[#000100]">
+                  {selectedResume.name.replace(/\.pdf$/i, "")}
+                </span>
+              </div>
+            )}
+            <input
+              type="text"
+              placeholder={
+                selectedResume
+                  ? "Set your agent goals..."
+                  : "Upload a resume first..."
+              }
+              disabled={!selectedResume && resumes.length === 0}
+              className="w-full min-w-0 bg-transparent text-sm text-[#000100] outline-none placeholder:text-[#999999] disabled:opacity-50"
+            />
+          </div>
+
           <button className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#000100] text-white transition active:opacity-80">
             <Send className="h-4 w-4" />
           </button>
@@ -2279,6 +2322,111 @@ function Dashboard({ go = () => {}, mini = false, noNav = false }) {
           </div>
         </div>
       </div>
+
+      {/* Resume Selection Bottom Sheet Modal */}
+      <AnimatePresence>
+        {isResumeModalOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsResumeModalOpen(false)}
+              className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
+            />
+
+            {/* Bottom Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 320 }}
+              className="absolute bottom-0 left-0 right-0 z-[101] flex max-h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
+            >
+              {/* Header */}
+              <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
+                <h2 className="text-lg font-bold text-[#000100]">
+                  Select Resume
+                </h2>
+                <button
+                  onClick={() => setIsResumeModalOpen(false)}
+                  className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
+                >
+                  <Plus className="h-5 w-5 rotate-45" />
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
+                {resumes.length === 0 ? (
+                  <div className="py-10 text-center">
+                    <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-[#d1d3d2] text-[#000100]">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <h3 className="font-bold text-[#000100]">
+                      No Resumes Found
+                    </h3>
+                    <p className="mt-2 text-sm text-[#666666]">
+                      Upload or create a resume first to use the AI Agent.
+                    </p>
+                    <PrimaryButton
+                      className="mt-6 w-full"
+                      onClick={() => {
+                        setIsResumeModalOpen(false);
+                        go("resumeUpload");
+                      }}
+                    >
+                      Go to Uploads
+                    </PrimaryButton>
+                  </div>
+                ) : (
+                  <div className="space-y-3 pb-8">
+                    {resumes.map((resume) => {
+                      const isSelected = selectedResumeId === resume.id;
+                      return (
+                        <button
+                          key={resume.id}
+                          onClick={() => {
+                            setSelectedResumeId(resume.id);
+                            setIsResumeModalOpen(false);
+                          }}
+                          className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
+                            isSelected
+                              ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
+                              : "border-[#d1d3d2] bg-[#ffffff] hover:bg-[#fafafa]"
+                          }`}
+                        >
+                          <div
+                            className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
+                              isSelected
+                                ? "bg-[#000100] text-white"
+                                : "bg-[#eaeceb] text-[#000100]"
+                            }`}
+                          >
+                            <FileText className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="truncate text-sm font-bold text-[#000100]">
+                              {resume.name}
+                            </h3>
+                            <p className="mt-0.5 text-xs text-[#666666]">
+                              Uploaded {formatUploadDate(resume.uploadedAt)}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <CheckCircle2 className="h-5 w-5 shrink-0 text-[#a0fe08]" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </Screen>
   );
 }
@@ -2289,10 +2437,11 @@ function JobsScreen({
   savedJobs = [],
   dashboardFilter = "all",
   setDashboardFilter,
+  onSaveJob = () => {},
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [matchThreshold, setMatchThreshold] = useState(50);
-  const [tempMatchThreshold, setTempMatchThreshold] = useState(50);
+  const [matchThreshold, setMatchThreshold] = useState(80);
+  const [tempMatchThreshold, setTempMatchThreshold] = useState(80);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedFilter, setExpandedFilter] = useState("skills");
   const [selectedJobIds, setSelectedJobIds] = useState([]);
@@ -2348,7 +2497,7 @@ function JobsScreen({
 
   const clearFilters = () => {
     setTempFilters(defaultFilters);
-    setTempMatchThreshold(50);
+    setTempMatchThreshold(80);
   };
 
   const toggleChip = (category, value) => {
@@ -2468,7 +2617,7 @@ function JobsScreen({
   return (
     <Screen nav activeTab="jobs" go={go} className="relative">
       {/* Header */}
-      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-5 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
+      <div className="sticky top-0 z-50 -mx-6 -mt-14 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
         <h1 className="text-xl font-bold tracking-tight text-[#000100]">
           Job Results
         </h1>
@@ -2591,8 +2740,8 @@ function JobsScreen({
                         {isSelected && <CheckCircle2 className="h-3.5 w-3.5" />}
                       </div>
                     )}
-                    <div className="flex flex-1 items-center justify-between gap-3 min-w-0">
-                      <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex flex-1 items-center gap-3 min-w-0">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
                         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaeceb] text-sm font-bold text-[#000100]">
                           {job.company[0]}
                         </div>
@@ -2605,15 +2754,41 @@ function JobsScreen({
                           </p>
                         </div>
                       </div>
-                      {isApplied ? (
-                        <span className="shrink-0 rounded-full bg-[#000100] px-2.5 py-1 text-[10px] font-bold text-white">
-                          Applied
-                        </span>
-                      ) : (
-                        <span className="shrink-0 rounded-full bg-[#a0fe08] px-2.5 py-1 text-[10px] font-bold text-[#000100]">
-                          {job.match}%
-                        </span>
-                      )}
+
+                      {/* Badge and Bookmark Container - Strictly Vertically Aligned */}
+                      <div className="flex shrink-0 items-center justify-end">
+                        <div className="flex w-[80px] shrink-0 justify-end">
+                          {isApplied ? (
+                            <span className="rounded-full bg-[#000100] px-2.5 py-1 text-[10px] font-bold text-white whitespace-nowrap">
+                              Applied
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-[#a0fe08] px-2.5 py-1 text-[10px] font-bold text-[#000100] whitespace-nowrap">
+                              {job.match}% Match
+                            </span>
+                          )}
+                        </div>
+                        {!isSelectionMode && (
+                          <div className="flex w-[32px] shrink-0 justify-end">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSaveJob(job.id);
+                              }}
+                              className="p-1 transition active:scale-90"
+                            >
+                              <Bookmark
+                                className={`h-4 w-4 ${
+                                  savedJobs.includes(job.id)
+                                    ? "fill-[#000100] text-[#000100]"
+                                    : "text-[#999999]"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -2683,9 +2858,13 @@ function JobsScreen({
               <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
                 {/* Match Threshold */}
                 <div className="mb-8">
-                  <h3 className="mb-3 text-sm font-bold text-[#000100]">
+                  <h3 className="mb-1 text-sm font-bold text-[#000100]">
                     Minimum Match
                   </h3>
+                  <p className="mb-3 text-xs text-[#666666]">
+                    Show jobs with at least{" "}
+                    {tempMatchThreshold === "" ? 80 : tempMatchThreshold}% match
+                  </p>
                   <div className="flex items-center gap-4">
                     <div className="relative h-6 flex-1 overflow-hidden rounded-full bg-[#d1d3d2]">
                       <div
@@ -2700,7 +2879,7 @@ function JobsScreen({
                         max="100"
                         step="1"
                         value={
-                          tempMatchThreshold === "" ? 50 : tempMatchThreshold
+                          tempMatchThreshold === "" ? 80 : tempMatchThreshold
                         }
                         onChange={(e) =>
                           setTempMatchThreshold(Number(e.target.value))
@@ -2723,7 +2902,7 @@ function JobsScreen({
                           if (val === "" || val < 50) setTempMatchThreshold(50);
                           else if (val > 100) setTempMatchThreshold(100);
                         }}
-                        placeholder="50"
+                        placeholder="80"
                         className="w-8 bg-transparent p-0 text-center text-sm font-bold text-[#000100] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none placeholder:text-[#999999]"
                       />
                       <span className="text-sm font-bold text-[#666666]">
@@ -3076,7 +3255,7 @@ function JobCard({ job, go }) {
           </div>
         </div>
         <span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">
-          {job.match}% match
+          {job.match}% Match
         </span>
       </div>
       <p className="mt-3 text-sm leading-6 text-[#666666]">{job.why}</p>
@@ -3160,72 +3339,103 @@ function Results({ go }) {
 
 function Detail({ go, selectedJob }) {
   const job = selectedJob || jobs[0];
+
   return (
     <PhoneShell>
-      <Screen>
-        <div className="mb-6 flex items-center gap-4">
-          <button
-            onClick={() => go("jobs")}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#000100] text-white transition active:opacity-80"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <p className="text-xs font-medium text-[#666666]">{job.company}</p>
-            <h2 className="text-xl font-bold tracking-tight text-[#000100]">
-              {job.title}
-            </h2>
+      <Screen className="flex flex-col" noNav>
+        <div className="flex h-full min-h-0 flex-col pb-4">
+          {/* Header */}
+          <div className="mb-6 flex shrink-0 items-center gap-4">
+            <button
+              onClick={() => go("jobs")}
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-xl font-bold tracking-tight text-[#000100]">
+                {job.title}
+              </h2>
+              <p className="truncate text-sm font-medium text-[#666666]">
+                {job.company} · {job.location}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <Card>
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-[#000100]">Match analysis</h3>
-            <span className="rounded-full bg-[#a0fe08] px-3 py-1 text-xs font-bold text-[#000100]">
-              {job.match}%
-            </span>
+          {/* Quick Info Tags */}
+          <div className="mb-4 flex shrink-0 flex-wrap gap-2">
+            <StepPill>{job.type}</StepPill>
+            <StepPill>{job.workSetting || "Hybrid"}</StepPill>
+            <StepPill>{job.salary}</StepPill>
           </div>
-          <p className="mt-3 text-sm leading-6 text-[#666666]">{job.why}</p>
-        </Card>
 
-        <Card className="mt-4">
-          <h3 className="font-bold text-[#000100]">Requirement checklist</h3>
-          <div className="mt-3 space-y-3">
-            {[
-              "Resume includes relevant projects",
-              "Location and job type match",
-              "Strong design/coding keywords",
-              ...job.missing.map((m) => `Needs improvement: ${m}`),
-            ].map((r, i) => (
-              <div
-                key={r}
-                className="flex items-center gap-2 text-sm text-[#000100]"
-              >
-                <CheckCircle2
-                  className={`h-4 w-4 ${
-                    i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"
-                  }`}
-                />
-                {r}
+          {/* Compact Main Content Body */}
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto no-scrollbar">
+            {/* Match Analysis */}
+            <div className="shrink-0 rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#000100]">
+                  Match Analysis
+                </h3>
+                <span className="rounded-full bg-[#a0fe08] px-2.5 py-0.5 text-[11px] font-bold text-[#000100]">
+                  {job.match}% Match
+                </span>
               </div>
-            ))}
+              <p className="mt-2 text-xs leading-5 text-[#666666]">{job.why}</p>
+            </div>
+
+            {/* Company Details */}
+            <div className="shrink-0 rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-[#000100]">
+                About the Role
+              </h3>
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#666666]">
+                Join {job.company} to help build the future of our product. We
+                are looking for someone with strong{" "}
+                {job.skills?.[0] || "design"} and {job.skills?.[1] || "coding"}{" "}
+                experience to impact millions of users.
+              </p>
+            </div>
+
+            {/* Requirement Checklist */}
+            <div className="shrink-0 rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-[#000100]">
+                Requirement Checklist
+              </h3>
+              <div className="mt-3 space-y-2.5">
+                {[
+                  "Resume includes relevant projects",
+                  "Location and job type match",
+                  "Strong design/coding keywords",
+                  ...job.missing.map((m) => `Needs improvement: ${m}`),
+                ]
+                  .slice(0, 3)
+                  .map((r, i) => (
+                    <div
+                      key={r}
+                      className="flex items-start gap-2.5 text-xs text-[#000100]"
+                    >
+                      <CheckCircle2
+                        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
+                          i < 3 ? "text-[#a0fe08]" : "text-[#d1d3d2]"
+                        }`}
+                      />
+                      <span className="leading-tight">{r}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
-        </Card>
 
-        <Card className="mt-4">
-          <h3 className="font-bold text-[#000100]">
-            Recommended resume changes
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-[#666666]">
-            Add role-specific keywords, strengthen project impact, and rewrite
-            one bullet to show measurable results.
-          </p>
-        </Card>
-
-        <div className="mt-6 space-y-3">
-          <PrimaryButton onClick={() => go("submitted", job)}>
-            Execute Application
-          </PrimaryButton>
+          {/* Action Footer */}
+          <div className="shrink-0 pt-4">
+            <PrimaryButton
+              className="py-4 text-sm"
+              onClick={() => go("submitted", job)}
+            >
+              Execute Application
+            </PrimaryButton>
+          </div>
         </div>
       </Screen>
     </PhoneShell>
@@ -3472,17 +3682,19 @@ function ResumesScreen({
   return (
     <PhoneShell>
       <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center justify-between bg-transparent px-6 pb-4 pt-14 ">
+        <div className="sticky top-0 z-50 -mx-6 -mt-14 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
           <button
             onClick={() => go("profile")}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000100] text-[#a0fe08] transition active:opacity-80"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-bold text-[#000100]">Resumes</h1>
+          <h1 className="text-xl font-bold tracking-tight text-[#000100]">
+            Resumes
+          </h1>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white  transition hover:bg-[#333]"
+            className="grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white transition hover:bg-[#333]"
           >
             <Plus className="h-5 w-5" />
           </button>
@@ -3557,20 +3769,17 @@ function ResumePreviewScreen({
   return (
     <PhoneShell>
       <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-4 flex items-center justify-between bg-transparent px-6 pb-3 pt-14 ">
+        <div className="sticky top-0 z-50 -mx-6 -mt-14 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
           <button
             onClick={() => go(backTarget)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000100] text-[#a0fe08] transition active:opacity-80"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1 px-3 text-center">
-            <h1 className="truncate text-base font-bold text-[#000100]">
+            <h1 className="truncate text-xl font-bold tracking-tight text-[#000100]">
               Resume Preview
             </h1>
-            <p className="truncate text-xs text-[#666666]">
-              {resume?.name || "No resume selected"}
-            </p>
           </div>
           {resume?.id ? (
             <button
@@ -3579,10 +3788,10 @@ function ResumePreviewScreen({
                 onDeleteResume(resume.id);
                 go(backTarget);
               }}
-              className="grid h-10 w-10 place-items-center rounded-full bg-[#ffffff] text-[#666666]  transition hover:bg-red-50 hover:text-red-500"
+              className="grid h-10 w-10 place-items-center rounded-full bg-[#ffffff] text-[#666666] transition hover:bg-red-50 hover:text-red-500"
               aria-label="Delete resume"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-5 w-5" />
             </button>
           ) : (
             <div className="h-10 w-10" />
@@ -3665,10 +3874,11 @@ function Profile({
   return (
     <PhoneShell>
       <Screen nav={!noNav} floatingNav={noNav} go={go} activeTab="profile">
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex items-center bg-[#eaeceb] px-6 pb-4 pt-14">
+        <div className="sticky top-0 z-50 -mx-6 -mt-14 mb-6 flex items-center justify-between bg-[#eaeceb] px-6 pb-4 pt-14">
           <h1 className="text-xl font-bold tracking-tight text-[#000100]">
             Settings
           </h1>
+          <div className="w-10"></div>
         </div>
 
         <div className="mb-6 overflow-hidden rounded-3xl border border-[#d1d3d2] bg-[#ffffff]">
@@ -4326,7 +4536,7 @@ export default function App() {
       case "skill":
         return <Skill go={go} />;
       case "dashboard":
-        return <Dashboard go={go} noNav />;
+        return <Dashboard go={go} noNav resumes={resumes} />;
       case "jobs":
         return (
           <JobsScreen
