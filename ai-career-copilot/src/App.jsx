@@ -3064,6 +3064,196 @@ function Submitted({ go, selectedJob, onApply = () => {} }) {
   );
 }
 
+
+// --- RESUMES SCREEN ---
+function ResumesScreen({
+  go,
+  resumes = [],
+  uploadQueue = [],
+  onUploadResume = () => {},
+  onOpenResume = () => {},
+  onDeleteResume = () => {},
+}) {
+  const fileInputRef = useRef(null);
+
+  const handleFiles = (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    onUploadResume(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  };
+
+  return (
+    <PhoneShell>
+      <Screen>
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end gap-3 bg-[#eaeceb] px-6 pb-5 border-b border-[#d1d3d2]/50">
+          <div className="flex items-center gap-2 mb-1">
+            <BackButton onClick={() => go("profile")} />
+          </div>
+          <div className="flex flex-col justify-end pb-0.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#666666] leading-none mb-1.5">
+              Career Pipeline
+            </p>
+            <h2 className="text-xl font-bold tracking-tight text-[#000100] leading-none">
+              Resumes & Docs
+            </h2>
+          </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="ml-auto grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
+            aria-label="Upload resume"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) =>
+            (e.key === "Enter" || e.key === " ") &&
+            fileInputRef.current?.click()
+          }
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          className="mb-4 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#000100]/30 bg-[#ffffff] text-[#000100] transition hover:bg-[#eaeceb]"
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+          <Upload className="mb-2 h-7 w-7" />
+          <span className="text-sm font-bold">
+            Tap to upload or drag & drop
+          </span>
+          <span className="mt-1 text-xs text-[#666666]">PDF up to 5MB</span>
+        </div>
+
+        <div className="space-y-3">
+          {uploadQueue.map((item) => (
+            <ResumeUploadCard key={item.id} item={item} uploading />
+          ))}
+          {resumes.map((resume) => (
+            <ResumeUploadCard
+              key={resume.id}
+              item={resume}
+              onOpen={() => onOpenResume(resume, "resumes")}
+              onDelete={() => onDeleteResume(resume.id)}
+            />
+          ))}
+          {uploadQueue.length === 0 && resumes.length === 0 && (
+            <Card className="text-center shadow-sm">
+              <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
+                <FileText className="h-7 w-7" />
+              </div>
+              <h3 className="font-bold text-[#000100]">No resumes yet</h3>
+              <p className="mt-2 text-sm leading-6 text-[#666666]">
+                Upload a resume to use it for AI matching, tailoring, and
+                applications.
+              </p>
+            </Card>
+          )}
+        </div>
+      </Screen>
+    </PhoneShell>
+  );
+}
+
+// --- RESUME PREVIEW SCREEN ---
+function ResumePreviewScreen({
+  go,
+  resume,
+  backTarget = "resumes",
+  onDeleteResume = () => {},
+}) {
+  const canPreviewPdf = resume?.url && isPdfResume(resume);
+
+  return (
+    <PhoneShell>
+      <div className="relative flex h-full w-full flex-col bg-[#eaeceb]">
+        <div className="pointer-events-none absolute left-0 right-0 top-0 z-50 flex items-center justify-between bg-gradient-to-b from-[#eaeceb]/90 to-transparent px-6 pt-[52px] pb-3 min-h-[88px]">
+          <BackButton
+            onClick={() => go(backTarget)}
+            className="pointer-events-auto drop-shadow-md"
+          />
+
+          {resume?.id && (
+            <button
+              type="button"
+              onClick={() => {
+                onDeleteResume(resume.id);
+                go(backTarget);
+              }}
+              className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full bg-[#ffffff] text-[#666666] shadow-sm transition hover:bg-red-50 hover:text-red-500"
+              aria-label="Delete resume"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
+        {!resume ? (
+          <div className="flex flex-1 items-center justify-center p-6 pt-24">
+            <Card className="w-full text-center shadow-sm">
+              <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
+                <FileText className="h-7 w-7" />
+              </div>
+              <h3 className="font-bold text-[#000100]">No resume selected</h3>
+              <p className="mt-2 text-sm leading-6 text-[#666666]">
+                Go back to your resume list and choose a file to preview.
+              </p>
+            </Card>
+          </div>
+        ) : canPreviewPdf ? (
+          <div className="flex-1 bg-white">
+            <iframe
+              title={resume.name}
+              src={`${resume.url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+              className="h-full w-full border-0 bg-white pt-14"
+            />
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center p-6 pt-24">
+            <Card className="w-full text-center shadow-sm">
+              <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
+                <FileText className="h-7 w-7" />
+              </div>
+              <h3 className="font-bold text-[#000100]">
+                Preview not available
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#666666]">
+                Browser in-app preview works best for PDF files. DOC and DOCX
+                files are saved in your list, but they cannot be rendered inside
+                the phone screen without a document viewer service.
+              </p>
+            </Card>
+          </div>
+        )}
+
+        {canPreviewPdf && (
+          <div className="pointer-events-none absolute bottom-8 left-1/2 z-50 w-full max-w-[80%] -translate-x-1/2 px-4">
+            <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/20 bg-[#000100]/80 px-4 py-2 backdrop-blur-md shadow-lg">
+              <FileText className="h-3.5 w-3.5 text-[#a0fe08]" />
+              <span className="truncate text-xs font-bold text-white">
+                {resume.name}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </PhoneShell>
+  );
+}
+
 // --- PROFILE SCREEN ---
 function Profile({
   go,
