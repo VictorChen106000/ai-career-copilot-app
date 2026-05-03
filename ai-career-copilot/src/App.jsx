@@ -38,16 +38,17 @@ import {
   Trash2,
   AlertCircle,
   ThumbsDown,
+  Zap,
+  Activity,
+  RotateCcw,
 } from "lucide-react";
 
 // --- LOCAL VSCODE IMAGES ---
-// Put your actual .jpg/.png files in the `public` folder of your VSCode project.
 const PROFILE_IMG_URL = "/profile.jpg";
 const LOGO_IMG_URL = "/logo.png";
 const LOGIN_BG_IMG_URL = "/login-bg.jpg";
 
 // --- AGENTIC JOB DATA (The Approval Queue) ---
-// This exactly matches your 5 Scenarios for the MVP Demo!
 const jobs = [
   {
     id: 1,
@@ -55,7 +56,7 @@ const jobs = [
     company: "TechFlow",
     location: "Remote",
     salary: "$120K–$140K",
-    category: "ready", // Capability 1: Autonomous Drafter (Scenario 1)
+    category: "ready",
     match: 95,
     agentAction: "Application Tailored",
     agentJustification:
@@ -70,7 +71,7 @@ const jobs = [
     company: "Linear",
     location: "San Francisco, CA",
     salary: "$90K–$120K",
-    category: "input_needed", // Capability 2: Collaborator (Scenario 2)
+    category: "input_needed",
     match: 94,
     agentAction: "Missing Requirement",
     agentJustification:
@@ -85,7 +86,7 @@ const jobs = [
     company: "Vercel",
     location: "New York, NY",
     salary: "$140K-$160K",
-    category: "exploration", // Capability 3: Strategist / Pivot (Scenario 4)
+    category: "exploration",
     match: 98,
     agentAction: "Strategic Pivot",
     agentJustification:
@@ -621,7 +622,7 @@ function BottomNav({ go = () => {}, activeTab = "home" }) {
   );
 }
 
-const Header = ({ title, subtitle, icon, action }) => (
+const Header = ({ title, subtitle, icon }) => (
   <div className="mb-6 flex items-center justify-between">
     <div className="flex items-center gap-3">
       {icon}
@@ -632,10 +633,10 @@ const Header = ({ title, subtitle, icon, action }) => (
         </h2>
       </div>
     </div>
-    {action}
   </div>
 );
 
+// --- OSHOME SCREEN ---
 function OSHome({ go }) {
   const [showNotif, setShowNotif] = useState(false);
 
@@ -654,6 +655,7 @@ function OSHome({ go }) {
         <AnimatePresence>
           {showNotif && (
             <motion.button
+              key="os-notif"
               initial={{ y: -100, opacity: 0, scale: 0.95 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: -100, opacity: 0 }}
@@ -724,6 +726,7 @@ function OSHome({ go }) {
   );
 }
 
+// --- SPLASH SCREEN ---
 function SplashScreen({ go, target = "landing" }) {
   useEffect(() => {
     const timer = setTimeout(() => go(target), 2300);
@@ -779,6 +782,7 @@ function SplashScreen({ go, target = "landing" }) {
   );
 }
 
+// --- LOGIN LOADING SCREEN ---
 function LoginLoadingScreen({ go }) {
   useEffect(() => {
     const loginTimer = setTimeout(() => go("login"), 2300);
@@ -834,6 +838,7 @@ function LoginLoadingScreen({ go }) {
   );
 }
 
+// --- LANDING SCREEN ---
 function Landing({ go }) {
   return (
     <div className="grid min-h-screen gap-10 bg-[#eaeceb] px-6 py-8 text-[#000100] lg:grid-cols-[1.05fr_.95fr] lg:px-16">
@@ -883,8 +888,8 @@ function Landing({ go }) {
               "Auto Apply Assistant",
               "Prepare applications after your approval.",
             ],
-          ].map(([Icon, title, copy]) => (
-            <Card key={title}>
+          ].map(([Icon, title, copy], idx) => (
+            <Card key={`card-${idx}`}>
               <div className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-[#000100] text-white">
                 <Icon className="h-5 w-5" />
               </div>
@@ -896,20 +901,26 @@ function Landing({ go }) {
       </div>
       <div className="flex items-center justify-center">
         <PhoneShell forceMobile>
-          <Dashboard mini />
+          <Dashboard
+            go={go}
+            mini
+            userName="Daryn"
+            resumesCount={0}
+            jobsCount={3}
+          />
         </PhoneShell>
       </div>
     </div>
   );
 }
 
+// --- LOGIN SCREEN ---
 function Login({ go }) {
-  const nextAfterLogin = "dashboard";
+  const nextAfterLogin = "onboarding"; // Routes to the new static Onboarding Screen
 
   return (
     <PhoneShell theme="dark">
       <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#000100]">
-        {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
             src={LOGIN_BG_IMG_URL}
@@ -920,13 +931,10 @@ function Login({ go }) {
               e.target.style.display = "none";
             }}
           />
-          {/* Fallback gradient behind the image in case it fails */}
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-black -z-10" />
-          {/* Dark fade gradient at the bottom so text is legible */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#000100] via-[#000100]/60 to-transparent" />
         </div>
 
-        {/* Content Container aligned to bottom */}
         <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pb-12 pt-8">
           <h1 className="mb-8 text-[44px] font-black leading-[1.05] tracking-tight text-white">
             Let <span className="text-[#a0fe08]">AI Agent</span>
@@ -994,6 +1002,7 @@ function Login({ go }) {
   );
 }
 
+// --- SIGN UP SCREEN ---
 function SignUp({ go }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -1001,7 +1010,7 @@ function SignUp({ go }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
-    go("dashboard");
+    go("onboarding"); // Routes to the new static Onboarding Screen
   };
   return (
     <PhoneShell>
@@ -1054,10 +1063,10 @@ function SignUp({ go }) {
               <span className="h-px flex-1 bg-[#d1d3d2]" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <SecondaryButton onClick={() => go("dashboard")}>
+              <SecondaryButton onClick={() => go("onboarding")}>
                 Google
               </SecondaryButton>
-              <SecondaryButton onClick={() => go("dashboard")}>
+              <SecondaryButton onClick={() => go("onboarding")}>
                 Demo Mode
               </SecondaryButton>
             </div>
@@ -1078,11 +1087,133 @@ function SignUp({ go }) {
   );
 }
 
+// --- STATIC ONBOARDING SCREEN (Completely simplified for demo/PPT) ---
+function Onboarding({ go }) {
+  return (
+    <PhoneShell>
+      <div className="flex h-full min-h-0 flex-1 flex-col bg-[#eaeceb] pb-6">
+        {/* Header */}
+        <div className="shrink-0 mb-5 flex min-h-[88px] items-center justify-between relative z-10 bg-[#eaeceb] px-6 pt-[52px] pb-3 border-b border-[#d1d3d2]/50">
+          <BackButton onClick={() => go("login")} />
+          <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/60 backdrop-blur-md px-4 py-2 shadow-sm">
+            <div className="grid h-4 w-4 place-items-center rounded-full bg-[#000100]">
+              <Star className="h-2.5 w-2.5 text-[#a0fe08]" />
+            </div>
+            <span className="text-xs font-bold text-[#000100]">
+              Syncra AI Setup
+            </span>
+          </div>
+          <div className="w-7"></div>
+        </div>
+
+        {/* Chat Content - All Static and shown instantly */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 no-scrollbar">
+          <div className="flex flex-col pb-4 gap-5">
+            {/* AI Msg 1 */}
+            <div className="flex w-full justify-start">
+              <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-sm">
+                  <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                </div>
+              </div>
+              <div className="max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm rounded-[22px] rounded-bl-[4px] bg-[#ffffff] text-[#000100]">
+                Hi! I'm Syncra AI. Let's set up your career profile. Could you
+                upload your latest resume?
+              </div>
+            </div>
+
+            {/* User Msg 1 */}
+            <div className="flex w-full justify-end">
+              <div className="max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm rounded-[22px] rounded-br-[4px] bg-[#000100] text-white flex items-center gap-2">
+                <FileText className="h-4 w-4 text-[#a0fe08]" />{" "}
+                chris_anderson_resume.pdf
+              </div>
+            </div>
+
+            {/* Agent Terminal Block */}
+            <div className="w-full rounded-2xl bg-[#000100] p-4 font-mono text-[11px] shadow-xl my-2 border border-white/10 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#a0fe08] to-transparent opacity-20" />
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+                <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+                <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+                <div className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+                <span className="ml-2 text-white/50 font-bold uppercase tracking-wider text-[9px]">
+                  Agent Thought Process
+                </span>
+              </div>
+              <div className="text-white/80 mb-2 flex items-start gap-2">
+                <span className="shrink-0">⚙️</span> Tool Call:
+                ParseDocument(file)
+              </div>
+              <div className="text-[#a0fe08] font-bold mb-4 ml-6">
+                ↳ Extracted 420 words.
+              </div>
+              <div className="text-white/80 mb-2 flex items-start gap-2">
+                <span className="shrink-0">⚙️</span> Tool Call: ExtractSkills()
+              </div>
+              <div className="text-[#a0fe08] font-bold mb-4 ml-6">
+                ↳ Found: React, JavaScript, Figma.
+              </div>
+              <div className="text-[#ffbd2e] mt-4 flex items-start gap-2">
+                <span className="shrink-0">🛑</span> Agent Decision: Missing
+                Target Role. Asking user for input.
+              </div>
+            </div>
+
+            {/* AI Msg 2 */}
+            <div className="flex w-full justify-start">
+              <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-sm">
+                  <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                </div>
+              </div>
+              <div className="max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm rounded-[22px] rounded-bl-[4px] bg-[#ffffff] text-[#000100]">
+                I successfully extracted your skills! To calibrate my matching
+                engine, what specific role are you aiming for?
+              </div>
+            </div>
+
+            {/* User Msg 2 */}
+            <div className="flex w-full justify-end">
+              <div className="max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm rounded-[22px] rounded-br-[4px] bg-[#000100] text-white">
+                UX Designer or Frontend Developer
+              </div>
+            </div>
+
+            {/* AI Msg 3 */}
+            <div className="flex w-full justify-start">
+              <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-sm">
+                  <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                </div>
+              </div>
+              <div className="max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm rounded-[22px] rounded-bl-[4px] bg-[#ffffff] text-[#000100]">
+                Got it! Your AI profile is ready. I'll start finding matches in
+                the background.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="px-5 pb-5 pt-2">
+          <button
+            onClick={() => go("dashboard")}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-[#000100] p-4 text-sm font-bold text-white shadow-lg transition active:scale-[0.98]"
+          >
+            Go to Dashboard <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </PhoneShell>
+  );
+}
+
+// --- MORNING BRIEF SCREEN ---
 function MorningBrief({ go, userName }) {
   return (
     <PhoneShell theme="dark">
       <div className="flex h-full flex-col justify-center bg-[#000100] px-8 text-left text-white relative overflow-hidden">
-        {/* Background ambient glow pushed to the right side */}
         <motion.div
           animate={{ scale: [1, 1.1, 1], opacity: [0.25, 0.4, 0.25] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -1210,6 +1341,130 @@ function ResumeUploadCard({ item, uploading = false, onOpen, onDelete }) {
   );
 }
 
+// --- TERMINAL DEMO LOGIC ---
+const demoSteps = [
+  {
+    action: "Task Decoupled into 4 steps. Executing...",
+    delay: 1000,
+    type: "info",
+  },
+  {
+    action: "Tool Call: JobBoardScraper(role='UX Design', type='Startup')",
+    delay: 1800,
+    result: "Found: Product Designer at 'Linear'.",
+    type: "tool",
+  },
+  {
+    action: "Tool Call: AnalyzeResumeMatch(job='Linear', resume=user_profile)",
+    delay: 2000,
+    result: "Score: 65% (Missing 'Design Systems').",
+    type: "tool",
+  },
+  {
+    action:
+      "Agent Decision: Match score too low for cold email. Invoking Tailor Tool first.",
+    delay: 2500,
+    type: "alert",
+  },
+  {
+    action: "Tool Call: TailorResume(missing_keywords=['Design Systems'])",
+    delay: 2200,
+    result: "Resume rewritten. New Score: 92%.",
+    type: "tool",
+  },
+  {
+    action: "Tool Call: WebScraper(query='Linear recent news')",
+    delay: 1800,
+    result: "Found: Linear launched a new mobile app.",
+    type: "tool",
+  },
+  {
+    action: "Tool Call: DraftColdEmail(context='Mention mobile app launch')",
+    delay: 1500,
+    result: "Draft complete. Ready for review.",
+    type: "tool",
+  },
+];
+
+function AgentTerminal({ onComplete }) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const hasCompleted = useRef(false);
+
+  useEffect(() => {
+    if (currentStep >= demoSteps.length) {
+      if (!hasCompleted.current) {
+        hasCompleted.current = true;
+        const timer = setTimeout(onComplete, 1200);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCurrentStep((prev) => prev + 1);
+    }, demoSteps[currentStep].delay);
+
+    return () => clearTimeout(timer);
+  }, [currentStep, onComplete]);
+
+  return (
+    <div className="w-full rounded-2xl bg-[#000100] p-4 font-mono text-[11px] shadow-xl border border-white/10 my-2 overflow-hidden relative">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#a0fe08] to-transparent opacity-20" />
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+        <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+        <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+        <div className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+        <span className="ml-2 text-white/50 font-bold uppercase tracking-wider text-[9px]">
+          Agent Thought Process
+        </span>
+      </div>
+      <div className="flex flex-col gap-3">
+        {demoSteps.slice(0, currentStep + 1).map((step, i) => {
+          const isLast = i === currentStep && currentStep < demoSteps.length;
+          return (
+            <motion.div
+              key={`step-${i}`}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div
+                className={`flex items-start gap-2 ${
+                  step.type === "alert" ? "text-[#ffbd2e]" : "text-white/80"
+                }`}
+              >
+                <span className="shrink-0">
+                  {step.type === "alert" ? "🛑" : "⚙️"}
+                </span>
+                <span className="leading-relaxed">{step.action}</span>
+              </div>
+              {step.result && !isLast && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="ml-7 mt-1 text-[#a0fe08] font-bold"
+                >
+                  ↳ {step.result}
+                </motion.div>
+              )}
+              {isLast && (
+                <motion.div
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ repeat: Infinity, duration: 1.2 }}
+                  className="ml-7 mt-1 flex items-center gap-1.5 text-white/40"
+                >
+                  <div className="h-1 w-1 bg-[#a0fe08] rounded-full animate-ping" />{" "}
+                  Processing...
+                </motion.div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// --- AI CHATBOT SCREEN ---
 function AIChatbot({
   go,
   chatMode = "setPreferences",
@@ -1222,184 +1477,33 @@ function AIChatbot({
   onUploadResume = () => {},
   uploadQueue = [],
 }) {
-  const prefQuestions = [
-    "What kind of job are you looking for? (e.g. UX Designer, Frontend Developer, Product Manager)",
-    "What's your preferred location? (e.g. Remote, San Francisco, New York)",
-    "Do you prefer remote, hybrid, or on-site work?",
-    "What's your expected salary range?",
-    "Any industry preferences? (e.g. Tech, Finance, Healthcare)",
-  ];
+  const [messages, setMessages] = useState([
+    {
+      from: "ai",
+      type: "text",
+      text: "Hi, Syncra AI here. What career goals can I help you execute today?",
+    },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
+  const [attachedContext, setAttachedContext] = useState(null);
 
-  const createQuestions = [
-    "Let's build your resume! What's your current or most recent job title?",
-    "Tell me about your education — school name, degree, and graduation year.",
-    "What are your top 5 skills? (e.g. React, Figma, Python, Project Management)",
-    "Describe your most notable work experience or project in 1-2 sentences.",
-    "Any certifications, awards, or achievements you'd like to include?",
-  ];
-
-  const helpWriteQuestions = [
-    "Question 1 of 5: What target role or internship are you applying for?",
-    "Question 2 of 5: Tell me about your education. Include school, major, graduation year, or relevant coursework.",
-    "Question 3 of 5: What project, experience, or class work should I highlight most?",
-    "Question 4 of 5: What skills, tools, or strengths should appear in your resume?",
-    "Question 5 of 5: Any achievements, links, or special points you want the resume to emphasize?",
-  ];
-
-  const createResumeFlows = {
-    "help me write it": [
-      "Absolutely. I’ll guide you like a resume coach and turn your answers into a professional resume draft.",
-      "I’ll ask 5 short questions. After your final answer, I’ll create the resume in the background so you can continue using the app.",
-      "Question 1 of 5: What target role or internship are you applying for?",
-    ],
-    "i'll type it out": [
-      "Perfect. You can type everything in your own words, and I’ll turn it into a clean resume draft.",
-      "Send one message with anything you already have: target role, education, skills, projects, experience, achievements, links, or even rough notes.",
-      "Don’t worry about grammar or formatting. After you send it, I’ll organize it into resume sections and create the resume in the background.",
-      "Paste or type your rough resume information now.",
-    ],
-    "use my linkedin": [
-      "Great choice. I already have access to your LinkedIn profile for this demo.",
-      "Reading LinkedIn data… Found your education, project experience, skills, portfolio link, and career interests.",
-      "I’m converting your LinkedIn profile into a resume format with ATS-friendly sections and stronger impact wording.",
-    ],
-  };
-
-  const careerPromptFlows = {
-    // SCENARIO 3: The Cold Outreach Hustler
-    "write cold email": [
-      "Reading the job description you pasted...",
-      "Since this job isn't in our network, the best approach is a cold email. I drafted a message highlighting your overlap with their requirements.",
-      "I have attached your core skills. You can now open this directly in your Mail App.",
-    ],
-    // SCENARIO 5: Make Me Sound Like a Boss
-    "make me sound like a boss": [
-      "I'm applying to management roles, let's upgrade this.",
-      "I've identified passive verbs (e.g., 'helped with') and replaced them with strong leadership verbs (e.g., 'Spearheaded', 'Architected').",
-      "I've quantified your impact. I just dropped a brand-new, upgraded PDF into your Resumes tab for you to download.",
-    ],
-    "find me jobs": [
-      "Starting an agentic job search now. I’ll use your resume, preferences, and skill profile to rank opportunities.",
-      "Searching demo sources: LinkedIn, Indeed, company career pages, and internship platforms…",
-      "Filtering out roles that require too much experience, don’t match your location, or don’t fit your preferred work style…",
-      "Search complete: I found 32 jobs. 8 are strong matches, 15 are medium matches, and 9 are low matches.",
-      "Best match: Senior Product Designer at TechFlow — 98% match. You match because of Figma, product thinking, and prototype experience. Missing skills: prototyping tools depth.",
-    ],
-    "improve my resume": [
-      "I’ll review your resume like an ATS and hiring manager at the same time.",
-      "Current demo score: 78/100. Strong areas: project experience, design tools, and frontend foundation.",
-      "Main improvements: add measurable impact, include missing keywords, and make your project bullets more outcome-focused.",
-      "Example improvement: ‘Built a React prototype’ → ‘Designed and built a responsive AI career prototype with React, improving task flow clarity for student job seekers.’",
-    ],
-    "career advice": [
-      "Based on your profile, I’d recommend targeting hybrid roles between UX, frontend, and AI product work.",
-      "Best early-career titles for you: Junior UX Designer, Product Design Intern, Frontend Engineer Intern, and AI Product Assistant.",
-      "Your strongest angle is not only coding or only design — it’s your ability to turn user problems into an interactive product prototype.",
-      "Next step: polish one portfolio case study and tailor your resume separately for UX roles and frontend roles.",
-    ],
-    "salary insights": [
-      "I’ll estimate salary expectations using the role type, location, and experience level from your profile.",
-      "For entry-level UX/frontend roles in this demo market, a realistic range is around $50K–$80K depending on location and company size.",
-      "For internships, focus less on salary and more on learning quality, mentorship, and whether the work can become a portfolio case study.",
-      "I can also filter job results by high salary once your job search starts.",
-    ],
-  };
-
-  const preferenceFlows = {
-    "remote only": [
-      "Got it — I’ll prioritize remote roles and remove on-site-only jobs from your match list.",
-      "I’ll still keep strong hybrid roles as backup options, but mark them as lower priority.",
-    ],
-    "full-time": [
-      "Great. I’ll focus on full-time entry-level roles and junior positions.",
-      "I’ll avoid short-term contract roles unless they strongly match your profile.",
-    ],
-    "entry level": [
-      "Understood. I’ll filter for internships, junior roles, trainee roles, and new graduate positions.",
-      "I’ll reduce the score for jobs asking for more than 2 years of experience.",
-    ],
-    "$50k–$80k": [
-      "Saved. I’ll use $50K–$80K as your preferred range when ranking job results.",
-      "If a job has no salary listed, I’ll still include it but mark salary confidence as unknown.",
-    ],
-  };
-
-  const isChatOpen = chatMode === "chatOpen";
-  const questions =
-    chatMode === "createResume" ? createQuestions : prefQuestions;
   const messagesEndRef = useRef(null);
   const messagesScrollRef = useRef(null);
-  const timersRef = useRef([]);
-
-  const initialChatState = useMemo(() => {
-    if (agentResumeNotice && chatMode === "createResume") {
-      return {
-        messages: [
-          {
-            from: "ai",
-            text: `I finished creating ${
-              agentResumeNotice.resumeName || "your AI-generated resume"
-            } according to your answers.`,
-          },
-          {
-            from: "ai",
-            text: "I saved it in Profile → Career → Resumes. You can go there to preview the resume, delete it, or use it for job matching.",
-          },
-        ],
-        step: questions.length + 1,
-      };
-    }
-
-    if (isChatOpen) {
-      return {
-        messages: [
-          {
-            from: "ai",
-            text: "Hi, Syncra AI, can I help you find new jobs or update your resume today?",
-          },
-        ],
-        step: 0,
-      };
-    }
-
-    if (chatMode === "createResume") {
-      return {
-        messages: [
-          { from: "user", text: "I want to create a resume" },
-          {
-            from: "ai",
-            text: "Absolutely. I’ll guide you like a resume coach and turn your answers into a professional resume draft.",
-          },
-          {
-            from: "ai",
-            text: "I’ll ask 5 short questions. After your final answer, I’ll create the resume in the background so you can continue using the app.",
-          },
-          { from: "ai", text: helpWriteQuestions[0] },
-        ],
-        step: 0,
-      };
-    }
-
-    const initial = { from: "user", text: "I want to set my preferences" };
-
-    return {
-      messages: [initial, { from: "ai", text: questions[0] }],
-      step: 1,
-    };
-  }, [agentResumeNotice, chatMode, isChatOpen, questions]);
-
-  const [messages, setMessages] = useState(initialChatState.messages);
-  const [inputText, setInputText] = useState("");
-  const [step, setStep] = useState(initialChatState.step);
-  const [isTyping, setIsTyping] = useState(false);
-  const [helpWriteStep, setHelpWriteStep] = useState(
-    chatMode === "createResume" && !agentResumeNotice ? 0 : null
-  );
-  const [helpWriteAnswers, setHelpWriteAnswers] = useState([]);
-  const [typeItOutActive, setTypeItOutActive] = useState(false);
-  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const fileInputRef = useRef(null);
-  const [attachedContext, setAttachedContext] = useState(null);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    const scrollContainer = messagesScrollRef.current;
+    if (!scrollContainer) return;
+    requestAnimationFrame(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+  }, [messages, isTyping]);
 
   const handleFiles = (fileList) => {
     const files = Array.from(fileList || []);
@@ -1409,347 +1513,51 @@ function AIChatbot({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  useEffect(() => {
-    const scrollContainer = messagesScrollRef.current;
-    if (!scrollContainer) return;
+  const handleSend = (textOverride) => {
+    const prompt =
+      typeof textOverride === "string" ? textOverride : inputText.trim();
+    if (!prompt || isTyping) return;
 
-    requestAnimationFrame(() => {
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    });
-  }, [messages, isTyping]);
-
-  useEffect(() => {
-    return () => timersRef.current.forEach((timer) => clearTimeout(timer));
-  }, []);
-
-  const normalizePrompt = (text) =>
-    text.trim().toLowerCase().replace(/[’']/g, "'");
-
-  const getFlowForPrompt = (text) => {
-    const key = normalizePrompt(text);
-    if (chatMode === "createResume" && createResumeFlows[key])
-      return createResumeFlows[key];
-    if (isChatOpen && careerPromptFlows[key]) return careerPromptFlows[key];
-    if (!isChatOpen && chatMode !== "createResume" && preferenceFlows[key])
-      return preferenceFlows[key];
-
-    // Reactive Agent Triggers (Scenarios 3 & 5)
-    if (
-      key.includes("cold email") ||
-      key.includes("outreach") ||
-      key.includes("random website")
-    ) {
-      return careerPromptFlows["write cold email"];
-    }
-    if (
-      key.includes("boss") ||
-      key.includes("manager") ||
-      key.includes("leadership") ||
-      key.includes("management")
-    ) {
-      return careerPromptFlows["make me sound like a boss"];
-    }
-
-    if (
-      key.includes("find me job") ||
-      key.includes("find jobs") ||
-      key.includes("find internships") ||
-      key.includes("search jobs") ||
-      key.includes("job search") ||
-      key.includes("look for jobs")
-    ) {
-      return careerPromptFlows["find me jobs"];
-    }
-    if (
-      (key.includes("improve") ||
-        key.includes("review") ||
-        key.includes("fix")) &&
-      key.includes("resume")
-    ) {
-      return careerPromptFlows["improve my resume"];
-    }
-    if (key.includes("salary")) return careerPromptFlows["salary insights"];
-    if (key.includes("career advice") || key.includes("career path"))
-      return careerPromptFlows["career advice"];
-    if (chatMode === "createResume" && key.includes("linkedin"))
-      return createResumeFlows["use my linkedin"];
-    if (chatMode === "createResume" && key.includes("write"))
-      return createResumeFlows["help me write it"];
-    return null;
-  };
-
-  const addAgentSequence = (userText, aiReplies, onComplete) => {
-    timersRef.current.forEach((timer) => clearTimeout(timer));
-    timersRef.current = [];
     setInputText("");
-    setMessages((prev) => [...prev, { from: "user", text: userText }]);
+    setMessages((prev) => [
+      ...prev,
+      { from: "user", type: "text", text: prompt },
+    ]);
     setIsTyping(true);
 
-    aiReplies.forEach((reply, index) => {
-      const timer = setTimeout(() => {
-        setMessages((prev) => [...prev, { from: "ai", text: reply }]);
-        if (index === aiReplies.length - 1) {
-          setIsTyping(false);
-          onComplete?.();
-        }
-      }, 650 + index * 850);
-      timersRef.current.push(timer);
-    });
+    // Trigger the flashy UI sequence for the demo
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, { from: "ai", type: "terminal" }]);
+    }, 600);
   };
 
-  const startHelpWriteFlow = (userText) => {
-    setTypeItOutActive(false);
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(0);
-    addAgentSequence(userText, createResumeFlows["help me write it"]);
-  };
+  const handleTerminalComplete = React.useCallback(() => {
+    setMessages((prev) => {
+      // Extra safeguard to prevent duplicate additions
+      if (prev.length > 0 && prev[prev.length - 1].type === "cards")
+        return prev;
 
-  const startTypeItOutFlow = (userText) => {
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    setTypeItOutActive(true);
-    addAgentSequence(userText, createResumeFlows["i'll type it out"]);
-  };
-
-  const startLinkedInFlow = (userText) => {
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    setTypeItOutActive(false);
-
-    const linkedInResumeAnswers = [
-      {
-        question: "LinkedIn target role",
-        answer:
-          "Junior UX Designer, Frontend Developer, and Product Design Internship roles focused on UI design, user research, frontend prototyping, and AI-powered product experiences.",
-      },
-      {
-        question: "LinkedIn education",
-        answer:
-          "International Business student at Tamkang University in Taiwan, expected graduation 2027, with software project experience in UI/UX planning, React prototyping, and product design.",
-      },
-      {
-        question: "LinkedIn projects and experience",
-        answer:
-          "AI Career Copilot app project: designed user flows, built a responsive React prototype, implemented resume upload, in-app PDF preview, chatbot interactions, job matching demo, and agentic background resume creation workflow.",
-      },
-      {
-        question: "LinkedIn skills and tools",
-        answer:
-          "React, JavaScript, Tailwind CSS, Figma, UI/UX Design, Responsive Web Design, User Journey Mapping, Empathy Maps, Prompt Engineering, Teamwork, Presentation, and AI tool usage.",
-      },
-      {
-        question: "LinkedIn achievements and links",
-        answer:
-          "Created a full interactive prototype, improved the interface with neumorphism and glassmorphism, deployed the app on Vercel for team testing, and connected business thinking with AI-driven product design.",
-      },
-    ];
-
-    addAgentSequence(userText, createResumeFlows["use my linkedin"], () => {
-      onStartBackgroundResume(linkedInResumeAnswers);
-      setTimeout(() => go("analyzing"), 1000);
-    });
-  };
-
-  const handleTypeItOutAnswer = (userText) => {
-    setTypeItOutActive(false);
-    const typedResumeAnswers = [
-      { question: "Typed resume information", answer: userText },
-      { question: "Education and background", answer: userText },
-      { question: "Projects and experience", answer: userText },
-      { question: "Skills and tools", answer: userText },
-      { question: "Achievements and links", answer: userText },
-    ];
-    addAgentSequence(
-      userText,
-      [
-        "Got it. I received your rough resume information and I’m extracting the key details now.",
-        "I’m organizing it into resume sections: Summary, Education, Skills, Projects, Experience, and Achievements.",
-        "Now I’m rewriting your notes into concise, ATS-friendly bullet points in the background.",
-      ],
-      () => {
-        onStartBackgroundResume(typedResumeAnswers);
-        setTimeout(() => go("analyzing"), 1000);
-      }
-    );
-  };
-
-  const handleHelpWriteAnswer = (userText) => {
-    const currentStep = helpWriteStep ?? 0;
-    const updatedAnswers = [
-      ...helpWriteAnswers,
-      { question: helpWriteQuestions[currentStep], answer: userText },
-    ];
-
-    if (currentStep < helpWriteQuestions.length - 1) {
-      const nextStep = currentStep + 1;
-      setHelpWriteAnswers(updatedAnswers);
-      setHelpWriteStep(nextStep);
-      addAgentSequence(userText, [
-        "Great — I saved that and will translate it into resume-ready wording.",
-        helpWriteQuestions[nextStep],
-      ]);
-      return;
-    }
-
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    addAgentSequence(
-      userText,
-      [
-        "Perfect. I have enough information to create your first resume draft.",
-        "I’m now writing the resume in the background: summary, education, skills, projects, and ATS-friendly bullet points.",
-      ],
-      () => {
-        onStartBackgroundResume(updatedAnswers);
-        setTimeout(() => go("analyzing"), 1000);
-      }
-    );
-  };
-
-  const isResumeOrCareerShortcutPrompt = (text) => {
-    const key = normalizePrompt(text);
-    return Boolean(
-      createResumeFlows[key] ||
-        careerPromptFlows[key] ||
-        key.includes("linkedin") ||
-        key.includes("find me job") ||
-        key.includes("find jobs") ||
-        key.includes("find internships") ||
-        key.includes("search jobs") ||
-        key.includes("job search") ||
-        key.includes("look for jobs") ||
-        ((key.includes("improve") ||
-          key.includes("review") ||
-          key.includes("fix")) &&
-          key.includes("resume")) ||
-        key.includes("salary") ||
-        key.includes("career advice") ||
-        key.includes("career path")
-    );
-  };
-
-  const resetCreateResumeSubFlows = () => {
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    setTypeItOutActive(false);
-  };
-
-  const runPromptFlow = (userText, flow) => {
-    const key = normalizePrompt(userText);
-    if (chatMode === "createResume" && key === "help me write it") {
-      startHelpWriteFlow(userText);
-    } else if (chatMode === "createResume" && key === "i'll type it out") {
-      startTypeItOutFlow(userText);
-    } else if (chatMode === "createResume" && key === "use my linkedin") {
-      startLinkedInFlow(userText);
-    } else {
-      addAgentSequence(userText, flow);
-    }
-  };
-
-  const handleSend = () => {
-    if (!inputText.trim() || isTyping) return;
-    const userText = inputText.trim();
-    const flow = getFlowForPrompt(userText);
-
-    if (
-      chatMode === "createResume" &&
-      flow &&
-      (helpWriteStep !== null || typeItOutActive) &&
-      isResumeOrCareerShortcutPrompt(userText)
-    ) {
-      resetCreateResumeSubFlows();
-      runPromptFlow(userText, flow);
-      return;
-    }
-
-    if (chatMode === "createResume" && helpWriteStep !== null) {
-      handleHelpWriteAnswer(userText);
-      return;
-    }
-
-    if (chatMode === "createResume" && typeItOutActive) {
-      handleTypeItOutAnswer(userText);
-      return;
-    }
-
-    if (flow) {
-      runPromptFlow(userText, flow);
-      return;
-    }
-
-    const newMessages = [...messages, { from: "user", text: userText }];
-    setInputText("");
-
-    if (isChatOpen) {
-      const replies = [
-        "I understand. I’ll treat that as new career context and use it when ranking jobs and improving your resume.",
-        "That helps. I can turn this into resume wording, job search filters, or application preparation.",
-        "Based on that, I’d recommend focusing on roles where your design, frontend, and AI prototype experience are visible.",
-        "Would you like me to search jobs, improve your resume, or prepare a job-specific application next?",
+      return [
+        ...prev,
+        {
+          from: "ai",
+          type: "text",
+          text: "I found a great fit at Linear. Initially, your resume match was a bit low, so I autonomously tailored your past projects to highlight 'Design Systems'. I also researched Linear and found they just launched a mobile app, so I wove that into your cold email to make you stand out. Both are ready for your review.",
+        },
+        {
+          from: "ai",
+          type: "cards",
+        },
       ];
-      newMessages.push({
-        from: "ai",
-        text: replies[messages.length % replies.length],
-      });
-      setMessages(newMessages);
-    } else if (step < questions.length) {
-      newMessages.push({ from: "ai", text: questions[step] });
-      setMessages(newMessages);
-      setStep(step + 1);
-    } else if (chatMode === "createResume") {
-      newMessages.push({
-        from: "ai",
-        text: "Great — I have enough background to create a first resume draft. I’ll now organize your information into Summary, Skills, Education, Projects, and Experience sections.",
-      });
-      setMessages(newMessages);
-      setStep(step + 1);
-    } else {
-      newMessages.push({
-        from: "ai",
-        text: "Perfect. I saved your preferences and will use them to filter job results, rank matches, and avoid roles that do not fit your goals.",
-      });
-      setMessages(newMessages);
-      setTimeout(() => go("analyzing"), 2000);
-    }
-  };
+    });
+  }, []);
 
-  const quickReplies = isChatOpen
-    ? [
-        "Write cold email",
-        "Make me sound like a boss",
-        "Find me jobs",
-        "Improve my resume",
-      ]
-    : chatMode === "createResume"
-    ? [
-        "I'll type it out",
-        "Use my LinkedIn",
-        "Find me jobs",
-        "Improve my resume",
-        "Career advice",
-        "Salary insights",
-      ]
-    : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
-
-  const handleQuickReply = (reply) => {
-    if (isTyping) return;
-    const flow = getFlowForPrompt(reply);
-    if (flow) {
-      if (
-        chatMode === "createResume" &&
-        isResumeOrCareerShortcutPrompt(reply)
-      ) {
-        resetCreateResumeSubFlows();
-      }
-      runPromptFlow(reply, flow);
-    } else {
-      setInputText(reply);
-    }
-  };
+  const quickReplies = [
+    "Find me a UX role at a startup & draft outreach",
+    "Improve my resume",
+    "Find internships",
+  ];
 
   const renderMessageText = (text) => (
     <>
@@ -1792,162 +1600,178 @@ function AIChatbot({
             </span>
           </div>
 
-          {!isChatOpen ? (
-            <button
-              onClick={() => go("dashboard")}
-              className="flex h-9 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-[#ffffff] px-4 text-xs font-bold text-[#000100] shadow-sm transition active:opacity-70"
-            >
-              Skip <ArrowRight className="h-3.5 w-3.5 text-[#000100]" />
-            </button>
-          ) : (
-            <button className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/40 bg-white/60 text-[#000100] shadow-sm backdrop-blur-md transition active:scale-95">
-              <Settings className="h-5 w-5" />
-            </button>
-          )}
+          <button className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/40 bg-white/60 text-[#000100] shadow-sm backdrop-blur-md transition active:scale-95">
+            <Settings className="h-5 w-5" />
+          </button>
         </motion.div>
 
-        {isChatOpen &&
-        messages.length === 1 &&
-        !isTyping &&
-        messages[0].from === "ai" ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="flex min-h-0 flex-1 flex-col items-center justify-center px-4 text-center pb-12"
-          >
-            <motion.div
-              animate={{
-                boxShadow: [
-                  "0 0 0px rgba(160,254,8,0)",
-                  "0 0 50px rgba(160,254,8,0.25)",
-                  "0 0 0px rgba(160,254,8,0)",
-                ],
-              }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="relative mb-8 grid h-32 w-32 place-items-center rounded-full bg-[#000100] shadow-xl"
-            >
-              <div className="absolute inset-1.5 rounded-full border border-white/10 bg-gradient-to-tr from-white/10 to-transparent" />
-              <Star className="relative z-10 h-10 w-10 text-[#a0fe08]" />
-              <Sparkles className="absolute right-6 top-6 h-5 w-5 text-white" />
-            </motion.div>
-            <h2 className="text-[22px] font-bold leading-snug tracking-tight text-[#000100]">
-              {messages[0].text}
-            </h2>
-          </motion.div>
-        ) : (
-          <div
-            ref={messagesScrollRef}
-            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-5 py-4"
-          >
-            <div className="flex flex-col pb-4">
-              {messages.map((msg, i) => {
-                const isAI = msg.from === "ai";
-                const isNextSame = messages[i + 1]?.from === msg.from;
-                const isPrevSame = messages[i - 1]?.from === msg.from;
+        <div
+          ref={messagesScrollRef}
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-5 py-4"
+        >
+          <div className="flex flex-col pb-4">
+            {messages.map((msg, i) => {
+              const isAI = msg.from === "ai";
+              const isNextSame = messages[i + 1]?.from === msg.from;
+              const isPrevSame = messages[i - 1]?.from === msg.from;
 
+              if (msg.type === "terminal") {
+                return (
+                  <div
+                    key={`msg-${i}`}
+                    className="w-full mb-6 flex justify-center"
+                  >
+                    <AgentTerminal onComplete={handleTerminalComplete} />
+                  </div>
+                );
+              }
+
+              if (msg.type === "cards") {
                 return (
                   <motion.div
-                    key={`${msg.from}-${i}-${msg.text.slice(0, 12)}`}
-                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className={`flex w-full ${
-                      isAI ? "justify-start" : "justify-end"
-                    } ${isNextSame ? "mb-1.5" : "mb-5"}`}
+                    key={`msg-${i}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-5 flex w-full justify-start pl-9"
                   >
-                    {isAI && (
-                      <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
-                        {!isNextSame && (
-                          <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
-                            <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
-                          </div>
-                        )}
+                    <div className="flex flex-col gap-3 mt-1 w-full max-w-[90%]">
+                      {/* Interactive Card 1: Tailored Resume */}
+                      <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#d1d3d2] shadow-sm cursor-pointer hover:bg-[#fafafa] transition active:scale-[0.98]">
+                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#000100] text-white">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-[#000100] truncate">
+                            Linear_UX_Resume_v4.pdf
+                          </h4>
+                          <p className="text-[11px] font-medium text-[#000100] bg-[#a0fe08] px-2 py-0.5 rounded w-fit mt-1">
+                            Tailored • 92% Match
+                          </p>
+                        </div>
+                        <button className="h-8 w-8 grid place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                          <Search className="h-4 w-4" />
+                        </button>
                       </div>
-                    )}
 
-                    <div
-                      className={`max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm ${
-                        isAI
-                          ? `border border-white/60 bg-[#ffffff] text-[#000100] ${
-                              isPrevSame && isNextSame
-                                ? "rounded-[20px] rounded-l-sm"
-                                : isPrevSame
-                                ? "rounded-[22px] rounded-tl-sm rounded-bl-[4px]"
-                                : isNextSame
-                                ? "rounded-[22px] rounded-bl-sm"
-                                : "rounded-[22px] rounded-bl-[4px]"
-                            }`
-                          : `bg-[#000100] text-white ${
-                              isPrevSame && isNextSame
-                                ? "rounded-[20px] rounded-r-sm"
-                                : isPrevSame
-                                ? "rounded-[22px] rounded-tr-sm rounded-br-[4px]"
-                                : isNextSame
-                                ? "rounded-[22px] rounded-br-sm"
-                                : "rounded-[22px] rounded-br-[4px]"
-                            }`
-                      }`}
-                    >
-                      {renderMessageText(msg.text)}
+                      {/* Interactive Card 2: Cold Email Draft */}
+                      <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#d1d3d2] shadow-sm cursor-pointer hover:bg-[#fafafa] transition active:scale-[0.98]">
+                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#000100] text-white">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-[#000100] truncate">
+                            Draft: Linear Outreach
+                          </h4>
+                          <p className="text-[11px] text-[#666666] mt-0.5">
+                            Includes recent news context
+                          </p>
+                        </div>
+                        <button className="h-8 w-8 grid place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 );
-              })}
+              }
 
-              {isTyping && (
+              return (
                 <motion.div
+                  key={`msg-${i}`}
                   initial={{ opacity: 0, y: 12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="mb-5 flex w-full justify-start"
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className={`flex w-full ${
+                    isAI ? "justify-start" : "justify-end"
+                  } ${isNextSame ? "mb-1.5" : "mb-5"}`}
                 >
-                  <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
-                    <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
-                      <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                  {isAI && (
+                    <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                      {!isNextSame && (
+                        <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+                          <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex h-[44px] items-center gap-1.5 rounded-[22px] rounded-bl-[4px] border border-white/60 bg-[#ffffff] px-4 shadow-sm">
-                    <motion.span
-                      animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut",
-                      }}
-                      className="h-1.5 w-1.5 rounded-full bg-[#000100]"
-                    />
-                    <motion.span
-                      animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut",
-                        delay: 0.2,
-                      }}
-                      className="h-1.5 w-1.5 rounded-full bg-[#000100]"
-                    />
-                    <motion.span
-                      animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut",
-                        delay: 0.4,
-                      }}
-                      className="h-1.5 w-1.5 rounded-full bg-[#000100]"
-                    />
+                  <div
+                    className={`max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm ${
+                      isAI
+                        ? `border border-white/60 bg-[#ffffff] text-[#000100] ${
+                            isPrevSame && isNextSame
+                              ? "rounded-[20px] rounded-l-sm"
+                              : isPrevSame
+                              ? "rounded-[22px] rounded-tl-sm rounded-bl-[4px]"
+                              : isNextSame
+                              ? "rounded-[22px] rounded-bl-sm"
+                              : "rounded-[22px] rounded-bl-[4px]"
+                          }`
+                        : `bg-[#000100] text-white ${
+                            isPrevSame && isNextSame
+                              ? "rounded-[20px] rounded-r-sm"
+                              : isPrevSame
+                              ? "rounded-[22px] rounded-tr-sm rounded-br-[4px]"
+                              : isNextSame
+                              ? "rounded-[22px] rounded-br-sm"
+                              : "rounded-[22px] rounded-br-[4px]"
+                          }`
+                    }`}
+                  >
+                    {renderMessageText(msg.text)}
                   </div>
                 </motion.div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              );
+            })}
+
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="mb-5 flex w-full justify-start"
+              >
+                <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                  <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+                    <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                  </div>
+                </div>
+
+                <div className="flex h-[44px] items-center gap-1.5 rounded-[22px] rounded-bl-[4px] border border-white/60 bg-[#ffffff] px-4 shadow-sm">
+                  <motion.span
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: "easeInOut",
+                    }}
+                    className="h-1.5 w-1.5 rounded-full bg-[#000100]"
+                  />
+                  <motion.span
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: "easeInOut",
+                      delay: 0.2,
+                    }}
+                    className="h-1.5 w-1.5 rounded-full bg-[#000100]"
+                  />
+                  <motion.span
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: "easeInOut",
+                      delay: 0.4,
+                    }}
+                    className="h-1.5 w-1.5 rounded-full bg-[#000100]"
+                  />
+                </div>
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-        )}
+        </div>
 
         <div className="relative z-20 shrink-0 bg-gradient-to-t from-[#eaeceb] via-[#eaeceb] to-transparent px-4 sm:px-6 pb-0 pt-2">
           {uploadQueue.length > 0 && (
@@ -1988,34 +1812,17 @@ function AIChatbot({
               transition={{ duration: 0.4, delay: 0.1 }}
               className="mb-3 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar"
             >
-              {quickReplies.map((q) => {
-                let Icon = null;
-                const lowerQ = q.toLowerCase();
-                if (lowerQ.includes("jobs") || lowerQ.includes("search"))
-                  Icon = Search;
-                else if (
-                  lowerQ.includes("resume") ||
-                  lowerQ.includes("linkedin")
-                )
-                  Icon = FileText;
-                else if (lowerQ.includes("advice")) Icon = Sparkles;
-                else if (lowerQ.includes("salary") || lowerQ.includes("market"))
-                  Icon = BarChart3;
-                else if (lowerQ.includes("type")) Icon = PenLine;
-                else Icon = InfinityIcon;
-
-                return (
-                  <button
-                    key={q}
-                    onClick={() => handleQuickReply(q)}
-                    disabled={isTyping}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-white/60 px-4 py-2.5 text-xs font-bold text-[#000100] shadow-sm backdrop-blur-md transition active:bg-[#eaeceb] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {Icon && <Icon className="h-3.5 w-3.5" />}
-                    {q}
-                  </button>
-                );
-              })}
+              {quickReplies.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => handleSend(q)}
+                  disabled={isTyping}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-white/60 px-4 py-2.5 text-xs font-bold text-[#000100] shadow-sm backdrop-blur-md transition active:bg-[#eaeceb] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {q}
+                </button>
+              ))}
             </motion.div>
           )}
 
@@ -2043,7 +1850,7 @@ function AIChatbot({
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={
                     isTyping
-                      ? "Syncra is thinking..."
+                      ? "Syncra is executing plan..."
                       : "Ask Syncra anything..."
                   }
                   disabled={isTyping}
@@ -2051,7 +1858,7 @@ function AIChatbot({
                 />
               </div>
               <button
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={isTyping || !inputText.trim()}
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95 disabled:opacity-40"
               >
@@ -2062,76 +1869,77 @@ function AIChatbot({
 
           <AnimatePresence>
             {isAttachModalOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setIsAttachModalOpen(false)}
-                  className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
-                />
+              <motion.div
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsAttachModalOpen(false)}
+                className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
+              />
+            )}
+            {isAttachModalOpen && (
+              <motion.div
+                key="modal"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 26, stiffness: 320 }}
+                className="absolute bottom-0 left-0 right-0 z-[101] flex flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-8"
+              >
+                <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
+                  <h2 className="text-lg font-bold text-[#000100]">
+                    Add Attachment
+                  </h2>
+                  <button
+                    onClick={() => setIsAttachModalOpen(false)}
+                    className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
+                  >
+                    <Plus className="h-5 w-5 rotate-45" />
+                  </button>
+                </div>
 
-                <motion.div
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  transition={{ type: "spring", damping: 26, stiffness: 320 }}
-                  className="absolute bottom-0 left-0 right-0 z-[101] flex flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-8"
-                >
-                  <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
-                    <h2 className="text-lg font-bold text-[#000100]">
-                      Add Attachment
-                    </h2>
-                    <button
-                      onClick={() => setIsAttachModalOpen(false)}
-                      className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
-                    >
-                      <Plus className="h-5 w-5 rotate-45" />
-                    </button>
-                  </div>
+                <div className="p-6 flex flex-col gap-4">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-4 rounded-2xl bg-[#ffffff] border border-[#d1d3d2] p-4 transition active:bg-[#fafafa]"
+                  >
+                    <div className="grid h-12 w-12 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                      <Upload className="h-5 w-5" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <h3 className="text-sm font-bold text-[#000100]">
+                        Upload Resume
+                      </h3>
+                      <p className="text-xs text-[#666666] mt-0.5">
+                        PDF, DOC up to 5MB
+                      </p>
+                    </div>
+                  </button>
 
-                  <div className="p-6 flex flex-col gap-4">
+                  {resumes.length > 0 && (
                     <button
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => {
+                        setAttachedContext(resumes[0]);
+                        setIsAttachModalOpen(false);
+                      }}
                       className="flex items-center gap-4 rounded-2xl bg-[#ffffff] border border-[#d1d3d2] p-4 transition active:bg-[#fafafa]"
                     >
                       <div className="grid h-12 w-12 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
-                        <Upload className="h-5 w-5" />
+                        <FileText className="h-5 w-5" />
                       </div>
                       <div className="text-left flex-1">
                         <h3 className="text-sm font-bold text-[#000100]">
-                          Upload Resume
+                          Use Existing Resume
                         </h3>
                         <p className="text-xs text-[#666666] mt-0.5">
-                          PDF, DOC up to 5MB
+                          {resumes[0].name}
                         </p>
                       </div>
                     </button>
-
-                    {resumes.length > 0 && (
-                      <button
-                        onClick={() => {
-                          setAttachedContext(resumes[0]);
-                          setIsAttachModalOpen(false);
-                        }}
-                        className="flex items-center gap-4 rounded-2xl bg-[#ffffff] border border-[#d1d3d2] p-4 transition active:bg-[#fafafa]"
-                      >
-                        <div className="grid h-12 w-12 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
-                          <FileText className="h-5 w-5" />
-                        </div>
-                        <div className="text-left flex-1">
-                          <h3 className="text-sm font-bold text-[#000100]">
-                            Use Existing Resume
-                          </h3>
-                          <p className="text-xs text-[#666666] mt-0.5">
-                            {resumes[0].name}
-                          </p>
-                        </div>
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              </>
+                  )}
+                </div>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
@@ -2140,411 +1948,96 @@ function AIChatbot({
   );
 }
 
-function Setup({ go }) {
-  const fields = [
-    "Desired role",
-    "Industry",
-    "Job type",
-    "Location",
-    "Salary",
-    "Company culture",
-    "Skills to use",
-    "Skills to avoid",
+// --- AGENT ACTIVITY LOG (Dashboard Feed) ---
+function AgentActivityFeed() {
+  const activities = [
+    {
+      id: 1,
+      tool: "JobScraperAPI",
+      detail: "Scanning LinkedIn for remote React roles...",
+      status: "active",
+      time: "just now",
+    },
+    {
+      id: 2,
+      tool: "MatchAnalyzer",
+      detail: "Score 95% for TechFlow role. Tailoring resume...",
+      status: "done",
+      time: "2m ago",
+      undoable: true,
+    },
+    {
+      id: 3,
+      tool: "GmailTool",
+      detail: "Waiting for approval to send Linear outreach.",
+      status: "waiting",
+      time: "5m ago",
+    },
+    {
+      id: 4,
+      tool: "PortfolioParser",
+      detail: "Extracted 3 new projects from your Figma files.",
+      status: "done",
+      time: "1h ago",
+      undoable: true,
+    },
   ];
-  return (
-    <PhoneShell>
-      <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end justify-between bg-[#eaeceb] px-6 pb-5">
-          <BackButton onClick={() => go("landing")} />
-        </div>
-        <div className="mx-auto mb-6 w-fit">
-          <GlassIcon>
-            <Star className="h-9 w-9 fill-[#a0fe08] text-[#a0fe08]" />
-          </GlassIcon>
-        </div>
-        <p className="text-xs text-[#666666]">Step 1 of 2</p>
-        <h1 className="mt-2 text-xl font-bold text-[#000100]">
-          AI Career Setup
-        </h1>
-        <p className="mt-2 text-sm text-[#666666]">
-          Tell Syncra AI what kind of job journey you want.
-        </p>
-        <div className="mt-6 grid gap-3">
-          {fields.map((field) => (
-            <div
-              key={field}
-              className={`rounded-2xl border border-[#d1d3d2] bg-[#ffffff] px-4 py-3 text-sm text-[#666666] ${neoIn} `}
-            >
-              {field}
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 space-y-3">
-          <PrimaryButton onClick={() => go("dashboard")}>
-            Continue <ArrowRight className="h-4 w-4" />
-          </PrimaryButton>
-          <SecondaryButton onClick={() => go("story")}>
-            Let AI help me fill this <Sparkles className="h-4 w-4" />
-          </SecondaryButton>
-          <TopNavButton onClick={() => go("dashboard")} className="w-full py-3">
-            Skip for now <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
-          </TopNavButton>
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
 
-function Story({ go, userName }) {
-  const quick = [
-    "What roles fit me?",
-    "Improve my resume",
-    "Salary expectations",
-    "Find internships",
-  ];
   return (
-    <PhoneShell>
-      <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end justify-between bg-[#eaeceb] px-6 pb-5">
-          <BackButton onClick={() => go("dashboard")} />
-          <TopNavButton onClick={() => go("dashboard")}>
-            Skip <ArrowRight className="h-4 w-4 text-[#a0fe08]" />
-          </TopNavButton>
-        </div>
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className={`grid h-10 w-10 place-items-center rounded-full border border-[#d1d3d2] bg-[#000100] text-lg ${neoOut}`}
-            >
-              🤖
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#000100]">Syncra AI</h2>
-              <p className="text-xs text-[#000100]">Online · Step 1 of 6</p>
-            </div>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <div
-            className={`max-w-[82%] rounded-2xl rounded-tl-sm border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm leading-6 text-[#000100] ${neoOut} `}
-          >
-            Hi {userName}, I&apos;ve reviewed your goal. Tell me what
-            you&apos;re looking for and I&apos;ll tailor matches.
-          </div>
-          <div className="ml-auto max-w-[82%] rounded-2xl rounded-tr-sm bg-[#000100] p-4 text-sm leading-6 text-white ">
-            I want an entry-level UX or frontend role where I can use design and
-            coding skills.
-          </div>
-          <div
-            className={`max-w-[86%] rounded-2xl rounded-tl-sm border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm leading-6 text-[#000100] ${neoOut} `}
-          >
-            Great. I&apos;ll ask about your education, projects, skills,
-            experience, achievements, and target role.
-          </div>
-        </div>
-        <div className="mt-48 flex gap-2 overflow-x-auto pb-3">
-          {quick.map((q) => (
-            <button
-              key={q}
-              className={`shrink-0 rounded-full border border-[#d1d3d2] bg-[#ffffff] px-4 py-2 text-xs font-bold text-[#000100] ${neoOut}`}
-            >
-              {q}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-3">
+      {activities.map((act) => (
         <div
-          className={`rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-2 ${neoIn} `}
+          key={act.id}
+          className="relative flex gap-3 rounded-2xl border border-[#d1d3d2]/60 bg-white p-3 shadow-sm overflow-hidden"
         >
-          <div className="flex items-center gap-2 rounded-xl bg-transparent px-2 py-1 text-sm text-[#666666]">
-            <span className="flex-1">Ask anything...</span>
-            <button className="grid h-11 w-11 place-items-center rounded-2xl bg-[#000100] text-white ">
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <SecondaryButton onClick={() => go("builder")}>
-            Continue
-          </SecondaryButton>
-          <SecondaryButton onClick={() => go("dashboard")}>
-            Save Later
-          </SecondaryButton>
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
-
-function Builder({ go }) {
-  const messages = [
-    "Reading your background",
-    "Writing professional bullet points",
-    "Optimizing for ATS",
-    "Creating a clean resume preview",
-  ];
-  return (
-    <PhoneShell>
-      <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end justify-between bg-[#eaeceb] px-6 pb-5">
-          <BackButton onClick={() => go("dashboard")} />
-        </div>
-        <Header
-          title="AI Resume Builder"
-          subtitle="Syncra AI is working"
-          icon={
-            <GlassIcon className="h-12 w-12 rounded-2xl">
-              <Wand2 className="h-6 w-6 text-white" />
-            </GlassIcon>
-          }
-        />
-        <Card>
-          <h3 className="font-bold text-[#000100]">
-            Generating your ATS-friendly resume
-          </h3>
-          <div className="mt-4 space-y-3">
-            {messages.map((m, i) => (
-              <div
-                key={m}
-                className="flex items-center gap-3 text-sm text-[#000100]"
-              >
-                <CheckCircle2
-                  className={`h-5 w-5 ${
-                    i < 3 ? "text-[#a0fe08]" : "text-[#a0fe08]"
-                  }`}
-                />
-                {m}
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card className="mt-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-bold text-[#000100]">Resume Preview</h3>
-            <StepPill>ATS ready</StepPill>
-          </div>
-          <div className={`space-y-2 rounded-2xl bg-[#ffffff] p-4 ${neoIn}`}>
-            <div className="h-4 w-32 rounded bg-slate-800" />
-            <div className="h-2 w-44 rounded bg-slate-300" />
-            <div className="mt-4 h-3 w-20 rounded bg-[#d1d3d2]" />
-            <div className="h-2 w-full rounded bg-slate-300" />
-            <div className="h-2 w-5/6 rounded bg-slate-300" />
-            <div className="mt-4 h-3 w-24 rounded bg-[#d1d3d2]" />
-            <div className="h-2 w-full rounded bg-slate-300" />
-            <div className="h-2 w-4/5 rounded bg-slate-300" />
-          </div>
-        </Card>
-        <div className="mt-5 grid gap-3">
-          <PrimaryButton onClick={() => go("analysis")}>
-            Analyze Resume <BarChart3 className="h-4 w-4" />
-          </PrimaryButton>
-          <div className="grid grid-cols-2 gap-3">
-            <SecondaryButton>Improve with AI</SecondaryButton>
-            <SecondaryButton>Edit Manually</SecondaryButton>
-          </div>
-          <SecondaryButton onClick={() => go("dashboard")}>
-            Save Resume
-          </SecondaryButton>
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
-
-function Analysis({ go }) {
-  const items = [
-    ["ATS Compatibility", 86],
-    ["Skills Strength", 78],
-    ["Experience Clarity", 74],
-    ["Role Relevance", 80],
-    ["Formatting", 92],
-    ["Missing Keywords", 63],
-  ];
-  return (
-    <PhoneShell>
-      <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end justify-between bg-[#eaeceb] px-6 pb-5">
-          <BackButton onClick={() => go("dashboard")} />
-        </div>
-        <Header
-          title="Resume Analysis"
-          subtitle="Score and improvement plan"
-          icon={
-            <GlassIcon className="h-12 w-12 rounded-2xl">
-              <BarChart3 className="h-6 w-6 text-white" />
-            </GlassIcon>
-          }
-        />
-        <Card className="text-center">
-          <div className="mx-auto grid h-32 w-32 place-items-center rounded-full bg-[#000100] text-white ">
-            <div>
-              <div className="text-3xl font-bold">78</div>
-              <div className="text-xs">/100</div>
-            </div>
-          </div>
-          <h3 className="mt-4 font-bold text-[#000100]">Good foundation</h3>
-          <p className="mt-1 text-sm text-[#666666]">
-            AI found 6 improvements before job matching.
-          </p>
-        </Card>
-        <div className="mt-4 space-y-3">
-          {items.map(([name, score]) => (
-            <Card key={name} className="py-4">
-              <div className="mb-2 flex justify-between text-sm">
-                <span className="font-medium text-[#000100]">{name}</span>
-                <span className="text-[#000100]">{score}%</span>
-              </div>
-              <div
-                className={`h-2 overflow-hidden rounded-full bg-[#ffffff] ${neoIn}`}
-              >
-                <div
-                  className="h-full rounded-full bg-[#000100]"
-                  style={{ width: `${score}%` }}
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
-        <div className="mt-5 grid gap-3">
-          <PrimaryButton onClick={() => go("skill")}>
-            Apply AI Improvements
-          </PrimaryButton>
-          <SecondaryButton onClick={() => go("skill")}>
-            View Missing Skills
-          </SecondaryButton>
-          <button
-            onClick={() => go("dashboard")}
-            className="w-full py-2 text-sm text-[#666666]"
+          {act.status === "active" && (
+            <div className="absolute top-0 left-0 bottom-0 w-1 bg-[#a0fe08] animate-pulse" />
+          )}
+          <div
+            className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
+              act.status === "done"
+                ? "bg-[#f4f5f4] text-[#000100]"
+                : act.status === "active"
+                ? "bg-[#000100] text-[#a0fe08]"
+                : "bg-amber-50 text-amber-600"
+            }`}
           >
-            Go to Dashboard
-          </button>
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
-
-function Skill({ go }) {
-  return (
-    <PhoneShell>
-      <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end justify-between bg-[#eaeceb] px-6 pb-5">
-          <BackButton onClick={() => go("analysis")} />
-        </div>
-        <Header
-          title="Skill Market Analysis"
-          subtitle="Compare skills with market demand"
-          icon={
-            <GlassIcon className="h-12 w-12 rounded-2xl">
-              <Sparkles className="h-6 w-6 text-white" />
-            </GlassIcon>
-          }
-        />
-        <Card>
-          <h3 className="font-bold text-[#000100]">
-            Should AI scan the current market?
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-[#666666]">
-            I can scan demo job posts, compare common requirements with your
-            resume, and create a skill gap report.
-          </p>
-          <PrimaryButton className="mt-4" onClick={() => {}}>
-            Start scan
-          </PrimaryButton>
-        </Card>
-        <div className="mt-4 space-y-3">
-          {[
-            ["Already strong", ["Figma", "React", "Research"]],
-            ["Missing skills", ["TypeScript", "A/B Testing", "SQL"]],
-            ["Trending skills", ["AI workflow", "Design system", "Analytics"]],
-            [
-              "Learning priorities",
-              ["TypeScript basics", "Portfolio case study", "Testing"],
-            ],
-          ].map(([title, chips]) => (
-            <Card key={title}>
-              <h3 className="mb-3 font-bold text-[#000100]">{title}</h3>
-              <div className="flex flex-wrap gap-2">
-                {chips.map((c) => (
-                  <StepPill key={c}>{c}</StepPill>
-                ))}
-              </div>
-            </Card>
-          ))}
-        </div>
-        <div className="mt-5">
-          <PrimaryButton onClick={() => go("dashboard")}>
-            Go to Dashboard
-          </PrimaryButton>
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
-
-function AnalyzingScreen({ go }) {
-  const [phase, setPhase] = useState(0);
-  const phases = [
-    "Hang tight...",
-    "Reading resume...",
-    "Finding matching companies...",
-  ];
-
-  useEffect(() => {
-    const timer1 = setTimeout(() => setPhase(1), 2200);
-    const timer2 = setTimeout(() => setPhase(2), 4400);
-    const timer3 = setTimeout(() => go("dashboard"), 7000);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <PhoneShell>
-      <Screen noNav>
-        <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-          <div className="relative mb-8 grid h-28 w-28 place-items-center mx-auto">
-            {/* Heartbeat filled circle */}
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1, 1.3, 1],
-                opacity: [0.4, 0.8, 0.4, 0.1, 0.4],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute inset-0 rounded-full bg-[#a0fe08]"
-            />
-            {/* Center icon */}
-            <div className="relative z-10 grid h-20 w-20 place-items-center rounded-full bg-[#000100] text-[#a0fe08]">
-              <InfinityIcon className="h-10 w-10" />
+            {act.status === "done" ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : act.status === "active" ? (
+              <Zap className="h-4 w-4 animate-pulse" />
+            ) : (
+              <Clock className="h-4 w-4" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#000100]/40 font-mono">
+                {act.tool}
+              </span>
+              <span className="text-[9px] font-bold text-[#999999]">
+                {act.time}
+              </span>
             </div>
-          </div>
-
-          <div className="flex h-12 w-full items-center justify-center overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.h2
-                key={phase}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.3 }}
-                className="text-lg font-bold text-[#000100]"
-              >
-                {phases[phase]}
-              </motion.h2>
-            </AnimatePresence>
+            <p className="mt-0.5 text-[12px] font-medium leading-relaxed text-[#000100]">
+              {act.detail}
+            </p>
+            {/* UNDO UI ADDED */}
+            {act.status === "done" && act.undoable && (
+              <div className="mt-2 flex">
+                <button className="flex items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-[#f4f5f4] px-2.5 py-1 text-[10px] font-bold text-[#000100] transition active:bg-[#eaeceb]">
+                  <RotateCcw className="h-3 w-3" /> Undo Action
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </Screen>
-    </PhoneShell>
+      ))}
+    </div>
   );
 }
 
+// --- DASHBOARD (Command Center) ---
 function Dashboard({
   go = () => {},
   mini = false,
@@ -2559,8 +2052,7 @@ function Dashboard({
   userName = "User",
 }) {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
-  const [portfolioLink, setPortfolioLink] = useState("");
-  const [actionResolved, setActionResolved] = useState(false);
+  const [activeTask] = useState("Scraping LinkedIn for Senior UX roles...");
   const fileInputRef = useRef(null);
 
   const handleFiles = (fileList) => {
@@ -2573,32 +2065,7 @@ function Dashboard({
   const selectedResume =
     resumes.find((resume) => resume.id === selectedResumeId) || null;
   const activeSelectedResumeId = selectedResumeId;
-  const agentUpdates = [
-    {
-      id: 1,
-      time: "09:30",
-      sub: "AM",
-      title: "Prepared 2 new drafts",
-      desc: "Based on overnight matches, I prepared applications for TechFlow and Linear.",
-      active: true,
-    },
-    {
-      id: 2,
-      time: "11:00",
-      sub: "AM",
-      title: "Application Viewed",
-      desc: "Your application for Frontend Engineer was viewed by Innovate AI.",
-      active: false,
-    },
-    {
-      id: 3,
-      time: "12:20",
-      sub: "PM",
-      title: "Resume Tailored",
-      desc: "Optimized your resume based on recent job market trends.",
-      active: false,
-    },
-  ];
+  const pendingJobsCount = jobs.length; // Pulls from our global MVP data
 
   const floatingAiInput = (
     <motion.div
@@ -2688,467 +2155,586 @@ function Dashboard({
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         className="flex-1"
       >
-        {/* Header with profile */}
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[124px] items-end justify-between bg-[#eaeceb] px-6 pb-4 border-b border-[#d1d3d2]/50">
-          <div className="flex items-center gap-4 h-[52px]">
-            <button
-              onClick={() => go("profile")}
-              className="h-[52px] w-[52px] shrink-0 overflow-hidden rounded-full bg-[#000100] shadow-sm transition active:scale-95"
-            >
-              <img
-                src={PROFILE_IMG_URL}
-                alt="Profile"
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = `https://ui-avatars.com/api/?name=${userName}&background=000100&color=a0fe08`;
-                }}
-              />
-            </button>
-            <div className="text-[26px] font-black tracking-tight text-[#000100]">
-              {userName}
+        {/* 1. Live Agent Status Banner */}
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 bg-[#eaeceb] px-6 pt-12 pb-4 border-b border-[#d1d3d2]/50">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-white shadow-sm">
+                <img
+                  src={PROFILE_IMG_URL}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.target.src = `https://ui-avatars.com/api/?name=${userName}&background=000100&color=a0fe08`;
+                  }}
+                />
+              </div>
+              <div>
+                <h1 className="text-xl font-black text-[#000100] leading-none">
+                  {userName}
+                </h1>
+                <p className="text-[11px] font-bold text-[#666666] mt-1">
+                  UX Designer
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100]">
+                <Bell className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-2xl bg-[#000100] p-3 shadow-lg shadow-[#a0fe08]/10">
+            <div className="relative grid h-8 w-8 place-items-center">
+              <div className="absolute inset-0 rounded-full bg-[#a0fe08]/20 animate-ping" />
+              <Activity className="relative h-4 w-4 text-[#a0fe08]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block text-[9px] font-black uppercase tracking-widest text-[#a0fe08]/60">
+                Agent Live
+              </span>
+              <p className="truncate text-[12px] font-bold text-white">
+                {activeTask}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Agent Action Required */}
-        <AnimatePresence>
-          {!actionResolved && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, scale: 0.95 }}
-              animate={{ opacity: 1, height: "auto", scale: 1 }}
-              exit={{ opacity: 0, height: 0, scale: 0.95, marginBottom: 0 }}
-              className="mb-6 overflow-hidden"
-            >
-              <div className="rounded-3xl bg-[#000100] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
-                <div className="mb-3 flex items-center gap-2 text-[#fbbf24]">
-                  <div className="grid h-6 w-6 place-items-center rounded-full bg-[#fbbf24]/20">
-                    <AlertCircle className="h-3.5 w-3.5 text-[#fbbf24]" />
-                  </div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#fbbf24]">
-                    Action Required
-                  </span>
-                </div>
-                <h3 className="text-sm font-bold text-white">
-                  Missing Portfolio Link
-                </h3>
-                <p className="mt-1 text-[13px] leading-relaxed text-white/70">
-                  Notion requires a portfolio link to complete the Product
-                  Design Intern application draft.
-                </p>
-                <div className="mt-4 flex items-center gap-2 rounded-2xl bg-white/10 p-1.5 focus-within:bg-white/20 transition-colors">
-                  <input
-                    type="url"
-                    value={portfolioLink}
-                    onChange={(e) => setPortfolioLink(e.target.value)}
-                    placeholder="Paste Figma or website link..."
-                    className="flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-white/40"
-                  />
-                  <button
-                    onClick={() => setActionResolved(true)}
-                    disabled={!portfolioLink}
-                    className="grid h-9 w-9 place-items-center rounded-xl bg-[#a0fe08] text-[#000100] disabled:bg-white/20 disabled:text-white/40 disabled:opacity-100 transition-colors"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* AI Profile Summary */}
-        <Card className="mb-6 border-none shadow-sm">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#000100]">
-              AI Profile Summary
+        {/* 2. Approval Queue CTA */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-sm font-black uppercase tracking-widest text-[#000100]/40">
+              Approval Pipeline
             </h2>
+            <StepPill accent>{pendingJobsCount} Pending</StepPill>
           </div>
+          <button
+            onClick={() => go("jobs")}
+            className="group relative w-full overflow-hidden rounded-[28px] bg-white border border-[#d1d3d2] p-5 text-left shadow-sm transition active:scale-[0.98]"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex -space-x-3">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-9 w-9 rounded-full border-2 border-white bg-[#000100] grid place-items-center text-[10px] font-bold text-white shadow-sm"
+                  >
+                    {["T", "L", "V"][i]}
+                  </div>
+                ))}
+              </div>
+              <div className="h-10 w-10 grid place-items-center rounded-full bg-[#000100] text-[#a0fe08] group-hover:scale-110 transition-transform">
+                <ArrowRight className="h-5 w-5" />
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-[#000100]">
+              Review Applications
+            </h3>
+            <p className="text-[13px] text-[#666666] mt-1 leading-relaxed">
+              I’ve tailored 3 resumes and drafted outreach emails. They are
+              waiting for your approval.
+            </p>
+          </button>
+        </div>
 
-          <div className="mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#999999]">
-              Target Role
-            </p>
-            <p className="text-base font-bold text-[#000100]">
-              Senior Product Designer
-            </p>
+        {/* 3. The Re-designed Agent Activity Feed */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-sm font-black uppercase tracking-widest text-[#000100]/40">
+              Agent Thought Stream
+            </h2>
+            <button className="text-[11px] font-bold text-[#000100] underline">
+              View Logs
+            </button>
           </div>
+          <AgentActivityFeed />
+        </div>
 
-          <div className="mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#999999]">
-              Work Preference
-            </p>
-            <p className="text-base font-bold text-[#000100]">New York, NY</p>
+        {/* 4. AI Profile Card (Simplified) */}
+        <Card className="mb-6 border-none shadow-sm">
+          <h3 className="text-xs font-black uppercase tracking-widest text-[#999999] mb-4">
+            AI Target Profile
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[9px] font-bold text-[#999999] uppercase">
+                Role
+              </p>
+              <p className="text-[13px] font-bold text-[#000100]">
+                Senior Product Designer
+              </p>
+            </div>
+            <div>
+              <p className="text-[9px] font-bold text-[#999999] uppercase">
+                Location
+              </p>
+              <p className="text-[13px] font-bold text-[#000100]">
+                New York (Remote)
+              </p>
+            </div>
           </div>
-
-          <div className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#999999]">
-              Salary Floor
-            </p>
-            <p className="text-base font-bold text-[#000100]">$150,000</p>
-          </div>
-
-          <div className="mb-5 h-px w-full bg-[#eaeceb]" />
-
-          <div className="flex flex-wrap gap-2">
-            {["UX Research", "Visual Design", "System Thinking"].map((pill) => (
+          <div className="mt-4 pt-4 border-t border-[#eaeceb] flex flex-wrap gap-1.5">
+            {["Figma", "Design Systems", "Prototyping"].map((s) => (
               <span
-                key={pill}
-                className="rounded-full bg-[#f4f5f4] px-3 py-1.5 text-[10px] font-bold tracking-wide text-[#666666]"
+                key={s}
+                className="bg-[#f4f5f4] text-[#666666] text-[10px] font-bold px-2 py-1 rounded-md"
               >
-                {pill.toUpperCase()}
+                {s}
               </span>
             ))}
           </div>
         </Card>
 
-        {/* Recent Updates Line Connected List */}
-        <div className="mb-4">
-          <h2 className="mb-5 text-lg font-bold text-[#000100]">
-            Recent Updates
-          </h2>
-          <div className="relative">
-            {/* Continuous vertical line connecting the dots */}
-            <div className="absolute bottom-8 left-[65px] top-3 w-[2px] bg-[#d1d3d2]" />
-
-            <div className="space-y-4">
-              {agentUpdates.map((update) => (
-                <div key={update.id} className="relative flex gap-4">
-                  {/* Left: Time */}
-                  <div className="flex w-[42px] shrink-0 flex-col items-end pt-1.5 text-right">
-                    <span className="text-[13px] font-black tracking-tight text-[#000100]">
-                      {update.time}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#999999]">
-                      {update.sub}
-                    </span>
-                  </div>
-
-                  {/* Middle: Dot */}
-                  <div className="relative z-10 flex w-4 shrink-0 justify-center pt-2.5">
-                    <div
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        update.active
-                          ? "bg-[#a0fe08] ring-4 ring-[#a0fe08]/30 shadow-[0_0_8px_rgba(160,254,8,0.6)]"
-                          : "bg-[#d1d3d2]"
-                      }`}
-                    />
-                  </div>
-
-                  {/* Right: Content */}
-                  <div className="flex-1 px-2 pt-1.5 pb-2">
-                    <h3 className="text-sm font-bold text-[#000100]">
-                      {update.title}
-                    </h3>
-                    <p className="mt-1 text-xs leading-5 text-[#666666]">
-                      {update.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Dashboard Bottom Input Spacer */}
+        <div className="h-20" />
       </motion.div>
 
       {/* Resume Selection Bottom Sheet Modal */}
       <AnimatePresence>
         {isResumeModalOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsResumeModalOpen(false)}
-              className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
-            />
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsResumeModalOpen(false)}
+            className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
+          />
+        )}
+        {isResumeModalOpen && (
+          <motion.div
+            key="modal"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 320 }}
+            className="absolute bottom-0 left-0 right-0 z-[101] flex max-h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
+              <h2 className="text-lg font-bold text-[#000100]">
+                Select Resume
+              </h2>
+              <button
+                onClick={() => setIsResumeModalOpen(false)}
+                className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
+              >
+                <Plus className="h-5 w-5 rotate-45" />
+              </button>
+            </div>
 
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 26, stiffness: 320 }}
-              className="absolute bottom-0 left-0 right-0 z-[101] flex max-h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
-            >
-              <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
-                <h2 className="text-lg font-bold text-[#000100]">
-                  Select Resume
-                </h2>
+            <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
+              <div className="space-y-3 pb-8">
                 <button
-                  onClick={() => setIsResumeModalOpen(false)}
-                  className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
+                  onClick={() => {
+                    setIsResumeModalOpen(false);
+                    fileInputRef.current?.click();
+                  }}
+                  className="flex w-full items-center gap-4 rounded-2xl border border-dashed border-[#000100]/30 bg-[#ffffff] p-4 text-left transition-all hover:bg-[#fafafa]"
                 >
-                  <Plus className="h-5 w-5 rotate-45" />
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                    <Upload className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-bold text-[#000100]">
+                      Upload New Resume
+                    </h3>
+                    <p className="mt-0.5 text-xs text-[#666666]">
+                      PDF, DOC up to 5MB
+                    </p>
+                  </div>
                 </button>
-              </div>
 
-              <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
-                <div className="space-y-3 pb-8">
-                  <button
-                    onClick={() => {
-                      setIsResumeModalOpen(false);
-                      fileInputRef.current?.click();
-                    }}
-                    className="flex w-full items-center gap-4 rounded-2xl border border-dashed border-[#000100]/30 bg-[#ffffff] p-4 text-left transition-all hover:bg-[#fafafa]"
-                  >
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
-                      <Upload className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-bold text-[#000100]">
-                        Upload New Resume
-                      </h3>
-                      <p className="mt-0.5 text-xs text-[#666666]">
-                        PDF, DOC up to 5MB
-                      </p>
-                    </div>
-                  </button>
-
-                  {resumes.map((resume) => {
-                    const isSelected = activeSelectedResumeId === resume.id;
-                    return (
-                      <button
-                        key={resume.id}
-                        onClick={() => {
-                          onSelectResume(isSelected ? null : resume.id);
-                          setIsResumeModalOpen(false);
-                        }}
-                        className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
+                {resumes.map((resume) => {
+                  const isSelected = activeSelectedResumeId === resume.id;
+                  return (
+                    <button
+                      key={resume.id}
+                      onClick={() => {
+                        onSelectResume(isSelected ? null : resume.id);
+                        setIsResumeModalOpen(false);
+                      }}
+                      className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
+                        isSelected
+                          ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
+                          : "border-[#d1d3d2] bg-[#ffffff] hover:bg-[#fafafa]"
+                      }`}
+                    >
+                      <div
+                        className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
                           isSelected
-                            ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
-                            : "border-[#d1d3d2] bg-[#ffffff] hover:bg-[#fafafa]"
+                            ? "bg-[#000100] text-white"
+                            : "bg-[#eaeceb] text-[#000100]"
                         }`}
                       >
-                        <div
-                          className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
-                            isSelected
-                              ? "bg-[#000100] text-white"
-                              : "bg-[#eaeceb] text-[#000100]"
-                          }`}
-                        >
-                          <FileText className="h-6 w-6" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="truncate text-sm font-bold text-[#000100]">
-                            {resume.name}
-                          </h3>
-                          <p className="mt-0.5 text-xs text-[#666666]">
-                            Uploaded {formatUploadDate(resume.uploadedAt)}
-                          </p>
-                        </div>
-                        {isSelected && (
-                          <CheckCircle2 className="h-5 w-5 shrink-0 text-[#a0fe08]" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                        <FileText className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-bold text-[#000100]">
+                          {resume.name}
+                        </h3>
+                        <p className="mt-0.5 text-xs text-[#666666]">
+                          Uploaded {formatUploadDate(resume.uploadedAt)}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-[#a0fe08]" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </Screen>
   );
 }
 
+// --- JOBS SCREEN (Agent Pipeline) ---
 function JobsScreen({ go }) {
-  // Agentic Approval Queue Grouping
+  const [activeTab, setActiveTab] = useState("queue");
+
+  // Agentic Approval Queue Grouping (Tab 1)
   const readyJobs = jobs.filter((j) => j.category === "ready");
   const inputJobs = jobs.filter((j) => j.category === "input_needed");
   const exploreJobs = jobs.filter((j) => j.category === "exploration");
 
+  // Agent History Data (Tab 2)
+  const agentUpdates = [
+    {
+      id: 1,
+      time: "09:30",
+      sub: "AM",
+      title: "Prepared 2 new drafts",
+      desc: "Based on overnight matches, I prepared applications for TechFlow and Linear.",
+      active: true,
+      undoable: true,
+    },
+    {
+      id: 2,
+      time: "11:00",
+      sub: "AM",
+      title: "Application Viewed",
+      desc: "Your tailored application for Innovate AI was just opened by the hiring team.",
+      active: false,
+      undoable: false,
+    },
+    {
+      id: 3,
+      time: "Yesterday",
+      sub: "",
+      title: "Resume Auto-Tailored",
+      desc: "Optimized your resume based on recent job market trends and missing 'Design Systems' keywords.",
+      active: false,
+      undoable: true,
+    },
+    {
+      id: 4,
+      time: "Yesterday",
+      sub: "",
+      title: "Auto-Saved Roles",
+      desc: "Found and saved 14 Python-focused roles matching your $140k salary floor.",
+      active: false,
+      undoable: true,
+    },
+  ];
+
   return (
     <Screen nav activeTab="jobs" go={go} className="relative bg-[#eaeceb]">
       {/* Fixed Agent Header */}
-      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-6 flex flex-col justify-end bg-[#eaeceb] px-6 pb-4 pt-12 h-[124px] border-b border-[#d1d3d2]/50">
+      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-6 flex flex-col justify-end bg-[#eaeceb] px-6 pb-4 pt-12 border-b border-[#d1d3d2]/50">
         <h1 className="text-[28px] font-black tracking-tight text-[#000100] leading-none mb-1.5">
-          Review Queue
+          Agent Pipeline
         </h1>
-        <p className="text-sm font-medium text-[#666666]">
-          I processed 142 roles. Here are 3 that need your attention.
+        <p className="text-sm font-medium text-[#666666] mb-5 h-[40px]">
+          {activeTab === "queue"
+            ? "I processed 142 roles. Here are 3 that need your attention."
+            : "Review my completed tasks and timeline history."}
         </p>
+
+        {/* Sleek Tab Switcher */}
+        <div className="flex items-center gap-2 rounded-xl bg-[#d1d3d2]/40 p-1">
+          <button
+            onClick={() => setActiveTab("queue")}
+            className={`flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-200 ${
+              activeTab === "queue"
+                ? "bg-[#ffffff] text-[#000100] shadow-sm"
+                : "text-[#666666] hover:text-[#000100]"
+            }`}
+          >
+            Review Queue
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-200 ${
+              activeTab === "history"
+                ? "bg-[#ffffff] text-[#000100] shadow-sm"
+                : "text-[#666666] hover:text-[#000100]"
+            }`}
+          >
+            History & Updates
+          </button>
+        </div>
       </div>
 
       <div className="pb-24">
-        {/* Tier 1: Ready to Send */}
-        {readyJobs.length > 0 && (
-          <div className="mb-8">
-            {readyJobs.map((job) => (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                key={job.id}
-                className="mb-6 rounded-[24px] bg-[#ffffff] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#d1d3d2]/60 overflow-hidden"
-              >
-                <div className="p-5 pb-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex h-6 items-center rounded-full bg-[#a0fe08] px-2.5 text-[10px] font-bold uppercase tracking-wider text-[#000100]">
-                      <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Ready to
-                      Send
-                    </div>
-                    <span className="text-xs font-bold text-[#666666]">
-                      {job.match}% Match
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#000100] text-lg font-bold text-[#a0fe08]">
-                      {job.company[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-bold text-[#000100]">
-                        {job.title}
-                      </h3>
-                      <p className="mt-0.5 truncate text-[13px] font-medium text-[#666666]">
-                        {job.company} • {job.salary}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+        <AnimatePresence mode="wait">
+          {/* TAB 1: REVIEW QUEUE */}
+          {activeTab === "queue" && (
+            <motion.div
+              key="queue"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Tier 1: Ready to Send */}
+              {readyJobs.length > 0 && (
+                <div className="mb-8">
+                  {readyJobs.map((job) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4 }}
+                      key={job.id}
+                      className="mb-6 rounded-[24px] bg-[#ffffff] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#d1d3d2]/60 overflow-hidden"
+                    >
+                      <div className="p-5 pb-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex h-6 items-center rounded-full bg-[#a0fe08] px-2.5 text-[10px] font-bold uppercase tracking-wider text-[#000100]">
+                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Ready
+                            to Send
+                          </div>
+                          <span className="text-xs font-bold text-[#666666]">
+                            {job.match}% Match
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-4">
+                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#000100] text-lg font-bold text-[#a0fe08]">
+                            {job.company[0]}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="truncate text-base font-bold text-[#000100]">
+                              {job.title}
+                            </h3>
+                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#666666]">
+                              {job.company} • {job.salary}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="bg-[#f4f5f4] p-4 mx-5 mb-5 rounded-2xl">
-                  <div className="flex gap-2 items-center mb-1.5">
-                    <Sparkles className="w-4 h-4 text-[#000100]" />
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#000100]">
-                      {job.agentAction}
-                    </span>
-                  </div>
-                  <p className="text-[13px] text-[#666666] leading-[1.6]">
-                    {job.agentJustification}
-                  </p>
-                </div>
+                      <div className="bg-[#f4f5f4] p-4 mx-5 mb-5 rounded-2xl">
+                        <div className="flex gap-2 items-center mb-1.5">
+                          <Sparkles className="w-4 h-4 text-[#000100]" />
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#000100]">
+                            {job.agentAction}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-[#666666] leading-[1.6]">
+                          {job.agentJustification}
+                        </p>
+                      </div>
 
-                <div className="px-5 pb-5 flex gap-3">
-                  <button
-                    onClick={() => go("review", job)}
-                    className="flex-1 bg-[#000100] text-white rounded-xl py-3.5 text-sm font-bold shadow-md transition active:scale-[0.98]"
-                  >
-                    Export Tailored Application
-                  </button>
-                  <button className="px-5 bg-[#eaeceb] text-[#666666] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                      <div className="px-5 pb-5 flex gap-3">
+                        <button
+                          onClick={() => go("review", job)}
+                          className="flex-1 bg-[#000100] text-white rounded-xl py-3.5 text-sm font-bold shadow-md transition active:scale-[0.98]"
+                        >
+                          Export Application
+                        </button>
+                        <button className="px-5 bg-[#eaeceb] text-[#666666] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+              )}
 
-        {/* Tier 2: Action Required */}
-        {inputJobs.length > 0 && (
-          <div className="mb-8">
-            {inputJobs.map((job) => (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-                key={job.id}
-                className="mb-6 rounded-[24px] bg-[#fffbeb] shadow-[0_8px_30px_rgba(251,191,36,0.12)] border border-[#fde68a] overflow-hidden"
-              >
-                <div className="p-5 pb-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex h-6 items-center rounded-full bg-[#fbbf24] px-2.5 text-[10px] font-bold uppercase tracking-wider text-[#000100]">
-                      <AlertCircle className="mr-1 h-3.5 w-3.5" /> Needs Your
-                      Input
+              {/* Tier 2: Action Required */}
+              {inputJobs.length > 0 && (
+                <div className="mb-8">
+                  {inputJobs.map((job) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.1 }}
+                      key={job.id}
+                      className="mb-6 rounded-[24px] bg-[#fffbeb] shadow-[0_8px_30px_rgba(251,191,36,0.12)] border border-[#fde68a] overflow-hidden"
+                    >
+                      <div className="p-5 pb-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex h-6 items-center rounded-full bg-[#fbbf24] px-2.5 text-[10px] font-bold uppercase tracking-wider text-[#000100]">
+                            <AlertCircle className="mr-1 h-3.5 w-3.5" /> Needs
+                            Your Input
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#fde68a] text-lg font-bold text-[#d97706]">
+                            {job.company[0]}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="truncate text-base font-bold text-[#92400e]">
+                              {job.title}
+                            </h3>
+                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#b45309]">
+                              {job.company} • {job.location}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#fef3c7]">
+                        <p className="text-[13px] text-[#92400e] leading-[1.6]">
+                          <b className="text-[#b45309]">
+                            Missing: A/B Testing.
+                          </b>{" "}
+                          {job.agentJustification}
+                        </p>
+                      </div>
+
+                      <div className="px-5 pb-5 flex gap-3">
+                        <button
+                          onClick={() => go("aiChatbot", job, "chatOpen")}
+                          className="flex-1 bg-[#d97706] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2"
+                        >
+                          Reply in Chat <Send className="w-4 h-4" />
+                        </button>
+                        <button className="px-5 bg-white/50 border border-[#fde68a] text-[#b45309] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                          Skip
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tier 3: Strategic Pivot */}
+              {exploreJobs.length > 0 && (
+                <div className="mb-4">
+                  {exploreJobs.map((job) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.2 }}
+                      key={job.id}
+                      className="mb-6 rounded-[24px] bg-[#faf5ff] shadow-[0_8px_30px_rgba(168,85,247,0.08)] border border-[#e9d5ff] overflow-hidden"
+                    >
+                      <div className="p-5 pb-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex h-6 items-center rounded-full bg-[#a855f7] px-2.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                            <Star className="mr-1 h-3.5 w-3.5" /> Strategic
+                            Pivot
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#e9d5ff] text-lg font-bold text-[#7e22ce]">
+                            {job.company[0]}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="truncate text-base font-bold text-[#6b21a8]">
+                              {job.title}
+                            </h3>
+                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#9333ea]">
+                              {job.company} • {job.salary}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#f3e8ff]">
+                        <p className="text-[13px] text-[#7e22ce] leading-[1.6]">
+                          {job.agentJustification}
+                        </p>
+                      </div>
+
+                      <div className="px-5 pb-5 flex gap-3">
+                        <button
+                          onClick={() => go("tailor", job)}
+                          className="flex-1 bg-[#9333ea] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98]"
+                        >
+                          Generate Draft
+                        </button>
+                        <button className="px-5 bg-white/50 border border-[#e9d5ff] text-[#9333ea] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                          Ignore
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* TAB 2: HISTORY & UPDATES */}
+          {activeTab === "history" && (
+            <motion.div
+              key="history"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="px-2 pt-2"
+            >
+              <div className="relative">
+                {/* Continuous vertical line connecting the dots */}
+                <div className="absolute bottom-8 left-[65px] top-3 w-[2px] bg-[#d1d3d2]" />
+
+                <div className="space-y-5">
+                  {agentUpdates.map((update) => (
+                    <div key={update.id} className="relative flex gap-4">
+                      {/* Left: Time */}
+                      <div className="flex w-[42px] shrink-0 flex-col items-end pt-1.5 text-right">
+                        <span className="text-[13px] font-black tracking-tight text-[#000100]">
+                          {update.time}
+                        </span>
+                        <span className="text-[10px] font-bold text-[#999999]">
+                          {update.sub}
+                        </span>
+                      </div>
+
+                      {/* Middle: Dot */}
+                      <div className="relative z-10 flex w-4 shrink-0 justify-center pt-2.5">
+                        <div
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            update.active
+                              ? "bg-[#a0fe08] ring-4 ring-[#a0fe08]/30 shadow-[0_0_8px_rgba(160,254,8,0.6)]"
+                              : "bg-[#d1d3d2]"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Right: Content */}
+                      <div className="flex-1 px-2 pt-1.5 pb-2">
+                        <h3 className="text-sm font-bold text-[#000100]">
+                          {update.title}
+                        </h3>
+                        <p className="mt-1 text-[13px] leading-relaxed text-[#666666]">
+                          {update.desc}
+                        </p>
+                        {/* UNDO UI ADDED */}
+                        {update.undoable && (
+                          <button className="mt-2.5 flex items-center gap-1.5 rounded-lg border border-[#d1d3d2] bg-[#ffffff] px-3 py-1.5 text-[11px] font-bold text-[#000100] shadow-sm transition active:bg-[#eaeceb]">
+                            <RotateCcw className="h-3 w-3" /> Undo Action
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#fde68a] text-lg font-bold text-[#d97706]">
-                      {job.company[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-bold text-[#92400e]">
-                        {job.title}
-                      </h3>
-                      <p className="mt-0.5 truncate text-[13px] font-medium text-[#b45309]">
-                        {job.company} • {job.location}
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-
-                <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#fef3c7]">
-                  <p className="text-[13px] text-[#92400e] leading-[1.6]">
-                    <b className="text-[#b45309]">Missing: A/B Testing.</b>{" "}
-                    {job.agentJustification}
-                  </p>
-                </div>
-
-                <div className="px-5 pb-5 flex gap-3">
-                  <button
-                    onClick={() => go("aiChatbot", job, "chatOpen")}
-                    className="flex-1 bg-[#d97706] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    Reply in Chat <Send className="w-4 h-4" />
-                  </button>
-                  <button className="px-5 bg-white/50 border border-[#fde68a] text-[#b45309] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
-                    Skip
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Tier 3: Strategic Pivot */}
-        {exploreJobs.length > 0 && (
-          <div className="mb-4">
-            {exploreJobs.map((job) => (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                key={job.id}
-                className="mb-6 rounded-[24px] bg-[#faf5ff] shadow-[0_8px_30px_rgba(168,85,247,0.08)] border border-[#e9d5ff] overflow-hidden"
-              >
-                <div className="p-5 pb-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex h-6 items-center rounded-full bg-[#a855f7] px-2.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                      <Star className="mr-1 h-3.5 w-3.5" /> Strategic Pivot
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#e9d5ff] text-lg font-bold text-[#7e22ce]">
-                      {job.company[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-bold text-[#6b21a8]">
-                        {job.title}
-                      </h3>
-                      <p className="mt-0.5 truncate text-[13px] font-medium text-[#9333ea]">
-                        {job.company} • {job.salary}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#f3e8ff]">
-                  <p className="text-[13px] text-[#7e22ce] leading-[1.6]">
-                    {job.agentJustification}
-                  </p>
-                </div>
-
-                <div className="px-5 pb-5 flex gap-3">
-                  <button
-                    onClick={() => go("tailor", job)}
-                    className="flex-1 bg-[#9333ea] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98]"
-                  >
-                    Generate Draft
-                  </button>
-                  <button className="px-5 bg-white/50 border border-[#e9d5ff] text-[#9333ea] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
-                    Ignore
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Screen>
   );
 }
 
+// --- DETAIL SCREEN ---
 function Detail({ go, selectedJob }) {
   const job = selectedJob || jobs[0];
   return (
@@ -3222,6 +2808,7 @@ function Detail({ go, selectedJob }) {
   );
 }
 
+// --- TAILOR SCREEN ---
 function Tailor({ go, selectedJob }) {
   const job = selectedJob || jobs[0];
   return (
@@ -3267,11 +2854,12 @@ function Tailor({ go, selectedJob }) {
             Accept Changes
           </PrimaryButton>
           <SecondaryButton>Edit Changes</SecondaryButton>
+          {/* UNDO UI ADDED */}
           <button
             onClick={() => go("review", job)}
-            className="w-full py-2 text-sm text-[#666666]"
+            className="w-full py-2 text-sm text-red-500 font-bold flex items-center justify-center gap-2 hover:underline"
           >
-            Keep Original Resume
+            <RotateCcw className="h-4 w-4" /> Revert to Original Resume
           </button>
         </div>
       </Screen>
@@ -3279,8 +2867,12 @@ function Tailor({ go, selectedJob }) {
   );
 }
 
+// --- REVIEW SCREEN ---
 function Review({ go, selectedJob }) {
   const job = selectedJob || jobs[0];
+  const [interceptTriggered, setInterceptTriggered] = useState(false);
+  const [resolving, setResolving] = useState(false);
+
   return (
     <PhoneShell>
       <Screen>
@@ -3329,7 +2921,7 @@ function Review({ go, selectedJob }) {
           </p>
         </Card>
         <div className="mt-6 space-y-3">
-          <PrimaryButton onClick={() => go("submitted", job)}>
+          <PrimaryButton onClick={() => setInterceptTriggered(true)}>
             Approve & Auto Apply
           </PrimaryButton>
           <SecondaryButton>Edit Application</SecondaryButton>
@@ -3340,11 +2932,88 @@ function Review({ go, selectedJob }) {
             Cancel
           </button>
         </div>
+
+        {/* DEMO: AGENT INTERCEPT MODAL */}
+        <AnimatePresence>
+          {interceptTriggered && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-[100] bg-[#000100]/60 backdrop-blur-sm flex flex-col justify-end"
+            >
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="bg-[#eaeceb] rounded-t-[2rem] p-6 pb-12 shadow-2xl flex flex-col gap-4"
+              >
+                <div className="flex items-center gap-3 text-[#ffbd2e]">
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-[#ffbd2e]/20">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                  <h2 className="text-xl font-black text-[#000100]">
+                    Agent Intercept
+                  </h2>
+                </div>
+
+                <div className="w-full rounded-2xl bg-[#000100] p-4 font-mono text-[11px] shadow-lg border border-white/10 relative overflow-hidden">
+                  <div className="text-white/80 mb-2 flex items-start gap-2">
+                    <span className="shrink-0">⚙️</span> Tool Call:
+                    FinalPreFlightCheck(job)
+                  </div>
+                  <div className="text-[#ffbd2e] font-bold mb-4 ml-6">
+                    ↳ Warning: Requirements updated 10m ago. Added: 'Figma
+                    Prototyping'
+                  </div>
+                  <div className="text-[#ff5f56] mt-2 flex items-start gap-2">
+                    <span className="shrink-0">🛑</span> Agent Decision: Halting
+                    submission to prevent low match score.
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-[#d1d3d2] shadow-sm">
+                  <p className="text-sm font-bold text-[#000100]">
+                    Wait! They just changed the requirements.
+                  </p>
+                  <p className="text-[13px] text-[#666666] leading-relaxed mt-1">
+                    Do you want me to quickly rewrite your resume draft to
+                    emphasize your Figma skills before we submit it?
+                  </p>
+                </div>
+
+                {resolving ? (
+                  <div className="flex items-center justify-center p-4 gap-3 bg-[#a0fe08] rounded-xl text-[#000100] font-bold shadow-md mt-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-[#000100] border-t-transparent animate-spin" />
+                    Auto-fixing & Submitting...
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 mt-2">
+                    <PrimaryButton
+                      className="bg-[#a0fe08] !text-[#000100] shadow-md"
+                      onClick={() => {
+                        setResolving(true);
+                        setTimeout(() => go("submitted", job), 1500);
+                      }}
+                    >
+                      <Sparkles className="h-4 w-4 text-[#000100]" /> Yes,
+                      Auto-Fix & Submit
+                    </PrimaryButton>
+                    <SecondaryButton onClick={() => go("submitted", job)}>
+                      Ignore & Submit Anyway
+                    </SecondaryButton>
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Screen>
     </PhoneShell>
   );
 }
 
+// --- SUBMITTED SCREEN ---
 function Submitted({ go, selectedJob, onApply = () => {} }) {
   const job = selectedJob || jobs[0];
   useEffect(() => {
@@ -3380,6 +3049,13 @@ function Submitted({ go, selectedJob, onApply = () => {} }) {
               <PrimaryButton onClick={() => go("dashboard")}>
                 Back to Home
               </PrimaryButton>
+              {/* UNDO UI ADDED */}
+              <button
+                onClick={() => go("dashboard")}
+                className="flex w-full items-center justify-center gap-2 py-3 text-sm font-bold text-[#666666] transition hover:text-red-500"
+              >
+                <RotateCcw className="h-4 w-4" /> Undo Submission
+              </button>
             </div>
           </Card>
         </div>
@@ -3388,234 +3064,68 @@ function Submitted({ go, selectedJob, onApply = () => {} }) {
   );
 }
 
-function ResumesScreen({
-  go,
-  resumes = [],
-  uploadQueue = [],
-  onUploadResume = () => {},
-  onOpenResume = () => {},
-  onDeleteResume = () => {},
-}) {
-  const fileInputRef = useRef(null);
-  const handleFiles = (fileList) => {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-    onUploadResume(files);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-  const handleDrop = (event) => {
-    event.preventDefault();
-    handleFiles(event.dataTransfer.files);
-  };
-
-  return (
-    <PhoneShell>
-      <Screen>
-        {/* Standardized Header */}
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end justify-between bg-[#eaeceb] px-6 pb-5">
-          <div className="flex h-[52px] items-center gap-2">
-            <BackButton onClick={() => go("profile")} />
-            <h1 className="text-[26px] font-bold tracking-tight text-[#000100]">
-              Resumes
-            </h1>
-          </div>
-          <div className="flex h-[52px] items-center">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white transition hover:bg-[#333]"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => fileInputRef.current?.click()}
-          onKeyDown={(e) =>
-            (e.key === "Enter" || e.key === " ") &&
-            fileInputRef.current?.click()
-          }
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-          className={`mb-4 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#000100]/30 bg-[#ffffff] text-[#000100] ${neoIn}  transition hover:bg-[#eaeceb]`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
-          <Upload className="mb-2 h-7 w-7" />
-          <span className="text-sm font-bold">
-            Tap to upload or drag & drop
-          </span>
-          <span className="mt-1 text-xs text-[#666666]">PDF up to 5MB</span>
-        </div>
-
-        <div className="space-y-3">
-          {uploadQueue.map((item) => (
-            <ResumeUploadCard key={item.id} item={item} uploading />
-          ))}
-          {resumes.map((resume) => (
-            <ResumeUploadCard
-              key={resume.id}
-              item={resume}
-              onOpen={() => onOpenResume(resume, "resumes")}
-              onDelete={() => onDeleteResume(resume.id)}
-            />
-          ))}
-          {uploadQueue.length === 0 && resumes.length === 0 && (
-            <Card className="text-center">
-              <div
-                className={`mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white ${neoIn}`}
-              >
-                <FileText className="h-7 w-7" />
-              </div>
-              <h3 className="font-bold text-[#000100]">No resumes yet</h3>
-              <p className="mt-2 text-sm leading-6 text-[#666666]">
-                Upload a resume to use it for AI matching, tailoring, and
-                applications.
-              </p>
-            </Card>
-          )}
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
-
-function ResumePreviewScreen({
-  go,
-  resume,
-  backTarget = "resumes",
-  onDeleteResume = () => {},
-}) {
-  const canPreviewPdf = resume?.url && isPdfResume(resume);
-
-  return (
-    <PhoneShell>
-      <div className="relative flex h-full w-full flex-col bg-[#eaeceb]">
-        {/* Floating Standardized Header over PDF */}
-        <div className="pointer-events-none absolute left-0 right-0 top-0 z-50 flex h-[100px] items-end justify-between bg-gradient-to-b from-[#eaeceb]/90 to-transparent px-6 pb-5">
-          <div className="flex h-[52px] items-center">
-            <BackButton
-              onClick={() => go(backTarget)}
-              className="pointer-events-auto drop-shadow-md"
-            />
-          </div>
-
-          <div className="flex h-[52px] items-center">
-            {resume?.id && (
-              <button
-                type="button"
-                onClick={() => {
-                  onDeleteResume(resume.id);
-                  go(backTarget);
-                }}
-                className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full bg-[#ffffff] text-[#666666] shadow-sm transition hover:bg-red-50 hover:text-red-500"
-                aria-label="Delete resume"
-              >
-                <Trash2 className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Full Screen Content Area */}
-        {!resume ? (
-          <div className="flex flex-1 items-center justify-center p-6 pt-24">
-            <Card className="w-full text-center">
-              <div
-                className={`mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white ${neoIn}`}
-              >
-                <FileText className="h-7 w-7" />
-              </div>
-              <h3 className="font-bold text-[#000100]">No resume selected</h3>
-              <p className="mt-2 text-sm leading-6 text-[#666666]">
-                Go back to your resume list and choose a file to preview.
-              </p>
-            </Card>
-          </div>
-        ) : canPreviewPdf ? (
-          <div className="flex-1 bg-white">
-            <iframe
-              title={resume.name}
-              src={`${resume.url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-              className="h-full w-full border-0 bg-white pt-14"
-            />
-          </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-center p-6 pt-24">
-            <Card className="w-full text-center">
-              <div
-                className={`mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white ${neoIn}`}
-              >
-                <FileText className="h-7 w-7" />
-              </div>
-              <h3 className="font-bold text-[#000100]">
-                Preview not available
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-[#666666]">
-                Browser in-app preview works best for PDF files. DOC and DOCX
-                files are saved in your list, but they cannot be rendered inside
-                the phone screen without a document viewer service.
-              </p>
-            </Card>
-          </div>
-        )}
-
-        {/* Floating File Name Pill at Bottom */}
-        {canPreviewPdf && (
-          <div className="pointer-events-none absolute bottom-8 left-1/2 z-50 w-full max-w-[80%] -translate-x-1/2 px-4">
-            <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/20 bg-[#000100]/80 px-4 py-2 backdrop-blur-md shadow-lg">
-              <FileText className="h-3.5 w-3.5 text-[#a0fe08]" />
-              <span className="truncate text-xs font-bold text-white">
-                {resume.name}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    </PhoneShell>
-  );
-}
-
+// --- PROFILE SCREEN ---
 function Profile({
   go,
   noNav = false,
-  appliedCount,
-  savedCount,
-  jobsCount,
+  appliedCount = 0,
+  savedCount = 0,
+  jobsCount = 0,
   resumesCount = 0,
   userName = "User",
 }) {
-  const accountRows = [{ icon: Settings, label: "Account Settings" }];
+  const [integrations, setIntegrations] = useState([
+    {
+      id: "gmail",
+      icon: Mail,
+      label: "Gmail Workspace",
+      desc: "Allow Agent to draft outreach and parse rejections",
+      active: true,
+    },
+    {
+      id: "linkedin",
+      icon: Briefcase,
+      label: "LinkedIn Data",
+      desc: "Keep AI Profile automatically synced",
+      active: true,
+    },
+    {
+      id: "figma",
+      icon: PenLine,
+      label: "Portfolio Access",
+      desc: "Allow Agent to pull context from your projects",
+      active: false,
+    },
+  ]);
+
+  const toggleIntegration = (id) => {
+    setIntegrations((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, active: !item.active } : item
+      )
+    );
+  };
 
   const preferenceRows = [
-    { icon: Bell, label: "Notifications" },
-    { icon: ShieldCheck, label: "Permissions" },
+    { icon: Bell, label: "Agent Notifications" },
+    { icon: ShieldCheck, label: "Privacy & Data" },
     { icon: Palette, label: "Appearance" },
   ];
-
-  const resourceRows = [{ icon: HelpCircle, label: "Contact Support" }];
 
   return (
     <PhoneShell>
       <Screen nav={!noNav} floatingNav={noNav} go={go} activeTab="profile">
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex h-[104px] items-end gap-2 bg-[#eaeceb] px-6 pb-4">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex h-[104px] items-end gap-2 bg-[#eaeceb] px-6 pb-4 border-b border-[#d1d3d2]/50">
           <div className="flex h-[52px] items-center">
             <h1 className="text-[26px] font-bold tracking-tight text-[#000100]">
-              Settings
+              AI Control Center
             </h1>
           </div>
         </div>
 
-        <div className="mb-6 overflow-hidden rounded-3xl border border-[#d1d3d2] bg-[#ffffff]">
-          <div className="flex items-center gap-4 p-4">
-            <div className="h-[52px] w-[52px] overflow-hidden rounded-full bg-[#eaeceb]">
+        <div className="mb-6 overflow-hidden rounded-[24px] border border-[#d1d3d2] bg-[#ffffff] shadow-sm">
+          <div className="flex items-center gap-4 p-5">
+            <div className="h-14 w-14 overflow-hidden rounded-full bg-[#eaeceb] shadow-inner">
               <img
                 src={PROFILE_IMG_URL}
                 alt="Profile"
@@ -3626,167 +3136,175 @@ function Profile({
                 }}
               />
             </div>
-            <div>
-              <h2 className="font-bold text-[#000100]">{userName}</h2>
-              <p className="text-sm text-[#666666]">UX Designer</p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-bold text-[#000100] truncate">
+                {userName}
+              </h2>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#a0fe08] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#8bd90a]"></span>
+                </span>
+                <p className="text-[13px] font-bold text-[#666666]">
+                  Agent Active
+                </p>
+              </div>
             </div>
-            <ChevronRight className="ml-auto h-5 w-5 text-[#666666]" />
+            <button className="grid h-10 w-10 place-items-center rounded-full bg-[#eaeceb] text-[#000100] transition active:scale-95">
+              <Settings className="h-5 w-5" />
+            </button>
           </div>
-          <div className="h-px w-full bg-[#d1d3d2]" />
-          <button className="flex w-full items-center justify-between p-4 text-sm font-bold text-[#000100] transition-colors hover:bg-[#eaeceb]">
-            Edit Profile
-            <ChevronRight className="h-4 w-4 text-[#666666]" />
-          </button>
         </div>
 
-        <h3 className="mb-2 ml-4 text-xs font-bold uppercase tracking-wider text-[#666666]">
-          Career
+        <h3 className="mb-3 ml-2 text-[11px] font-bold uppercase tracking-wider text-[#999999]">
+          Career Pipeline
         </h3>
-        <div className="mb-6 overflow-hidden rounded-3xl border border-[#d1d3d2] bg-[#ffffff]">
+        <div className="mb-6 overflow-hidden rounded-[24px] border border-[#d1d3d2] bg-[#ffffff] shadow-sm">
           {[
             {
               onClick: () => go("resumes"),
               icon: FileText,
-              label: "Resumes",
+              label: "Resumes & Docs",
               count: resumesCount,
             },
             {
               onClick: () => go("jobs", null, null, "all"),
-              icon: Briefcase,
-              label: "Matches",
+              icon: Search,
+              label: "Discovered Roles",
               count: jobsCount,
             },
             {
               onClick: () => go("jobs", null, null, "saved"),
               icon: Bookmark,
-              label: "Saved Roles",
+              label: "Saved to Queue",
               count: savedCount,
             },
             {
               onClick: () => go("jobs", null, null, "applied"),
               icon: CheckCircle2,
-              label: "Applied",
+              label: "Auto-Applied",
               count: appliedCount,
             },
           ].map((row, i, arr) => (
             <div key={row.label}>
               <button
                 onClick={row.onClick}
-                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-[#eaeceb]"
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-[#fafafa] active:bg-[#eaeceb]"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white">
-                    <row.icon className="h-4 w-4" />
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#000100] text-white">
+                    <row.icon className="h-[18px] w-[18px]" />
                   </div>
-                  <span className="text-sm font-medium text-[#000100]">
+                  <span className="text-sm font-bold text-[#000100]">
                     {row.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#666666]">{row.count}</span>
-                  <ChevronRight className="h-4 w-4 text-[#666666]" />
+                  <span className="text-[13px] font-bold text-[#666666]">
+                    {row.count}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-[#d1d3d2]" />
                 </div>
               </button>
               {i < arr.length - 1 && (
-                <div className="ml-14 h-px bg-[#d1d3d2]" />
+                <div className="ml-[60px] h-px bg-[#eaeceb]" />
               )}
             </div>
           ))}
         </div>
 
-        <div className="mb-6 overflow-hidden rounded-3xl border border-[#d1d3d2] bg-[#ffffff]">
-          {accountRows.map((row, i) => (
-            <div key={row.label}>
-              <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-[#eaeceb]">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white">
-                    <row.icon className="h-4 w-4" />
+        <h3 className="mb-3 ml-2 text-[11px] font-bold uppercase tracking-wider text-[#999999]">
+          Agent Permissions & Tools
+        </h3>
+        <div className="mb-6 overflow-hidden rounded-[24px] border border-[#d1d3d2] bg-[#ffffff] shadow-sm">
+          {integrations.map((item, i, arr) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.id}>
+                <div className="flex w-full items-center justify-between p-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0 pr-4">
+                    <div
+                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-colors ${
+                        item.active
+                          ? "bg-[#a0fe08] text-[#000100]"
+                          : "bg-[#eaeceb] text-[#999999]"
+                      }`}
+                    >
+                      <Icon className="h-[18px] w-[18px]" />
+                    </div>
+                    <div className="flex flex-col pt-0.5">
+                      <span className="text-sm font-bold text-[#000100]">
+                        {item.label}
+                      </span>
+                      <span className="text-[11px] leading-snug text-[#666666] mt-0.5">
+                        {item.desc}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium text-[#000100]">
-                    {row.label}
-                  </span>
+
+                  <button
+                    onClick={() => toggleIntegration(item.id)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none ${
+                      item.active ? "bg-[#000100]" : "bg-[#d1d3d2]"
+                    }`}
+                  >
+                    <span className="sr-only">Toggle {item.label}</span>
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-300 ease-in-out ${
+                        item.active ? "translate-x-5" : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
                 </div>
-                <ChevronRight className="h-4 w-4 text-[#666666]" />
-              </button>
-              {i < accountRows.length - 1 && (
-                <div className="ml-14 h-px bg-[#d1d3d2]" />
-              )}
-            </div>
-          ))}
+                {i < arr.length - 1 && (
+                  <div className="ml-[60px] h-px bg-[#eaeceb]" />
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        <h3 className="mb-2 ml-4 text-xs font-bold uppercase tracking-wider text-[#666666]">
+        <h3 className="mb-3 ml-2 text-[11px] font-bold uppercase tracking-wider text-[#999999]">
           Preferences
         </h3>
-        <div className="mb-6 overflow-hidden rounded-3xl border border-[#d1d3d2] bg-[#ffffff]">
-          {preferenceRows.map((row, i) => (
-            <div key={row.label}>
-              <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-[#eaeceb]">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white">
-                    <row.icon className="h-4 w-4" />
+        <div className="mb-8 overflow-hidden rounded-[24px] border border-[#d1d3d2] bg-[#ffffff] shadow-sm">
+          {preferenceRows.map((row, i, arr) => {
+            const RowIcon = row.icon;
+            return (
+              <div key={row.label}>
+                <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-[#fafafa] active:bg-[#eaeceb]">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#eaeceb] text-[#000100]">
+                      <RowIcon className="h-[18px] w-[18px]" />
+                    </div>
+                    <span className="text-sm font-bold text-[#000100]">
+                      {row.label}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-[#000100]">
-                    {row.label}
-                  </span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-[#666666]" />
-              </button>
-              {i < preferenceRows.length - 1 && (
-                <div className="ml-14 h-px bg-[#d1d3d2]" />
-              )}
-            </div>
-          ))}
-        </div>
-
-        <h3 className="mb-2 ml-4 text-xs font-bold uppercase tracking-wider text-[#666666]">
-          Resources
-        </h3>
-        <div className="mb-6 overflow-hidden rounded-3xl border border-[#d1d3d2] bg-[#ffffff]">
-          {resourceRows.map((row, i) => (
-            <div key={row.label}>
-              <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-[#eaeceb]">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-[#000100] text-white">
-                    <row.icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium text-[#000100]">
-                    {row.label}
-                  </span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-[#666666]" />
-              </button>
-              {i < resourceRows.length - 1 && (
-                <div className="ml-14 h-px bg-[#d1d3d2]" />
-              )}
-            </div>
-          ))}
+                  <ChevronRight className="h-4 w-4 text-[#d1d3d2]" />
+                </button>
+                {i < arr.length - 1 && (
+                  <div className="ml-[60px] h-px bg-[#eaeceb]" />
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <motion.button
           type="button"
           onClick={() => go("login")}
-          whileTap={{
-            scale: 0.97,
-            y: 6,
-            boxShadow:
-              "inset 0 8px 18px rgba(127,29,29,0.45), 0 0 10px rgba(239,68,68,0.45)",
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 780,
-            damping: 18,
-            mass: 0.45,
-          }}
-          className="mb-4 flex w-full items-center justify-center gap-2 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-sm font-bold text-red-500 transition-all duration-200 hover:-translate-y-0.5 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-[0_0_18px_rgba(239,68,68,0.65),0_0_42px_rgba(239,68,68,0.35)] active:translate-y-1 active:border-red-500 active:bg-red-500 active:text-white"
+          whileTap={{ scale: 0.97 }}
+          className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#eaeceb] p-4 text-sm font-bold text-[#000100] transition-colors hover:bg-red-50 hover:text-red-600"
         >
-          <LogOut className="h-5 w-5" /> Sign Out
+          <LogOut className="h-4 w-4" /> Sign Out
         </motion.button>
       </Screen>
     </PhoneShell>
   );
 }
 
+// --- APP COMPONENT ---
 function ViewSwitchIcon({ active, type }) {
   const className = `h-[18px] w-[18px] transition-colors duration-300 ${
     active ? "text-zinc-950" : "text-white/75"
@@ -3823,34 +3341,6 @@ function ViewSwitchIcon({ active, type }) {
       <rect x="7" y="3" width="10" height="18" rx="2.4" />
       <path d="M10.5 17h3" />
     </svg>
-  );
-}
-
-function AgentResumeNotification({ job, onClick }) {
-  if (!job?.notification) return null;
-
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      initial={{ opacity: 0, y: -18, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 360, damping: 28 }}
-      className="absolute left-4 right-4 top-16 z-[80] flex items-center gap-3 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-left"
-    >
-      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#a0fe08] text-[#000100]">
-        <CheckCircle2 className="h-6 w-6" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-[#000100]">
-          Syncra AI finished your resume
-        </p>
-        <p className="mt-1 truncate text-xs text-[#666666]">
-          Tap to view the chatbot update and check your resume list.
-        </p>
-      </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-[#666666]" />
-    </motion.button>
   );
 }
 
@@ -3893,6 +3383,34 @@ function ViewSwitchButton({ viewMode, onToggle }) {
         </motion.span>
       </div>
     </button>
+  );
+}
+
+function AgentResumeNotification({ job, onClick }) {
+  if (!job?.notification) return null;
+
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      initial={{ opacity: 0, y: -18, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 360, damping: 28 }}
+      className="absolute left-4 right-4 top-16 z-[80] flex items-center gap-3 rounded-3xl border border-[#d1d3d2] bg-[#ffffff] p-4 text-left shadow-lg"
+    >
+      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#a0fe08] text-[#000100]">
+        <CheckCircle2 className="h-6 w-6" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-[#000100]">
+          Syncra AI finished your resume
+        </p>
+        <p className="mt-1 truncate text-xs text-[#666666]">
+          Tap to view the chatbot update and check your resume list.
+        </p>
+      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 text-[#666666]" />
+    </motion.button>
   );
 }
 
@@ -4066,7 +3584,8 @@ export default function App() {
 
   const go = (next, job, mode, filterParam, splashTargetStr) => {
     const shouldKeepWindowScroll =
-      next === "aiChatbot" && (mode === "chatOpen" || mode === "createResume");
+      next === "aiChatbot" &&
+      (mode === "chatOpen" || mode === "createResume" || mode === "onboarding");
     const savedScrollX =
       shouldKeepWindowScroll && typeof window !== "undefined"
         ? window.scrollX
@@ -4109,9 +3628,11 @@ export default function App() {
       case "loginLoading":
         return <LoginLoadingScreen go={go} />;
       case "login":
-        return <Login go={go} resumesCount={resumes.length} />;
+        return <Login go={go} />;
       case "signup":
         return <SignUp go={go} />;
+      case "onboarding":
+        return <Onboarding go={go} />;
       case "morningBrief":
         return <MorningBrief go={go} userName={userName} />;
       case "aiChatbot":
@@ -4132,16 +3653,6 @@ export default function App() {
             uploadQueue={uploadQueue}
           />
         );
-      case "setup":
-        return <Setup go={go} />;
-      case "story":
-        return <Story go={go} userName={userName} />;
-      case "builder":
-        return <Builder go={go} />;
-      case "analysis":
-        return <Analysis go={go} />;
-      case "skill":
-        return <Skill go={go} />;
       case "dashboard":
         return (
           <Dashboard
@@ -4155,7 +3666,7 @@ export default function App() {
               setIsChatTransition(true);
               setTimeout(() => {
                 go("aiChatbot", null, "chatOpen");
-                setIsChatTransition(false); // Reset immediately after navigation finishes
+                setIsChatTransition(false);
               }, 350);
             }}
             onUploadResume={handleUploadResume}
@@ -4165,16 +3676,6 @@ export default function App() {
         );
       case "jobs":
         return <JobsScreen go={go} />;
-      case "analyzing":
-        return <AnalyzingScreen go={go} />;
-      case "jobSetup":
-        return <JobSetup go={go} />;
-      case "running":
-        return <Running go={go} />;
-      case "complete":
-        return <Complete go={go} />;
-      case "results":
-        return <Results go={go} />;
       case "detail":
         return <Detail go={go} selectedJob={selectedJob} />;
       case "tailor":
@@ -4251,6 +3752,7 @@ export default function App() {
     screen !== "loginLoading" &&
     screen !== "login" &&
     screen !== "signup" &&
+    screen !== "onboarding" &&
     screen !== "morningBrief";
 
   const hideFirstTimeCreateResumeNav =
@@ -4313,6 +3815,7 @@ export default function App() {
                   <AnimatePresence>
                     {isTabbed && !isChatTransition && (
                       <motion.div
+                        key="bottom-nav"
                         initial={{ y: 50, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 80, opacity: 0 }}
