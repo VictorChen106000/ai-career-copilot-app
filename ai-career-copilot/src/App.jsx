@@ -3103,13 +3103,6 @@ function ResumesScreen({
               Resumes & Docs
             </h2>
           </div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="ml-auto grid h-10 w-10 place-items-center rounded-full bg-[#000100] text-white transition active:scale-95"
-            aria-label="Upload resume"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
         </div>
 
         <div
