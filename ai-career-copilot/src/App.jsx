@@ -1210,6 +1210,129 @@ function ResumeUploadCard({ item, uploading = false, onOpen, onDelete }) {
   );
 }
 
+// --- NEW MVP DEMO LOGIC (The Flashy Sequence) ---
+const demoSteps = [
+  {
+    action: "Task Decoupled into 4 steps. Executing...",
+    delay: 1000,
+    type: "info",
+  },
+  {
+    action: "Tool Call: JobBoardScraper(role='UX Design', type='Startup')",
+    delay: 1800,
+    result: "Found: Product Designer at 'Linear'.",
+    type: "tool",
+  },
+  {
+    action: "Tool Call: AnalyzeResumeMatch(job='Linear', resume=user_profile)",
+    delay: 2000,
+    result: "Score: 65% (Missing 'Design Systems').",
+    type: "tool",
+  },
+  {
+    action:
+      "Agent Decision: Match score too low for cold email. Invoking Tailor Tool first.",
+    delay: 2500,
+    type: "alert",
+  },
+  {
+    action: "Tool Call: TailorResume(missing_keywords=['Design Systems'])",
+    delay: 2200,
+    result: "Resume rewritten. New Score: 92%.",
+    type: "tool",
+  },
+  {
+    action: "Tool Call: WebScraper(query='Linear recent news')",
+    delay: 1800,
+    result: "Found: Linear launched a new mobile app.",
+    type: "tool",
+  },
+  {
+    action: "Tool Call: DraftColdEmail(context='Mention mobile app launch')",
+    delay: 1500,
+    result: "Draft complete. Ready for review.",
+    type: "tool",
+  },
+];
+
+function AgentTerminal({ onComplete }) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const hasCompleted = useRef(false); // Add this ref to prevent infinite loops
+
+  useEffect(() => {
+    if (currentStep >= demoSteps.length) {
+      if (!hasCompleted.current) {
+        hasCompleted.current = true;
+        const timer = setTimeout(onComplete, 1200);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCurrentStep((prev) => prev + 1);
+    }, demoSteps[currentStep].delay);
+
+    return () => clearTimeout(timer);
+  }, [currentStep, onComplete]);
+
+  return (
+    <div className="w-full rounded-2xl bg-[#000100] p-4 font-mono text-[11px] shadow-xl border border-white/10 my-2 overflow-hidden relative">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#a0fe08] to-transparent opacity-20" />
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+        <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+        <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+        <div className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+        <span className="ml-2 text-white/50 font-bold uppercase tracking-wider text-[9px]">
+          Agent Thought Process
+        </span>
+      </div>
+      <div className="flex flex-col gap-3">
+        {demoSteps.slice(0, currentStep + 1).map((step, i) => {
+          const isLast = i === currentStep && currentStep < demoSteps.length;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div
+                className={`flex items-start gap-2 ${
+                  step.type === "alert" ? "text-[#ffbd2e]" : "text-white/80"
+                }`}
+              >
+                <span className="shrink-0">
+                  {step.type === "alert" ? "🛑" : "⚙️"}
+                </span>
+                <span className="leading-relaxed">{step.action}</span>
+              </div>
+              {step.result && !isLast && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="ml-7 mt-1 text-[#a0fe08] font-bold"
+                >
+                  ↳ {step.result}
+                </motion.div>
+              )}
+              {isLast && (
+                <motion.div
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ repeat: Infinity, duration: 1.2 }}
+                  className="ml-7 mt-1 flex items-center gap-1.5 text-white/40"
+                >
+                  <div className="h-1 w-1 bg-[#a0fe08] rounded-full animate-ping" />{" "}
+                  Processing...
+                </motion.div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AIChatbot({
   go,
   chatMode = "setPreferences",
@@ -1222,184 +1345,33 @@ function AIChatbot({
   onUploadResume = () => {},
   uploadQueue = [],
 }) {
-  const prefQuestions = [
-    "What kind of job are you looking for? (e.g. UX Designer, Frontend Developer, Product Manager)",
-    "What's your preferred location? (e.g. Remote, San Francisco, New York)",
-    "Do you prefer remote, hybrid, or on-site work?",
-    "What's your expected salary range?",
-    "Any industry preferences? (e.g. Tech, Finance, Healthcare)",
-  ];
+  const [messages, setMessages] = useState([
+    {
+      from: "ai",
+      type: "text",
+      text: "Hi, Syncra AI here. What career goals can I help you execute today?",
+    },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
+  const [attachedContext, setAttachedContext] = useState(null);
 
-  const createQuestions = [
-    "Let's build your resume! What's your current or most recent job title?",
-    "Tell me about your education — school name, degree, and graduation year.",
-    "What are your top 5 skills? (e.g. React, Figma, Python, Project Management)",
-    "Describe your most notable work experience or project in 1-2 sentences.",
-    "Any certifications, awards, or achievements you'd like to include?",
-  ];
-
-  const helpWriteQuestions = [
-    "Question 1 of 5: What target role or internship are you applying for?",
-    "Question 2 of 5: Tell me about your education. Include school, major, graduation year, or relevant coursework.",
-    "Question 3 of 5: What project, experience, or class work should I highlight most?",
-    "Question 4 of 5: What skills, tools, or strengths should appear in your resume?",
-    "Question 5 of 5: Any achievements, links, or special points you want the resume to emphasize?",
-  ];
-
-  const createResumeFlows = {
-    "help me write it": [
-      "Absolutely. I’ll guide you like a resume coach and turn your answers into a professional resume draft.",
-      "I’ll ask 5 short questions. After your final answer, I’ll create the resume in the background so you can continue using the app.",
-      "Question 1 of 5: What target role or internship are you applying for?",
-    ],
-    "i'll type it out": [
-      "Perfect. You can type everything in your own words, and I’ll turn it into a clean resume draft.",
-      "Send one message with anything you already have: target role, education, skills, projects, experience, achievements, links, or even rough notes.",
-      "Don’t worry about grammar or formatting. After you send it, I’ll organize it into resume sections and create the resume in the background.",
-      "Paste or type your rough resume information now.",
-    ],
-    "use my linkedin": [
-      "Great choice. I already have access to your LinkedIn profile for this demo.",
-      "Reading LinkedIn data… Found your education, project experience, skills, portfolio link, and career interests.",
-      "I’m converting your LinkedIn profile into a resume format with ATS-friendly sections and stronger impact wording.",
-    ],
-  };
-
-  const careerPromptFlows = {
-    // SCENARIO 3: The Cold Outreach Hustler
-    "write cold email": [
-      "Reading the job description you pasted...",
-      "Since this job isn't in our network, the best approach is a cold email. I drafted a message highlighting your overlap with their requirements.",
-      "I have attached your core skills. You can now open this directly in your Mail App.",
-    ],
-    // SCENARIO 5: Make Me Sound Like a Boss
-    "make me sound like a boss": [
-      "I'm applying to management roles, let's upgrade this.",
-      "I've identified passive verbs (e.g., 'helped with') and replaced them with strong leadership verbs (e.g., 'Spearheaded', 'Architected').",
-      "I've quantified your impact. I just dropped a brand-new, upgraded PDF into your Resumes tab for you to download.",
-    ],
-    "find me jobs": [
-      "Starting an agentic job search now. I’ll use your resume, preferences, and skill profile to rank opportunities.",
-      "Searching demo sources: LinkedIn, Indeed, company career pages, and internship platforms…",
-      "Filtering out roles that require too much experience, don’t match your location, or don’t fit your preferred work style…",
-      "Search complete: I found 32 jobs. 8 are strong matches, 15 are medium matches, and 9 are low matches.",
-      "Best match: Senior Product Designer at TechFlow — 98% match. You match because of Figma, product thinking, and prototype experience. Missing skills: prototyping tools depth.",
-    ],
-    "improve my resume": [
-      "I’ll review your resume like an ATS and hiring manager at the same time.",
-      "Current demo score: 78/100. Strong areas: project experience, design tools, and frontend foundation.",
-      "Main improvements: add measurable impact, include missing keywords, and make your project bullets more outcome-focused.",
-      "Example improvement: ‘Built a React prototype’ → ‘Designed and built a responsive AI career prototype with React, improving task flow clarity for student job seekers.’",
-    ],
-    "career advice": [
-      "Based on your profile, I’d recommend targeting hybrid roles between UX, frontend, and AI product work.",
-      "Best early-career titles for you: Junior UX Designer, Product Design Intern, Frontend Engineer Intern, and AI Product Assistant.",
-      "Your strongest angle is not only coding or only design — it’s your ability to turn user problems into an interactive product prototype.",
-      "Next step: polish one portfolio case study and tailor your resume separately for UX roles and frontend roles.",
-    ],
-    "salary insights": [
-      "I’ll estimate salary expectations using the role type, location, and experience level from your profile.",
-      "For entry-level UX/frontend roles in this demo market, a realistic range is around $50K–$80K depending on location and company size.",
-      "For internships, focus less on salary and more on learning quality, mentorship, and whether the work can become a portfolio case study.",
-      "I can also filter job results by high salary once your job search starts.",
-    ],
-  };
-
-  const preferenceFlows = {
-    "remote only": [
-      "Got it — I’ll prioritize remote roles and remove on-site-only jobs from your match list.",
-      "I’ll still keep strong hybrid roles as backup options, but mark them as lower priority.",
-    ],
-    "full-time": [
-      "Great. I’ll focus on full-time entry-level roles and junior positions.",
-      "I’ll avoid short-term contract roles unless they strongly match your profile.",
-    ],
-    "entry level": [
-      "Understood. I’ll filter for internships, junior roles, trainee roles, and new graduate positions.",
-      "I’ll reduce the score for jobs asking for more than 2 years of experience.",
-    ],
-    "$50k–$80k": [
-      "Saved. I’ll use $50K–$80K as your preferred range when ranking job results.",
-      "If a job has no salary listed, I’ll still include it but mark salary confidence as unknown.",
-    ],
-  };
-
-  const isChatOpen = chatMode === "chatOpen";
-  const questions =
-    chatMode === "createResume" ? createQuestions : prefQuestions;
   const messagesEndRef = useRef(null);
   const messagesScrollRef = useRef(null);
-  const timersRef = useRef([]);
-
-  const initialChatState = useMemo(() => {
-    if (agentResumeNotice && chatMode === "createResume") {
-      return {
-        messages: [
-          {
-            from: "ai",
-            text: `I finished creating ${
-              agentResumeNotice.resumeName || "your AI-generated resume"
-            } according to your answers.`,
-          },
-          {
-            from: "ai",
-            text: "I saved it in Profile → Career → Resumes. You can go there to preview the resume, delete it, or use it for job matching.",
-          },
-        ],
-        step: questions.length + 1,
-      };
-    }
-
-    if (isChatOpen) {
-      return {
-        messages: [
-          {
-            from: "ai",
-            text: "Hi, Syncra AI, can I help you find new jobs or update your resume today?",
-          },
-        ],
-        step: 0,
-      };
-    }
-
-    if (chatMode === "createResume") {
-      return {
-        messages: [
-          { from: "user", text: "I want to create a resume" },
-          {
-            from: "ai",
-            text: "Absolutely. I’ll guide you like a resume coach and turn your answers into a professional resume draft.",
-          },
-          {
-            from: "ai",
-            text: "I’ll ask 5 short questions. After your final answer, I’ll create the resume in the background so you can continue using the app.",
-          },
-          { from: "ai", text: helpWriteQuestions[0] },
-        ],
-        step: 0,
-      };
-    }
-
-    const initial = { from: "user", text: "I want to set my preferences" };
-
-    return {
-      messages: [initial, { from: "ai", text: questions[0] }],
-      step: 1,
-    };
-  }, [agentResumeNotice, chatMode, isChatOpen, questions]);
-
-  const [messages, setMessages] = useState(initialChatState.messages);
-  const [inputText, setInputText] = useState("");
-  const [step, setStep] = useState(initialChatState.step);
-  const [isTyping, setIsTyping] = useState(false);
-  const [helpWriteStep, setHelpWriteStep] = useState(
-    chatMode === "createResume" && !agentResumeNotice ? 0 : null
-  );
-  const [helpWriteAnswers, setHelpWriteAnswers] = useState([]);
-  const [typeItOutActive, setTypeItOutActive] = useState(false);
-  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const fileInputRef = useRef(null);
-  const [attachedContext, setAttachedContext] = useState(null);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    const scrollContainer = messagesScrollRef.current;
+    if (!scrollContainer) return;
+    requestAnimationFrame(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+  }, [messages, isTyping]);
 
   const handleFiles = (fileList) => {
     const files = Array.from(fileList || []);
@@ -1409,347 +1381,51 @@ function AIChatbot({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  useEffect(() => {
-    const scrollContainer = messagesScrollRef.current;
-    if (!scrollContainer) return;
+  const handleSend = (textOverride) => {
+    const prompt =
+      typeof textOverride === "string" ? textOverride : inputText.trim();
+    if (!prompt || isTyping) return;
 
-    requestAnimationFrame(() => {
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    });
-  }, [messages, isTyping]);
-
-  useEffect(() => {
-    return () => timersRef.current.forEach((timer) => clearTimeout(timer));
-  }, []);
-
-  const normalizePrompt = (text) =>
-    text.trim().toLowerCase().replace(/[’']/g, "'");
-
-  const getFlowForPrompt = (text) => {
-    const key = normalizePrompt(text);
-    if (chatMode === "createResume" && createResumeFlows[key])
-      return createResumeFlows[key];
-    if (isChatOpen && careerPromptFlows[key]) return careerPromptFlows[key];
-    if (!isChatOpen && chatMode !== "createResume" && preferenceFlows[key])
-      return preferenceFlows[key];
-
-    // Reactive Agent Triggers (Scenarios 3 & 5)
-    if (
-      key.includes("cold email") ||
-      key.includes("outreach") ||
-      key.includes("random website")
-    ) {
-      return careerPromptFlows["write cold email"];
-    }
-    if (
-      key.includes("boss") ||
-      key.includes("manager") ||
-      key.includes("leadership") ||
-      key.includes("management")
-    ) {
-      return careerPromptFlows["make me sound like a boss"];
-    }
-
-    if (
-      key.includes("find me job") ||
-      key.includes("find jobs") ||
-      key.includes("find internships") ||
-      key.includes("search jobs") ||
-      key.includes("job search") ||
-      key.includes("look for jobs")
-    ) {
-      return careerPromptFlows["find me jobs"];
-    }
-    if (
-      (key.includes("improve") ||
-        key.includes("review") ||
-        key.includes("fix")) &&
-      key.includes("resume")
-    ) {
-      return careerPromptFlows["improve my resume"];
-    }
-    if (key.includes("salary")) return careerPromptFlows["salary insights"];
-    if (key.includes("career advice") || key.includes("career path"))
-      return careerPromptFlows["career advice"];
-    if (chatMode === "createResume" && key.includes("linkedin"))
-      return createResumeFlows["use my linkedin"];
-    if (chatMode === "createResume" && key.includes("write"))
-      return createResumeFlows["help me write it"];
-    return null;
-  };
-
-  const addAgentSequence = (userText, aiReplies, onComplete) => {
-    timersRef.current.forEach((timer) => clearTimeout(timer));
-    timersRef.current = [];
     setInputText("");
-    setMessages((prev) => [...prev, { from: "user", text: userText }]);
+    setMessages((prev) => [
+      ...prev,
+      { from: "user", type: "text", text: prompt },
+    ]);
     setIsTyping(true);
 
-    aiReplies.forEach((reply, index) => {
-      const timer = setTimeout(() => {
-        setMessages((prev) => [...prev, { from: "ai", text: reply }]);
-        if (index === aiReplies.length - 1) {
-          setIsTyping(false);
-          onComplete?.();
-        }
-      }, 650 + index * 850);
-      timersRef.current.push(timer);
-    });
+    // Trigger the flashy UI sequence for the demo
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, { from: "ai", type: "terminal" }]);
+    }, 600);
   };
 
-  const startHelpWriteFlow = (userText) => {
-    setTypeItOutActive(false);
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(0);
-    addAgentSequence(userText, createResumeFlows["help me write it"]);
-  };
+  const handleTerminalComplete = React.useCallback(() => {
+    setMessages((prev) => {
+      // Extra safeguard to prevent duplicate additions
+      if (prev.length > 0 && prev[prev.length - 1].type === "cards")
+        return prev;
 
-  const startTypeItOutFlow = (userText) => {
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    setTypeItOutActive(true);
-    addAgentSequence(userText, createResumeFlows["i'll type it out"]);
-  };
-
-  const startLinkedInFlow = (userText) => {
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    setTypeItOutActive(false);
-
-    const linkedInResumeAnswers = [
-      {
-        question: "LinkedIn target role",
-        answer:
-          "Junior UX Designer, Frontend Developer, and Product Design Internship roles focused on UI design, user research, frontend prototyping, and AI-powered product experiences.",
-      },
-      {
-        question: "LinkedIn education",
-        answer:
-          "International Business student at Tamkang University in Taiwan, expected graduation 2027, with software project experience in UI/UX planning, React prototyping, and product design.",
-      },
-      {
-        question: "LinkedIn projects and experience",
-        answer:
-          "AI Career Copilot app project: designed user flows, built a responsive React prototype, implemented resume upload, in-app PDF preview, chatbot interactions, job matching demo, and agentic background resume creation workflow.",
-      },
-      {
-        question: "LinkedIn skills and tools",
-        answer:
-          "React, JavaScript, Tailwind CSS, Figma, UI/UX Design, Responsive Web Design, User Journey Mapping, Empathy Maps, Prompt Engineering, Teamwork, Presentation, and AI tool usage.",
-      },
-      {
-        question: "LinkedIn achievements and links",
-        answer:
-          "Created a full interactive prototype, improved the interface with neumorphism and glassmorphism, deployed the app on Vercel for team testing, and connected business thinking with AI-driven product design.",
-      },
-    ];
-
-    addAgentSequence(userText, createResumeFlows["use my linkedin"], () => {
-      onStartBackgroundResume(linkedInResumeAnswers);
-      setTimeout(() => go("analyzing"), 1000);
-    });
-  };
-
-  const handleTypeItOutAnswer = (userText) => {
-    setTypeItOutActive(false);
-    const typedResumeAnswers = [
-      { question: "Typed resume information", answer: userText },
-      { question: "Education and background", answer: userText },
-      { question: "Projects and experience", answer: userText },
-      { question: "Skills and tools", answer: userText },
-      { question: "Achievements and links", answer: userText },
-    ];
-    addAgentSequence(
-      userText,
-      [
-        "Got it. I received your rough resume information and I’m extracting the key details now.",
-        "I’m organizing it into resume sections: Summary, Education, Skills, Projects, Experience, and Achievements.",
-        "Now I’m rewriting your notes into concise, ATS-friendly bullet points in the background.",
-      ],
-      () => {
-        onStartBackgroundResume(typedResumeAnswers);
-        setTimeout(() => go("analyzing"), 1000);
-      }
-    );
-  };
-
-  const handleHelpWriteAnswer = (userText) => {
-    const currentStep = helpWriteStep ?? 0;
-    const updatedAnswers = [
-      ...helpWriteAnswers,
-      { question: helpWriteQuestions[currentStep], answer: userText },
-    ];
-
-    if (currentStep < helpWriteQuestions.length - 1) {
-      const nextStep = currentStep + 1;
-      setHelpWriteAnswers(updatedAnswers);
-      setHelpWriteStep(nextStep);
-      addAgentSequence(userText, [
-        "Great — I saved that and will translate it into resume-ready wording.",
-        helpWriteQuestions[nextStep],
-      ]);
-      return;
-    }
-
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    addAgentSequence(
-      userText,
-      [
-        "Perfect. I have enough information to create your first resume draft.",
-        "I’m now writing the resume in the background: summary, education, skills, projects, and ATS-friendly bullet points.",
-      ],
-      () => {
-        onStartBackgroundResume(updatedAnswers);
-        setTimeout(() => go("analyzing"), 1000);
-      }
-    );
-  };
-
-  const isResumeOrCareerShortcutPrompt = (text) => {
-    const key = normalizePrompt(text);
-    return Boolean(
-      createResumeFlows[key] ||
-        careerPromptFlows[key] ||
-        key.includes("linkedin") ||
-        key.includes("find me job") ||
-        key.includes("find jobs") ||
-        key.includes("find internships") ||
-        key.includes("search jobs") ||
-        key.includes("job search") ||
-        key.includes("look for jobs") ||
-        ((key.includes("improve") ||
-          key.includes("review") ||
-          key.includes("fix")) &&
-          key.includes("resume")) ||
-        key.includes("salary") ||
-        key.includes("career advice") ||
-        key.includes("career path")
-    );
-  };
-
-  const resetCreateResumeSubFlows = () => {
-    setHelpWriteAnswers([]);
-    setHelpWriteStep(null);
-    setTypeItOutActive(false);
-  };
-
-  const runPromptFlow = (userText, flow) => {
-    const key = normalizePrompt(userText);
-    if (chatMode === "createResume" && key === "help me write it") {
-      startHelpWriteFlow(userText);
-    } else if (chatMode === "createResume" && key === "i'll type it out") {
-      startTypeItOutFlow(userText);
-    } else if (chatMode === "createResume" && key === "use my linkedin") {
-      startLinkedInFlow(userText);
-    } else {
-      addAgentSequence(userText, flow);
-    }
-  };
-
-  const handleSend = () => {
-    if (!inputText.trim() || isTyping) return;
-    const userText = inputText.trim();
-    const flow = getFlowForPrompt(userText);
-
-    if (
-      chatMode === "createResume" &&
-      flow &&
-      (helpWriteStep !== null || typeItOutActive) &&
-      isResumeOrCareerShortcutPrompt(userText)
-    ) {
-      resetCreateResumeSubFlows();
-      runPromptFlow(userText, flow);
-      return;
-    }
-
-    if (chatMode === "createResume" && helpWriteStep !== null) {
-      handleHelpWriteAnswer(userText);
-      return;
-    }
-
-    if (chatMode === "createResume" && typeItOutActive) {
-      handleTypeItOutAnswer(userText);
-      return;
-    }
-
-    if (flow) {
-      runPromptFlow(userText, flow);
-      return;
-    }
-
-    const newMessages = [...messages, { from: "user", text: userText }];
-    setInputText("");
-
-    if (isChatOpen) {
-      const replies = [
-        "I understand. I’ll treat that as new career context and use it when ranking jobs and improving your resume.",
-        "That helps. I can turn this into resume wording, job search filters, or application preparation.",
-        "Based on that, I’d recommend focusing on roles where your design, frontend, and AI prototype experience are visible.",
-        "Would you like me to search jobs, improve your resume, or prepare a job-specific application next?",
+      return [
+        ...prev,
+        {
+          from: "ai",
+          type: "text",
+          text: "I found a great fit at Linear. Initially, your resume match was a bit low, so I autonomously tailored your past projects to highlight 'Design Systems'. I also researched Linear and found they just launched a mobile app, so I wove that into your cold email to make you stand out. Both are ready for your review.",
+        },
+        {
+          from: "ai",
+          type: "cards",
+        },
       ];
-      newMessages.push({
-        from: "ai",
-        text: replies[messages.length % replies.length],
-      });
-      setMessages(newMessages);
-    } else if (step < questions.length) {
-      newMessages.push({ from: "ai", text: questions[step] });
-      setMessages(newMessages);
-      setStep(step + 1);
-    } else if (chatMode === "createResume") {
-      newMessages.push({
-        from: "ai",
-        text: "Great — I have enough background to create a first resume draft. I’ll now organize your information into Summary, Skills, Education, Projects, and Experience sections.",
-      });
-      setMessages(newMessages);
-      setStep(step + 1);
-    } else {
-      newMessages.push({
-        from: "ai",
-        text: "Perfect. I saved your preferences and will use them to filter job results, rank matches, and avoid roles that do not fit your goals.",
-      });
-      setMessages(newMessages);
-      setTimeout(() => go("analyzing"), 2000);
-    }
-  };
+    });
+  }, []);
 
-  const quickReplies = isChatOpen
-    ? [
-        "Write cold email",
-        "Make me sound like a boss",
-        "Find me jobs",
-        "Improve my resume",
-      ]
-    : chatMode === "createResume"
-    ? [
-        "I'll type it out",
-        "Use my LinkedIn",
-        "Find me jobs",
-        "Improve my resume",
-        "Career advice",
-        "Salary insights",
-      ]
-    : ["Remote only", "Full-time", "Entry level", "$50K–$80K"];
-
-  const handleQuickReply = (reply) => {
-    if (isTyping) return;
-    const flow = getFlowForPrompt(reply);
-    if (flow) {
-      if (
-        chatMode === "createResume" &&
-        isResumeOrCareerShortcutPrompt(reply)
-      ) {
-        resetCreateResumeSubFlows();
-      }
-      runPromptFlow(reply, flow);
-    } else {
-      setInputText(reply);
-    }
-  };
+  const quickReplies = [
+    "Find me a UX role at a startup & draft outreach",
+    "Improve my resume",
+    "Find internships",
+  ];
 
   const renderMessageText = (text) => (
     <>
@@ -1792,162 +1468,175 @@ function AIChatbot({
             </span>
           </div>
 
-          {!isChatOpen ? (
-            <button
-              onClick={() => go("dashboard")}
-              className="flex h-9 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-[#ffffff] px-4 text-xs font-bold text-[#000100] shadow-sm transition active:opacity-70"
-            >
-              Skip <ArrowRight className="h-3.5 w-3.5 text-[#000100]" />
-            </button>
-          ) : (
-            <button className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/40 bg-white/60 text-[#000100] shadow-sm backdrop-blur-md transition active:scale-95">
-              <Settings className="h-5 w-5" />
-            </button>
-          )}
+          <button className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/40 bg-white/60 text-[#000100] shadow-sm backdrop-blur-md transition active:scale-95">
+            <Settings className="h-5 w-5" />
+          </button>
         </motion.div>
 
-        {isChatOpen &&
-        messages.length === 1 &&
-        !isTyping &&
-        messages[0].from === "ai" ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="flex min-h-0 flex-1 flex-col items-center justify-center px-4 text-center pb-12"
-          >
-            <motion.div
-              animate={{
-                boxShadow: [
-                  "0 0 0px rgba(160,254,8,0)",
-                  "0 0 50px rgba(160,254,8,0.25)",
-                  "0 0 0px rgba(160,254,8,0)",
-                ],
-              }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="relative mb-8 grid h-32 w-32 place-items-center rounded-full bg-[#000100] shadow-xl"
-            >
-              <div className="absolute inset-1.5 rounded-full border border-white/10 bg-gradient-to-tr from-white/10 to-transparent" />
-              <Star className="relative z-10 h-10 w-10 text-[#a0fe08]" />
-              <Sparkles className="absolute right-6 top-6 h-5 w-5 text-white" />
-            </motion.div>
-            <h2 className="text-[22px] font-bold leading-snug tracking-tight text-[#000100]">
-              {messages[0].text}
-            </h2>
-          </motion.div>
-        ) : (
-          <div
-            ref={messagesScrollRef}
-            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-5 py-4"
-          >
-            <div className="flex flex-col pb-4">
-              {messages.map((msg, i) => {
-                const isAI = msg.from === "ai";
-                const isNextSame = messages[i + 1]?.from === msg.from;
-                const isPrevSame = messages[i - 1]?.from === msg.from;
+        <div
+          ref={messagesScrollRef}
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-5 py-4"
+        >
+          <div className="flex flex-col pb-4">
+            {messages.map((msg, i) => {
+              const isAI = msg.from === "ai";
+              const isNextSame = messages[i + 1]?.from === msg.from;
+              const isPrevSame = messages[i - 1]?.from === msg.from;
 
+              if (msg.type === "terminal") {
+                return (
+                  <div key={i} className="w-full mb-6 flex justify-center">
+                    <AgentTerminal onComplete={handleTerminalComplete} />
+                  </div>
+                );
+              }
+
+              if (msg.type === "cards") {
                 return (
                   <motion.div
-                    key={`${msg.from}-${i}-${msg.text.slice(0, 12)}`}
-                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className={`flex w-full ${
-                      isAI ? "justify-start" : "justify-end"
-                    } ${isNextSame ? "mb-1.5" : "mb-5"}`}
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-5 flex w-full justify-start pl-9"
                   >
-                    {isAI && (
-                      <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
-                        {!isNextSame && (
-                          <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
-                            <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
-                          </div>
-                        )}
+                    <div className="flex flex-col gap-3 mt-1 w-full max-w-[90%]">
+                      {/* Interactive Card 1: Tailored Resume */}
+                      <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#d1d3d2] shadow-sm cursor-pointer hover:bg-[#fafafa] transition active:scale-[0.98]">
+                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#000100] text-white">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-[#000100] truncate">
+                            Linear_UX_Resume_v4.pdf
+                          </h4>
+                          <p className="text-[11px] font-medium text-[#a0fe08] bg-[#000100] px-2 py-0.5 rounded w-fit mt-1">
+                            Tailored • 92% Match
+                          </p>
+                        </div>
+                        <button className="h-8 w-8 grid place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                          <Search className="h-4 w-4" />
+                        </button>
                       </div>
-                    )}
 
-                    <div
-                      className={`max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm ${
-                        isAI
-                          ? `border border-white/60 bg-[#ffffff] text-[#000100] ${
-                              isPrevSame && isNextSame
-                                ? "rounded-[20px] rounded-l-sm"
-                                : isPrevSame
-                                ? "rounded-[22px] rounded-tl-sm rounded-bl-[4px]"
-                                : isNextSame
-                                ? "rounded-[22px] rounded-bl-sm"
-                                : "rounded-[22px] rounded-bl-[4px]"
-                            }`
-                          : `bg-[#000100] text-white ${
-                              isPrevSame && isNextSame
-                                ? "rounded-[20px] rounded-r-sm"
-                                : isPrevSame
-                                ? "rounded-[22px] rounded-tr-sm rounded-br-[4px]"
-                                : isNextSame
-                                ? "rounded-[22px] rounded-br-sm"
-                                : "rounded-[22px] rounded-br-[4px]"
-                            }`
-                      }`}
-                    >
-                      {renderMessageText(msg.text)}
+                      {/* Interactive Card 2: Cold Email Draft */}
+                      <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#d1d3d2] shadow-sm cursor-pointer hover:bg-[#fafafa] transition active:scale-[0.98]">
+                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#000100] text-white">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-[#000100] truncate">
+                            Draft: Linear Outreach
+                          </h4>
+                          <p className="text-[11px] text-[#666666] mt-0.5">
+                            Includes recent news context
+                          </p>
+                        </div>
+                        <button className="h-8 w-8 grid place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 );
-              })}
+              }
 
-              {isTyping && (
+              return (
                 <motion.div
+                  key={`${msg.from}-${i}-${msg.text.slice(0, 12)}`}
                   initial={{ opacity: 0, y: 12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="mb-5 flex w-full justify-start"
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className={`flex w-full ${
+                    isAI ? "justify-start" : "justify-end"
+                  } ${isNextSame ? "mb-1.5" : "mb-5"}`}
                 >
-                  <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
-                    <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
-                      <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                  {isAI && (
+                    <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                      {!isNextSame && (
+                        <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+                          <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex h-[44px] items-center gap-1.5 rounded-[22px] rounded-bl-[4px] border border-white/60 bg-[#ffffff] px-4 shadow-sm">
-                    <motion.span
-                      animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut",
-                      }}
-                      className="h-1.5 w-1.5 rounded-full bg-[#000100]"
-                    />
-                    <motion.span
-                      animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut",
-                        delay: 0.2,
-                      }}
-                      className="h-1.5 w-1.5 rounded-full bg-[#000100]"
-                    />
-                    <motion.span
-                      animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut",
-                        delay: 0.4,
-                      }}
-                      className="h-1.5 w-1.5 rounded-full bg-[#000100]"
-                    />
+                  <div
+                    className={`max-w-[78%] px-4 py-3 text-[14.5px] leading-[1.55] shadow-sm ${
+                      isAI
+                        ? `border border-white/60 bg-[#ffffff] text-[#000100] ${
+                            isPrevSame && isNextSame
+                              ? "rounded-[20px] rounded-l-sm"
+                              : isPrevSame
+                              ? "rounded-[22px] rounded-tl-sm rounded-bl-[4px]"
+                              : isNextSame
+                              ? "rounded-[22px] rounded-bl-sm"
+                              : "rounded-[22px] rounded-bl-[4px]"
+                          }`
+                        : `bg-[#000100] text-white ${
+                            isPrevSame && isNextSame
+                              ? "rounded-[20px] rounded-r-sm"
+                              : isPrevSame
+                              ? "rounded-[22px] rounded-tr-sm rounded-br-[4px]"
+                              : isNextSame
+                              ? "rounded-[22px] rounded-br-sm"
+                              : "rounded-[22px] rounded-br-[4px]"
+                          }`
+                    }`}
+                  >
+                    {renderMessageText(msg.text)}
                   </div>
                 </motion.div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              );
+            })}
+
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="mb-5 flex w-full justify-start"
+              >
+                <div className="mr-2.5 flex w-7 shrink-0 flex-col justify-end pb-0.5">
+                  <div className="grid h-7 w-7 place-items-center rounded-full bg-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+                    <Star className="h-3.5 w-3.5 text-[#a0fe08]" />
+                  </div>
+                </div>
+
+                <div className="flex h-[44px] items-center gap-1.5 rounded-[22px] rounded-bl-[4px] border border-white/60 bg-[#ffffff] px-4 shadow-sm">
+                  <motion.span
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: "easeInOut",
+                    }}
+                    className="h-1.5 w-1.5 rounded-full bg-[#000100]"
+                  />
+                  <motion.span
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: "easeInOut",
+                      delay: 0.2,
+                    }}
+                    className="h-1.5 w-1.5 rounded-full bg-[#000100]"
+                  />
+                  <motion.span
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: "easeInOut",
+                      delay: 0.4,
+                    }}
+                    className="h-1.5 w-1.5 rounded-full bg-[#000100]"
+                  />
+                </div>
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-        )}
+        </div>
 
         <div className="relative z-20 shrink-0 bg-gradient-to-t from-[#eaeceb] via-[#eaeceb] to-transparent px-4 sm:px-6 pb-0 pt-2">
           {uploadQueue.length > 0 && (
@@ -1988,34 +1677,17 @@ function AIChatbot({
               transition={{ duration: 0.4, delay: 0.1 }}
               className="mb-3 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar"
             >
-              {quickReplies.map((q) => {
-                let Icon = null;
-                const lowerQ = q.toLowerCase();
-                if (lowerQ.includes("jobs") || lowerQ.includes("search"))
-                  Icon = Search;
-                else if (
-                  lowerQ.includes("resume") ||
-                  lowerQ.includes("linkedin")
-                )
-                  Icon = FileText;
-                else if (lowerQ.includes("advice")) Icon = Sparkles;
-                else if (lowerQ.includes("salary") || lowerQ.includes("market"))
-                  Icon = BarChart3;
-                else if (lowerQ.includes("type")) Icon = PenLine;
-                else Icon = InfinityIcon;
-
-                return (
-                  <button
-                    key={q}
-                    onClick={() => handleQuickReply(q)}
-                    disabled={isTyping}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-white/60 px-4 py-2.5 text-xs font-bold text-[#000100] shadow-sm backdrop-blur-md transition active:bg-[#eaeceb] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {Icon && <Icon className="h-3.5 w-3.5" />}
-                    {q}
-                  </button>
-                );
-              })}
+              {quickReplies.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => handleSend(q)}
+                  disabled={isTyping}
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-white/60 px-4 py-2.5 text-xs font-bold text-[#000100] shadow-sm backdrop-blur-md transition active:bg-[#eaeceb] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {q}
+                </button>
+              ))}
             </motion.div>
           )}
 
@@ -2043,7 +1715,7 @@ function AIChatbot({
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={
                     isTyping
-                      ? "Syncra is thinking..."
+                      ? "Syncra is executing plan..."
                       : "Ask Syncra anything..."
                   }
                   disabled={isTyping}
@@ -2051,7 +1723,7 @@ function AIChatbot({
                 />
               </div>
               <button
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={isTyping || !inputText.trim()}
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95 disabled:opacity-40"
               >
