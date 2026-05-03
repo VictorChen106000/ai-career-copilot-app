@@ -2,7 +2,6 @@ import React, { useContext, useMemo, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  ArrowLeft,
   Upload,
   Mail,
   Lock,
@@ -38,70 +37,62 @@ import {
   Signal,
   Trash2,
   AlertCircle,
+  ThumbsDown,
 } from "lucide-react";
 
 // --- LOCAL VSCODE IMAGES ---
 // Put your actual .jpg/.png files in the `public` folder of your VSCode project.
 const PROFILE_IMG_URL = "/profile.jpg";
 const LOGO_IMG_URL = "/logo.png";
-const LOGIN_BG_IMG_URL = "/login-bg.jpg"; // Your cinematic background image for the login screen
+const LOGIN_BG_IMG_URL = "/login-bg.jpg";
 
+// --- AGENTIC JOB DATA (The Approval Queue) ---
+// This exactly matches your 5 Scenarios for the MVP Demo!
 const jobs = [
   {
     id: 1,
-    title: "Senior Product Designer",
+    title: "React Developer",
     company: "TechFlow",
-    match: 98,
-    location: "New York, NY",
-    workSetting: "On-site",
-    salary: "$150K–$180K",
-    type: "Senior",
-    why: "Your design systems and product thinking match this role perfectly.",
-    missing: ["Prototyping tools depth"],
-    skills: ["Figma", "Design Systems", "UI/UX"],
-    agentStatus: "drafted",
+    location: "Remote",
+    salary: "$120K–$140K",
+    category: "ready", // Capability 1: Autonomous Drafter (Scenario 1)
+    match: 95,
+    agentAction: "Application Tailored",
+    agentJustification:
+      "I matched your React projects to this role and drafted a custom resume emphasizing your frontend skills.",
+    skills: ["React", "Frontend", "Tailwind"],
+    missing: [],
+    why: "Your specialized experience in building complex React dashboards aligns perfectly with TechFlow's internal tooling team.",
   },
   {
     id: 2,
-    title: "Junior UX Designer",
+    title: "UX Designer",
     company: "Linear",
+    location: "San Francisco, CA",
+    salary: "$90K–$120K",
+    category: "input_needed", // Capability 2: Collaborator (Scenario 2)
     match: 94,
-    location: "Remote",
-    workSetting: "Remote",
-    salary: "$55K–$72K",
-    type: "Entry Level",
-    why: "Your portfolio, Figma experience, and product thinking match this role strongly.",
-    missing: ["Design systems", "A/B testing"],
-    skills: ["Figma", "UI/UX", "Product Design"],
-    agentStatus: "drafted",
+    agentAction: "Missing Requirement",
+    agentJustification:
+      "This role requires A/B testing. Do you have any experience with this? Reply with a quick sentence and I will weave it into your tailored draft.",
+    skills: ["User Research", "Figma", "Prototyping"],
+    missing: ["A/B Testing"],
+    why: "Linear's focus on high-fidelity visual craft matches your portfolio, but they specifically want data-driven design validation.",
   },
   {
     id: 3,
-    title: "Frontend Engineer",
-    company: "Stripe",
-    match: 88,
-    location: "San Francisco",
-    workSetting: "Hybrid",
-    salary: "$110K-$130K",
-    type: "Mid Level",
-    why: "Your React projects and API integration experience fit the core requirements.",
-    missing: ["Testing Library", "TypeScript depth"],
-    skills: ["React", "JavaScript", "Frontend", "TypeScript"],
-    agentStatus: "matched",
-  },
-  {
-    id: 4,
-    title: "Product Design Intern",
-    company: "Notion",
-    match: 82,
-    location: "New York",
-    workSetting: "Hybrid",
-    salary: "$28/hr",
-    type: "Internship",
-    why: "Your research, wireframing, and student product experience align well.",
-    missing: ["Portfolio case study polish"],
-    skills: ["Figma", "Research", "Wireframing"],
-    agentStatus: "matched",
+    title: "Data Visualization Specialist",
+    company: "Vercel",
+    location: "New York, NY",
+    salary: "$140K-$160K",
+    category: "exploration", // Capability 3: Strategist / Pivot (Scenario 4)
+    match: 98,
+    agentAction: "Strategic Pivot",
+    agentJustification:
+      "You asked for Frontend, but your Python and D3.js skills make you a unicorn for this Data Viz role paying $20k more. Should I draft an application?",
+    skills: ["Python", "D3.js", "Data Viz"],
+    missing: [],
+    why: "Your hidden strength in mathematical visualization puts you in the top 1% of applicants for this specialized role.",
   },
 ];
 
@@ -292,7 +283,6 @@ const GlassIcon = ({ children, className = "" }) => (
   </div>
 );
 
-// Standardized Back Button Layout
 const BackButton = ({ onClick, className = "" }) => (
   <button
     type="button"
@@ -452,8 +442,6 @@ const Screen = ({
   );
 };
 
-// --- Custom Modern Line-Art Icons for BottomNav (Matching the cute squircle reference) ---
-
 const HomeIcon = ({ active }) => (
   <svg
     width="24"
@@ -511,16 +499,16 @@ const BriefcaseIcon = ({ active }) => (
           rx="4"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
         <path
           d="M8.5 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
         />
-        <circle cx="12" cy="14" r="1" fill="currentColor" />
+        <circle cx="12" cy="14" r="1.5" fill="currentColor" />
       </>
     )}
   </svg>
@@ -533,6 +521,7 @@ const UserIcon = ({ active }) => (
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    className="shrink-0"
   >
     {active ? (
       <>
@@ -554,12 +543,12 @@ const UserIcon = ({ active }) => (
           r="3"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
         <path
           d="M6 18c1.5-2.5 3.5-4 6-4s4.5 1.5 6 4"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
           fill="none"
         />
@@ -569,7 +558,7 @@ const UserIcon = ({ active }) => (
           r="10"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
         />
       </>
     )}
@@ -651,7 +640,6 @@ function OSHome({ go }) {
   const [showNotif, setShowNotif] = useState(false);
 
   useEffect(() => {
-    // Show notification 1.5s after arriving on OS Home screen
     const timer = setTimeout(() => setShowNotif(true), 1500);
     return () => clearTimeout(timer);
   }, []);
@@ -663,7 +651,6 @@ function OSHome({ go }) {
   return (
     <PhoneShell theme="dark">
       <div className="relative flex h-full flex-col bg-gradient-to-br from-[#0f172a] via-[#3b0764] to-[#000000] px-5 pb-4 pt-16">
-        {/* Push Notification Banner */}
         <AnimatePresence>
           {showNotif && (
             <motion.button
@@ -700,7 +687,6 @@ function OSHome({ go }) {
           )}
         </AnimatePresence>
 
-        {/* App Grid */}
         <div className="mt-8 grid grid-cols-4 gap-x-4 gap-y-8">
           <button
             onClick={() => launchApp("landing")}
@@ -714,7 +700,6 @@ function OSHome({ go }) {
             </span>
           </button>
 
-          {/* Dummy Apps */}
           {[...Array(11)].map((_, i) => (
             <div
               key={i}
@@ -726,7 +711,6 @@ function OSHome({ go }) {
           ))}
         </div>
 
-        {/* Dock */}
         <div className="mt-auto mb-1 flex h-[86px] items-center justify-between rounded-[32px] bg-white/20 px-4 backdrop-blur-2xl">
           {[...Array(4)].map((_, i) => (
             <div
@@ -1010,6 +994,90 @@ function Login({ go }) {
   );
 }
 
+function SignUp({ go }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    go("dashboard");
+  };
+  return (
+    <PhoneShell>
+      <Screen>
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto flex h-full min-h-[610px] w-full max-w-[430px] flex-col"
+        >
+          <div className="flex flex-1 flex-col justify-center">
+            <h1 className="text-lg font-bold text-[#000100]">
+              Create your account
+            </h1>
+            <p className="mb-8 mt-2 text-sm text-[#666666]">
+              Start building your AI-powered career profile
+            </p>
+            <div className="space-y-3">
+              <SoftInput
+                icon={User}
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <SoftInput
+                icon={Mail}
+                placeholder="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <SoftInput
+                icon={Lock}
+                placeholder="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <SoftInput
+                icon={Lock}
+                placeholder="Confirm password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            <PrimaryButton className="mt-7" onClick={handleSubmit}>
+              Create account <ArrowRight className="h-4 w-4" />
+            </PrimaryButton>
+            <div className="my-6 flex items-center gap-3 text-xs text-[#666666]">
+              <span className="h-px flex-1 bg-[#d1d3d2]" /> or sign up with{" "}
+              <span className="h-px flex-1 bg-[#d1d3d2]" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <SecondaryButton onClick={() => go("dashboard")}>
+                Google
+              </SecondaryButton>
+              <SecondaryButton onClick={() => go("dashboard")}>
+                Demo Mode
+              </SecondaryButton>
+            </div>
+          </div>
+          <p className="pb-2 text-center text-sm text-[#666666]">
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => go("login")}
+              className="font-bold text-[#000100]"
+            >
+              Sign in
+            </button>
+          </p>
+        </form>
+      </Screen>
+    </PhoneShell>
+  );
+}
+
 function MorningBrief({ go, userName }) {
   return (
     <PhoneShell theme="dark">
@@ -1053,9 +1121,8 @@ function MorningBrief({ go, userName }) {
             </motion.div>
 
             <p className="text-[17px] font-medium leading-relaxed text-white/60 max-w-[280px]">
-              new roles. <span className="text-white">2</span> perfectly matched
-              your Senior Designer goal. I've tailored your resume and prepared
-              application drafts.
+              new roles. <span className="text-white">3</span> require your
+              input today. I've prepared your tailored resumes.
             </p>
           </div>
         </motion.div>
@@ -1199,6 +1266,18 @@ function AIChatbot({
   };
 
   const careerPromptFlows = {
+    // SCENARIO 3: The Cold Outreach Hustler
+    "write cold email": [
+      "Reading the job description you pasted...",
+      "Since this job isn't in our network, the best approach is a cold email. I drafted a message highlighting your overlap with their requirements.",
+      "I have attached your core skills. You can now open this directly in your Mail App.",
+    ],
+    // SCENARIO 5: Make Me Sound Like a Boss
+    "make me sound like a boss": [
+      "I'm applying to management roles, let's upgrade this.",
+      "I've identified passive verbs (e.g., 'helped with') and replaced them with strong leadership verbs (e.g., 'Spearheaded', 'Architected').",
+      "I've quantified your impact. I just dropped a brand-new, upgraded PDF into your Resumes tab for you to download.",
+    ],
     "find me jobs": [
       "Starting an agentic job search now. I’ll use your resume, preferences, and skill profile to rank opportunities.",
       "Searching demo sources: LinkedIn, Indeed, company career pages, and internship platforms…",
@@ -1356,6 +1435,23 @@ function AIChatbot({
     if (isChatOpen && careerPromptFlows[key]) return careerPromptFlows[key];
     if (!isChatOpen && chatMode !== "createResume" && preferenceFlows[key])
       return preferenceFlows[key];
+
+    // Reactive Agent Triggers (Scenarios 3 & 5)
+    if (
+      key.includes("cold email") ||
+      key.includes("outreach") ||
+      key.includes("random website")
+    ) {
+      return careerPromptFlows["write cold email"];
+    }
+    if (
+      key.includes("boss") ||
+      key.includes("manager") ||
+      key.includes("leadership") ||
+      key.includes("management")
+    ) {
+      return careerPromptFlows["make me sound like a boss"];
+    }
 
     if (
       key.includes("find me job") ||
@@ -1622,7 +1718,12 @@ function AIChatbot({
   };
 
   const quickReplies = isChatOpen
-    ? ["Find me jobs", "Improve my resume", "Career advice", "Salary insights"]
+    ? [
+        "Write cold email",
+        "Make me sound like a boss",
+        "Find me jobs",
+        "Improve my resume",
+      ]
     : chatMode === "createResume"
     ? [
         "I'll type it out",
@@ -2588,7 +2689,7 @@ function Dashboard({
         className="flex-1"
       >
         {/* Header with profile */}
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[124px] items-end justify-between bg-[#eaeceb] px-6 pb-4">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[124px] items-end justify-between bg-[#eaeceb] px-6 pb-4 border-b border-[#d1d3d2]/50">
           <div className="flex items-center gap-4 h-[52px]">
             <button
               onClick={() => go("profile")}
@@ -2851,652 +2952,199 @@ function Dashboard({
   );
 }
 
-function JobsScreen({
-  go,
-  appliedJobs = [],
-  savedJobs = [],
-  onSaveJob = () => {},
-  dashboardFilter = "all",
-  setDashboardFilter,
-}) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [matchThreshold, setMatchThreshold] = useState(50);
-  const [tempMatchThreshold, setTempMatchThreshold] = useState(50);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [expandedFilter, setExpandedFilter] = useState("skills");
-  const [selectedJobIds, setSelectedJobIds] = useState([]);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-
-  const defaultFilters = {
-    workSetting: ["All"],
-    experience: ["All"],
-    skills: [],
-    roles: [],
-  };
-
-  const [activeFilters, setActiveFilters] = useState(defaultFilters);
-  const [tempFilters, setTempFilters] = useState(defaultFilters);
-
-  const workSettingsOptions = ["All", "Remote", "Hybrid", "On-site"];
-  const experienceOptions = [
-    "All",
-    "Internship",
-    "Entry Level",
-    "Mid Level",
-    "Senior",
-  ];
-  const skillOptions = [
-    "Figma",
-    "React",
-    "Design Systems",
-    "TypeScript",
-    "UI/UX",
-    "Frontend",
-    "JavaScript",
-  ];
-  const roleOptions = [
-    "UX Designer",
-    "Product Designer",
-    "Frontend Engineer",
-    "Data Analyst",
-  ];
-
-  const openFilter = () => {
-    setTempFilters(activeFilters);
-    setTempMatchThreshold(matchThreshold);
-    setIsFilterOpen(true);
-  };
-
-  const closeFilter = () => setIsFilterOpen(false);
-
-  const applyFilters = () => {
-    setActiveFilters(tempFilters);
-    setMatchThreshold(tempMatchThreshold);
-    closeFilter();
-  };
-
-  const clearFilters = () => {
-    setTempFilters(defaultFilters);
-    setTempMatchThreshold(50);
-  };
-
-  const toggleChip = (category, value) => {
-    setTempFilters((prev) => {
-      const current = prev[category];
-      if (value === "All") return { ...prev, [category]: ["All"] };
-
-      let newArr = current.filter((v) => v !== "All");
-      if (newArr.includes(value)) {
-        newArr = newArr.filter((v) => v !== value);
-        if (newArr.length === 0) newArr = ["All"];
-      } else {
-        newArr = [...newArr, value];
-      }
-      return { ...prev, [category]: newArr };
-    });
-  };
-
-  const toggleCheckbox = (category, value) => {
-    setTempFilters((prev) => {
-      const current = prev[category];
-      if (current.includes(value)) {
-        return { ...prev, [category]: current.filter((v) => v !== value) };
-      }
-      return { ...prev, [category]: [...current, value] };
-    });
-  };
-
-  const filters = [
-    { key: "recent", label: "Recent", icon: Clock },
-    { key: "saved", label: "Saved", icon: Bookmark },
-    { key: "applied", label: "Applied", icon: CheckCircle2 },
-  ];
-
-  const jobDateLabels = {
-    1: "Today May 1",
-    2: "Today May 1",
-    3: "Yesterday Apr 30",
-    4: "Apr 29",
-  };
-
-  const filteredJobs = jobs.filter((job) => {
-    // Top pill filters
-    const isRecent = job.id <= 2;
-    if (dashboardFilter === "saved" && !savedJobs.includes(job.id))
-      return false;
-    if (dashboardFilter === "applied" && !appliedJobs.includes(job.id))
-      return false;
-    if (dashboardFilter === "recent" && !isRecent) return false;
-
-    // Search query
-    if (
-      searchQuery &&
-      !job.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !job.company.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
-    }
-
-    // Match threshold
-    if (job.match < matchThreshold) return false;
-
-    // Work Setting
-    if (
-      !activeFilters.workSetting.includes("All") &&
-      !activeFilters.workSetting.includes(job.workSetting)
-    ) {
-      return false;
-    }
-
-    // Experience Level
-    if (
-      !activeFilters.experience.includes("All") &&
-      !activeFilters.experience.includes(job.type)
-    ) {
-      return false;
-    }
-
-    // Skills
-    if (
-      activeFilters.skills.length > 0 &&
-      !activeFilters.skills.some((s) => job.skills.includes(s))
-    ) {
-      return false;
-    }
-
-    // Roles
-    if (
-      activeFilters.roles.length > 0 &&
-      !activeFilters.roles.some((r) =>
-        job.title.toLowerCase().includes(r.toLowerCase())
-      )
-    ) {
-      return false;
-    }
-
-    return true;
-  });
-
-  const groupedFilteredJobs = filteredJobs.reduce((groups, job) => {
-    const dateLabel = jobDateLabels[job.id] || "Earlier";
-    const existingGroup = groups.find((group) => group.dateLabel === dateLabel);
-    if (existingGroup) {
-      existingGroup.items.push(job);
-    } else {
-      groups.push({ dateLabel, items: [job] });
-    }
-    return groups;
-  }, []);
-
-  const toggleSelectJob = (id) => {
-    setSelectedJobIds((prev) =>
-      prev.includes(id) ? prev.filter((jobId) => jobId !== id) : [...prev, id]
-    );
-  };
+function JobsScreen({ go }) {
+  // Agentic Approval Queue Grouping
+  const readyJobs = jobs.filter((j) => j.category === "ready");
+  const inputJobs = jobs.filter((j) => j.category === "input_needed");
+  const exploreJobs = jobs.filter((j) => j.category === "exploration");
 
   return (
-    <Screen nav activeTab="jobs" go={go} className="relative">
-      {/* Header */}
-      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-5 flex h-[104px] items-end justify-between bg-[#eaeceb] px-6 pb-4">
-        <div className="flex h-[52px] items-center">
-          <h1 className="text-[26px] font-bold tracking-tight text-[#000100]">
-            Job Results
-          </h1>
-        </div>
-        <div className="flex h-[52px] items-center">
-          <button
-            onClick={() => {
-              setIsSelectionMode(!isSelectionMode);
-              if (isSelectionMode) setSelectedJobIds([]);
-            }}
-            className="text-sm font-bold text-[#000100] transition active:opacity-70"
-          >
-            {isSelectionMode ? "Cancel" : "Select"}
-          </button>
-        </div>
+    <Screen nav activeTab="jobs" go={go} className="relative bg-[#eaeceb]">
+      {/* Fixed Agent Header */}
+      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-6 flex flex-col justify-end bg-[#eaeceb] px-6 pb-4 pt-12 h-[124px] border-b border-[#d1d3d2]/50">
+        <h1 className="text-[28px] font-black tracking-tight text-[#000100] leading-none mb-1.5">
+          Review Queue
+        </h1>
+        <p className="text-sm font-medium text-[#666666]">
+          I processed 142 roles. Here are 3 that need your attention.
+        </p>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-4 flex items-center gap-3 rounded-2xl border border-[#d1d3d2] bg-[#ffffff] p-2 pl-4 shadow-sm focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
-        <Search className="h-5 w-5 text-[#999999]" />
-        <input
-          type="text"
-          placeholder="Search roles, companies..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-transparent text-sm text-[#000100] outline-none placeholder:text-[#999999]"
-        />
-      </div>
-
-      {/* Filter tabs */}
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-        <button
-          onClick={openFilter}
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d1d3d2] bg-[#000100] px-4 py-2 text-xs font-bold text-white transition active:opacity-80"
-        >
-          <Filter className="h-3.5 w-3.5" />
-          Filter / All
-        </button>
-        {filters.map((f) => {
-          const FIcon = f.icon;
-          const active = dashboardFilter === f.key;
-          const count =
-            f.key === "applied"
-              ? appliedJobs.length
-              : f.key === "saved"
-              ? savedJobs.length
-              : null;
-          return (
-            <button
-              key={f.key}
-              onClick={() => setDashboardFilter(active ? "all" : f.key)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${
-                active
-                  ? "bg-[#000100] text-white"
-                  : "border border-[#d1d3d2] bg-[#ffffff] text-[#000100]"
-              }`}
-            >
-              <FIcon className="h-3.5 w-3.5" />
-              {f.label}
-              {count !== null && count > 0 && (
-                <span
-                  className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                    active
-                      ? "bg-[#a0fe08] text-[#000100]"
-                      : "bg-[#eaeceb] text-[#000100]"
-                  }`}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Job cards */}
-      {filteredJobs.length === 0 ? (
-        <Card className="border-none py-10 text-center shadow-sm">
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-[#000100] text-white">
-            <Search className="h-6 w-6" />
-          </div>
-          <h3 className="font-bold text-[#000100]">No jobs found</h3>
-          <p className="mt-2 text-sm text-[#666666]">
-            Try adjusting your filters or search terms.
-          </p>
-        </Card>
-      ) : (
-        groupedFilteredJobs.map((group) => (
-          <div key={group.dateLabel} className="mb-5">
-            <div className="mb-3 px-1">
-              <h3 className="text-sm font-bold text-[#000100]">
-                {group.dateLabel}
-              </h3>
-            </div>
-
-            {group.items.map((job) => {
-              const isApplied = appliedJobs.includes(job.id);
-              const isSelected = selectedJobIds.includes(job.id);
-              const isSaved = savedJobs.includes(job.id);
-              return (
-                <Card
-                  key={job.id}
-                  className={`mb-3 cursor-pointer border p-4 shadow-sm transition hover:bg-[#fafafa] ${
-                    isSelectionMode && isSelected
-                      ? "border-[#000100] ring-1 ring-[#000100]"
-                      : "border-transparent"
-                  }`}
-                  onClick={() =>
-                    isSelectionMode
-                      ? toggleSelectJob(job.id)
-                      : go("detail", job)
-                  }
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Selection Checkbox */}
-                    {isSelectionMode && (
-                      <div
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
-                          isSelected
-                            ? "border-[#000100] bg-[#000100] text-white"
-                            : "border-[#d1d3d2] bg-white"
-                        }`}
-                      >
-                        {isSelected && <CheckCircle2 className="h-3.5 w-3.5" />}
-                      </div>
-                    )}
-                    <div className="flex flex-1 items-center justify-between gap-3 min-w-0">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#eaeceb] text-sm font-bold text-[#000100]">
-                          {job.company[0]}
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="truncate text-sm font-bold text-[#000100]">
-                            {job.title}
-                          </h3>
-                          <p className="mt-0.5 truncate text-[11px] text-[#666666]">
-                            {job.company} · {job.location}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {isApplied ? (
-                          <span className="rounded-full bg-[#000100] px-2.5 py-1 text-[10px] font-bold text-white">
-                            Applied
-                          </span>
-                        ) : job.agentStatus === "drafted" ? (
-                          <span className="flex items-center gap-1 rounded-full bg-[#000100] px-2.5 py-1 text-[10px] font-bold text-[#a0fe08]">
-                            <Sparkles className="h-3 w-3" /> Drafted
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-[#a0fe08] px-2.5 py-1 text-[10px] font-bold text-[#000100]">
-                            {job.match}% match
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onSaveJob(job.id);
-                          }}
-                          className={`grid h-8 w-8 place-items-center rounded-full transition active:opacity-70 ${
-                            isSaved
-                              ? "bg-[#000100] text-[#a0fe08]"
-                              : "bg-[#eaeceb] text-[#666666] hover:bg-[#000100] hover:text-white"
-                          }`}
-                          aria-label={isSaved ? "Unsave job" : "Save job"}
-                        >
-                          <Bookmark
-                            className="h-4 w-4"
-                            fill={isSaved ? "currentColor" : "none"}
-                          />
-                        </button>
-                      </div>
+      <div className="pb-24">
+        {/* Tier 1: Ready to Send */}
+        {readyJobs.length > 0 && (
+          <div className="mb-8">
+            {readyJobs.map((job) => (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                key={job.id}
+                className="mb-6 rounded-[24px] bg-[#ffffff] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#d1d3d2]/60 overflow-hidden"
+              >
+                <div className="p-5 pb-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex h-6 items-center rounded-full bg-[#a0fe08] px-2.5 text-[10px] font-bold uppercase tracking-wider text-[#000100]">
+                      <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Ready to
+                      Send
                     </div>
+                    <span className="text-xs font-bold text-[#666666]">
+                      {job.match}% Match
+                    </span>
                   </div>
-                </Card>
-              );
-            })}
-          </div>
-        ))
-      )}
-
-      {/* Floating Action Button for Selection Mode */}
-      <AnimatePresence>
-        {isSelectionMode && selectedJobIds.length > 0 && (
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 50, opacity: 0 }}
-            className="absolute bottom-24 left-6 right-6 z-40"
-          >
-            <button
-              onClick={() => {
-                setIsSelectionMode(false);
-                setSelectedJobIds([]);
-                go("dashboard");
-              }}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#000100] px-5 py-4 text-sm font-bold text-white shadow-[0_8px_30px_rgba(0,0,0,0.24)] transition active:opacity-80"
-            >
-              Execute Application ({selectedJobIds.length})
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Filter Bottom Sheet Modal */}
-      <AnimatePresence>
-        {isFilterOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeFilter}
-              className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
-            />
-
-            {/* Bottom Sheet */}
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 26, stiffness: 320 }}
-              className="absolute bottom-0 left-0 right-0 z-[101] flex h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
-                <h2 className="text-lg font-bold text-[#000100]">Filters</h2>
-                <button
-                  onClick={closeFilter}
-                  className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
-                >
-                  <Plus className="h-5 w-5 rotate-45" />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
-                {/* Match Threshold */}
-                <div className="mb-8">
-                  <h3 className="mb-3 text-sm font-bold text-[#000100]">
-                    Minimum Match
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-6 flex-1 overflow-hidden rounded-full bg-[#d1d3d2]">
-                      <div
-                        className="absolute bottom-0 left-0 top-0 bg-[#000100] transition-all"
-                        style={{
-                          width: `${((tempMatchThreshold || 50) - 50) * 2}%`,
-                        }}
-                      />
-                      <input
-                        type="range"
-                        min="50"
-                        max="100"
-                        step="1"
-                        value={
-                          tempMatchThreshold === "" ? 50 : tempMatchThreshold
-                        }
-                        onChange={(e) =>
-                          setTempMatchThreshold(Number(e.target.value))
-                        }
-                        className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0"
-                      />
+                  <div className="flex items-start gap-4">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#000100] text-lg font-bold text-[#a0fe08]">
+                      {job.company[0]}
                     </div>
-                    <div className="flex items-center gap-0.5 rounded-lg border border-[#d1d3d2] bg-[#ffffff] px-2 py-1 shadow-sm focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
-                      <input
-                        type="number"
-                        min="50"
-                        max="100"
-                        value={tempMatchThreshold}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setTempMatchThreshold(val === "" ? "" : Number(val));
-                        }}
-                        onBlur={() => {
-                          let val = tempMatchThreshold;
-                          if (val === "" || val < 50) setTempMatchThreshold(50);
-                          else if (val > 100) setTempMatchThreshold(100);
-                        }}
-                        placeholder="50"
-                        className="w-8 bg-transparent p-0 text-center text-sm font-bold text-[#000100] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none placeholder:text-[#999999]"
-                      />
-                      <span className="text-sm font-bold text-[#666666]">
-                        %
-                      </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-base font-bold text-[#000100]">
+                        {job.title}
+                      </h3>
+                      <p className="mt-0.5 truncate text-[13px] font-medium text-[#666666]">
+                        {job.company} • {job.salary}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Work Setting (ChoiceChip Equivalent) */}
-                <div className="mb-8">
-                  <h3 className="mb-3 text-sm font-bold text-[#000100]">
-                    Work Setting
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {workSettingsOptions.map((ws) => {
-                      const isActive = tempFilters.workSetting.includes(ws);
-                      return (
-                        <button
-                          key={ws}
-                          onClick={() => toggleChip("workSetting", ws)}
-                          className={`rounded-full border px-4 py-2 text-xs font-bold transition ${
-                            isActive
-                              ? "border-[#000100] bg-[#000100] text-white"
-                              : "border-[#d1d3d2] bg-[#ffffff] text-[#000100]"
-                          }`}
-                        >
-                          {ws}
-                        </button>
-                      );
-                    })}
+                <div className="bg-[#f4f5f4] p-4 mx-5 mb-5 rounded-2xl">
+                  <div className="flex gap-2 items-center mb-1.5">
+                    <Sparkles className="w-4 h-4 text-[#000100]" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#000100]">
+                      {job.agentAction}
+                    </span>
                   </div>
+                  <p className="text-[13px] text-[#666666] leading-[1.6]">
+                    {job.agentJustification}
+                  </p>
                 </div>
 
-                {/* Experience Level (ChoiceChip Equivalent) */}
-                <div className="mb-8">
-                  <h3 className="mb-3 text-sm font-bold text-[#000100]">
-                    Experience Level
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {experienceOptions.map((el) => {
-                      const isActive = tempFilters.experience.includes(el);
-                      return (
-                        <button
-                          key={el}
-                          onClick={() => toggleChip("experience", el)}
-                          className={`rounded-full border px-4 py-2 text-xs font-bold transition ${
-                            isActive
-                              ? "border-[#000100] bg-[#000100] text-white"
-                              : "border-[#d1d3d2] bg-[#ffffff] text-[#000100]"
-                          }`}
-                        >
-                          {el}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Skills (ExpansionTile Equivalent) */}
-                <div className="mb-4 overflow-hidden rounded-2xl border border-[#d1d3d2] bg-[#ffffff]">
+                <div className="px-5 pb-5 flex gap-3">
                   <button
-                    onClick={() =>
-                      setExpandedFilter(
-                        expandedFilter === "skills" ? "" : "skills"
-                      )
-                    }
-                    className="flex w-full items-center justify-between px-5 py-4 font-bold text-[#000100]"
+                    onClick={() => go("review", job)}
+                    className="flex-1 bg-[#000100] text-white rounded-xl py-3.5 text-sm font-bold shadow-md transition active:scale-[0.98]"
                   >
-                    Skills
-                    <ChevronRight
-                      className={`h-4 w-4 text-[#666666] transition-transform ${
-                        expandedFilter === "skills" ? "rotate-90" : ""
-                      }`}
-                    />
+                    Export Tailored Application
                   </button>
-                  <AnimatePresence>
-                    {expandedFilter === "skills" && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="border-t border-[#d1d3d2] px-5 py-3">
-                          {skillOptions.map((skill) => (
-                            <label
-                              key={skill}
-                              className="flex cursor-pointer items-center gap-3 py-2"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={tempFilters.skills.includes(skill)}
-                                onChange={() => toggleCheckbox("skills", skill)}
-                                className="h-4 w-4 cursor-pointer rounded border-[#d1d3d2] text-[#000100] focus:ring-[#000100]"
-                              />
-                              <span className="text-sm font-medium text-[#666666]">
-                                {skill}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Roles (ExpansionTile Equivalent) */}
-                <div className="mb-4 overflow-hidden rounded-2xl border border-[#d1d3d2] bg-[#ffffff]">
-                  <button
-                    onClick={() =>
-                      setExpandedFilter(
-                        expandedFilter === "roles" ? "" : "roles"
-                      )
-                    }
-                    className="flex w-full items-center justify-between px-5 py-4 font-bold text-[#000100]"
-                  >
-                    Roles
-                    <ChevronRight
-                      className={`h-4 w-4 text-[#666666] transition-transform ${
-                        expandedFilter === "roles" ? "rotate-90" : ""
-                      }`}
-                    />
+                  <button className="px-5 bg-[#eaeceb] text-[#666666] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                  <AnimatePresence>
-                    {expandedFilter === "roles" && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="border-t border-[#d1d3d2] px-5 py-3">
-                          {roleOptions.map((role) => (
-                            <label
-                              key={role}
-                              className="flex cursor-pointer items-center gap-3 py-2"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={tempFilters.roles.includes(role)}
-                                onChange={() => toggleCheckbox("roles", role)}
-                                className="h-4 w-4 cursor-pointer rounded border-[#d1d3d2] text-[#000100] focus:ring-[#000100]"
-                              />
-                              <span className="text-sm font-medium text-[#666666]">
-                                {role}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
-              </div>
-
-              {/* Pinned Footer */}
-              <div className="flex items-center gap-4 border-t border-[#d1d3d2] bg-[#ffffff] p-5 pb-8">
-                <button
-                  onClick={clearFilters}
-                  className="px-2 text-sm font-bold text-[#666666] transition active:opacity-70"
-                >
-                  Clear Filters
-                </button>
-                <button
-                  onClick={applyFilters}
-                  className="flex-1 rounded-xl bg-[#000100] px-5 py-4 text-center text-sm font-bold text-white transition active:opacity-80"
-                >
-                  Show Results
-                </button>
-              </div>
-            </motion.div>
-          </>
+              </motion.div>
+            ))}
+          </div>
         )}
-      </AnimatePresence>
+
+        {/* Tier 2: Action Required */}
+        {inputJobs.length > 0 && (
+          <div className="mb-8">
+            {inputJobs.map((job) => (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                key={job.id}
+                className="mb-6 rounded-[24px] bg-[#fffbeb] shadow-[0_8px_30px_rgba(251,191,36,0.12)] border border-[#fde68a] overflow-hidden"
+              >
+                <div className="p-5 pb-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex h-6 items-center rounded-full bg-[#fbbf24] px-2.5 text-[10px] font-bold uppercase tracking-wider text-[#000100]">
+                      <AlertCircle className="mr-1 h-3.5 w-3.5" /> Needs Your
+                      Input
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#fde68a] text-lg font-bold text-[#d97706]">
+                      {job.company[0]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-base font-bold text-[#92400e]">
+                        {job.title}
+                      </h3>
+                      <p className="mt-0.5 truncate text-[13px] font-medium text-[#b45309]">
+                        {job.company} • {job.location}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#fef3c7]">
+                  <p className="text-[13px] text-[#92400e] leading-[1.6]">
+                    <b className="text-[#b45309]">Missing: A/B Testing.</b>{" "}
+                    {job.agentJustification}
+                  </p>
+                </div>
+
+                <div className="px-5 pb-5 flex gap-3">
+                  <button
+                    onClick={() => go("aiChatbot", job, "chatOpen")}
+                    className="flex-1 bg-[#d97706] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    Reply in Chat <Send className="w-4 h-4" />
+                  </button>
+                  <button className="px-5 bg-white/50 border border-[#fde68a] text-[#b45309] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                    Skip
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Tier 3: Strategic Pivot */}
+        {exploreJobs.length > 0 && (
+          <div className="mb-4">
+            {exploreJobs.map((job) => (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                key={job.id}
+                className="mb-6 rounded-[24px] bg-[#faf5ff] shadow-[0_8px_30px_rgba(168,85,247,0.08)] border border-[#e9d5ff] overflow-hidden"
+              >
+                <div className="p-5 pb-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex h-6 items-center rounded-full bg-[#a855f7] px-2.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      <Star className="mr-1 h-3.5 w-3.5" /> Strategic Pivot
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#e9d5ff] text-lg font-bold text-[#7e22ce]">
+                      {job.company[0]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-base font-bold text-[#6b21a8]">
+                        {job.title}
+                      </h3>
+                      <p className="mt-0.5 truncate text-[13px] font-medium text-[#9333ea]">
+                        {job.company} • {job.salary}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#f3e8ff]">
+                  <p className="text-[13px] text-[#7e22ce] leading-[1.6]">
+                    {job.agentJustification}
+                  </p>
+                </div>
+
+                <div className="px-5 pb-5 flex gap-3">
+                  <button
+                    onClick={() => go("tailor", job)}
+                    className="flex-1 bg-[#9333ea] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98]"
+                  >
+                    Generate Draft
+                  </button>
+                  <button className="px-5 bg-white/50 border border-[#e9d5ff] text-[#9333ea] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                    Ignore
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
     </Screen>
   );
 }
@@ -4516,16 +4164,7 @@ export default function App() {
           />
         );
       case "jobs":
-        return (
-          <JobsScreen
-            go={go}
-            appliedJobs={appliedJobs}
-            savedJobs={savedJobs}
-            onSaveJob={handleSaveJob}
-            dashboardFilter={dashboardFilter}
-            setDashboardFilter={setDashboardFilter}
-          />
-        );
+        return <JobsScreen go={go} />;
       case "analyzing":
         return <AnalyzingScreen go={go} />;
       case "jobSetup":
