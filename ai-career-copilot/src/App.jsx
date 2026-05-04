@@ -1327,6 +1327,107 @@ function SelectResumesBottomSheet({
   );
 }
 
+
+function AgentChatInputBar({
+  selectedResumes = [],
+  onRemoveResume = () => {},
+  onAttachClick = () => {},
+  attachDisabled = false,
+  value = "",
+  onInputChange = () => {},
+  onInputKeyDown = () => {},
+  placeholder = "Ask Syncra anything...",
+  inputReadOnly = false,
+  inputDisabled = false,
+  onInputClick,
+  onSend = () => {},
+  sendDisabled = false,
+  inputClassName = "",
+}) {
+  return (
+    <motion.div
+      layout
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="flex w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]"
+    >
+      <AnimatePresence initial={false}>
+        {selectedResumes.length > 0 && (
+          <motion.div
+            key="selected-resume-attachments"
+            layout
+            initial={{ opacity: 0, height: 0, y: 8 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: 8 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1 no-scrollbar"
+          >
+            {selectedResumes.map((resume) => (
+              <motion.div
+                key={resume.id}
+                layout
+                className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
+              >
+                <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+                <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
+                  {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+                </span>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onRemoveResume(resume.id);
+                  }}
+                  className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
+                  aria-label={`Remove ${resume.name}`}
+                >
+                  <Plus className="h-3.5 w-3.5 rotate-45" />
+                </button>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex w-full min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={onAttachClick}
+          disabled={attachDisabled}
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
+          title="Select Resume"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
+
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+          <input
+            type="text"
+            readOnly={inputReadOnly}
+            disabled={inputDisabled}
+            value={value}
+            onChange={onInputChange}
+            onKeyDown={onInputKeyDown}
+            onClick={onInputClick}
+            placeholder={placeholder}
+            className={`w-full min-w-0 bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999] disabled:cursor-not-allowed ${
+              inputReadOnly ? "cursor-pointer" : ""
+            } ${inputClassName}`}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={sendDisabled}
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95 disabled:opacity-40"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // --- TERMINAL DEMO LOGIC ---
 const demoSteps = [
   {
@@ -1755,7 +1856,7 @@ function AIChatbot({
           </div>
         </div>
 
-        <div className="relative z-20 shrink-0 bg-gradient-to-t from-[#eaeceb] via-[#eaeceb] to-transparent px-4 sm:px-6 pb-0 pt-2">
+        <div className="relative z-20 shrink-0 px-4 sm:px-6 pb-0 pt-2">
           {uploadQueue.length > 0 && (
             <div className="mb-2 flex flex-col gap-2">
               {uploadQueue.map((item) => (
@@ -1791,80 +1892,23 @@ function AIChatbot({
             </motion.div>
           )}
 
-          <div className="flex w-full min-w-0 items-end gap-2 overflow-hidden">
-            <motion.div
-              layout
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="flex w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
-            >
-              <AnimatePresence initial={false}>
-                {attachedResumes.length > 0 && (
-                  <motion.div
-                    key="chat-selected-resume-attachments"
-                    layout
-                    initial={{ opacity: 0, height: 0, y: 8 }}
-                    animate={{ opacity: 1, height: "auto", y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: 8 }}
-                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                    className="mb-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1 no-scrollbar"
-                  >
-                    {attachedResumes.map((resume) => (
-                      <motion.div
-                        key={resume.id}
-                        layout
-                        className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
-                      >
-                        <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                        <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                          {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachedResume(resume.id)}
-                          className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
-                          aria-label={`Remove ${resume.name}`}
-                        >
-                          <Plus className="h-3.5 w-3.5 rotate-45" />
-                        </button>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="flex w-full min-w-0 items-center gap-2">
-                <button
-                  onClick={() => setIsAttachModalOpen(true)}
-                  disabled={isTyping}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
-                >
-                  <Plus className="h-5 w-5" />
-                </button>
-                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-                  <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    placeholder={
-                      isTyping
-                        ? "Syncra is executing plan..."
-                        : "Ask Syncra anything..."
-                    }
-                    disabled={isTyping}
-                    className="w-full min-w-0 bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999] disabled:cursor-not-allowed"
-                  />
-                </div>
-                <button
-                  onClick={() => handleSend()}
-                  disabled={isTyping || !inputText.trim()}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95 disabled:opacity-40"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </div>
-            </motion.div>
-          </div>
+          <AgentChatInputBar
+            selectedResumes={attachedResumes}
+            onRemoveResume={removeAttachedResume}
+            onAttachClick={() => setIsAttachModalOpen(true)}
+            attachDisabled={isTyping}
+            value={inputText}
+            onInputChange={(e) => setInputText(e.target.value)}
+            onInputKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder={
+              isTyping
+                ? "Syncra is executing plan..."
+                : "Ask Syncra anything..."
+            }
+            inputDisabled={isTyping}
+            onSend={() => handleSend()}
+            sendDisabled={isTyping || !inputText.trim()}
+          />
         </div>
 
         <SelectResumesBottomSheet
@@ -2012,82 +2056,20 @@ function Dashboard({
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className="absolute z-50"
     >
-      <motion.div
-        layout
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]"
-      >
-        <AnimatePresence initial={false}>
-          {selectedResumes.length > 0 && !isChatTransition && (
-            <motion.div
-              key="selected-resume-attachments"
-              layout
-              initial={{ opacity: 0, height: 0, y: 8 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: 8 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-2 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar"
-            >
-              {selectedResumes.map((resume) => (
-                <motion.div
-                  key={resume.id}
-                  layout
-                  className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
-                >
-                  <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                  <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                    {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      removeSelectedResume(resume.id);
-                    }}
-                    className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
-                    aria-label={`Remove ${resume.name}`}
-                  >
-                    <Plus className="h-3.5 w-3.5 rotate-45" />
-                  </button>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsResumeModalOpen(true)}
-            disabled={isChatTransition}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
-            title="Select Resume"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
-
-
-          <div className="flex flex-1 items-center gap-2 overflow-hidden">
-            <input
-              type="text"
-              readOnly
-              onClick={onStartChatTransition}
-              placeholder={
-                selectedResumes.length > 0 && !isChatTransition
-                  ? "Set your agent goals..."
-                  : "Ask Syncra anything..."
-              }
-              className="w-full min-w-0 cursor-pointer bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999]"
-            />
-          </div>
-
-          <button
-            onClick={onStartChatTransition}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95"
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-      </motion.div>
+      <AgentChatInputBar
+        selectedResumes={!isChatTransition ? selectedResumes : []}
+        onRemoveResume={removeSelectedResume}
+        onAttachClick={() => setIsResumeModalOpen(true)}
+        attachDisabled={isChatTransition}
+        inputReadOnly
+        onInputClick={onStartChatTransition}
+        placeholder={
+          selectedResumes.length > 0 && !isChatTransition
+            ? "Set your agent goals..."
+            : "Ask Syncra anything..."
+        }
+        onSend={onStartChatTransition}
+      />
     </motion.div>
   );
 
