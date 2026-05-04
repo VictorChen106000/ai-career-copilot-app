@@ -3546,18 +3546,16 @@ export default function App() {
         if (progress >= 100) {
           clearInterval(timer);
           setTimeout(() => {
+            const resume = {
+              id,
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              uploadedAt: new Date().toISOString(),
+              url: URL.createObjectURL(file),
+            };
             setUploadQueue((prev) => prev.filter((item) => item.id !== id));
-            setTimeout(() => {
-              const resume = {
-                id,
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                uploadedAt: new Date().toISOString(),
-                url: URL.createObjectURL(file),
-              };
-              setResumes((prev) => [resume, ...prev]);
-            }, 160);
+            setResumes((prev) => [resume, ...prev]);
           }, 800);
         }
       }, 260);
