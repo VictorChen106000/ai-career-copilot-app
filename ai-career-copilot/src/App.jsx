@@ -2205,10 +2205,7 @@ function Dashboard({
             <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
               <div className="space-y-3 pb-8">
                 <button
-                  onClick={() => {
-                    setIsResumeModalOpen(false);
-                    fileInputRef.current?.click();
-                  }}
+                  onClick={() => fileInputRef.current?.click()}
                   className="flex w-full items-center gap-4 rounded-2xl border border-dashed border-[#000100]/30 bg-[#ffffff] p-4 text-left transition-all hover:bg-[#fafafa]"
                 >
                   <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
