@@ -231,6 +231,8 @@ const neoIn = "";
 const ViewModeContext = React.createContext("mobile");
 const ShellStripContext = React.createContext(false);
 const syncraLogoPng = "https://placehold.co/400x400/a0fe08/000100?text=Syncra";
+const MAX_RESUME_ATTACHMENTS = 10;
+const MAX_RESUME_UPLOAD_BATCH = 10;
 
 const StepPill = ({ children, accent = false }) => (
   <span
@@ -1661,6 +1663,7 @@ function AIChatbot({
                 ref={fileInputRef}
                 type="file"
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                multiple
                 className="hidden"
                 onChange={(e) => handleFiles(e.target.files)}
               />
@@ -1891,15 +1894,16 @@ function Dashboard({
   const selectedResumes = resumes.filter((resume) =>
     activeSelectedResumeIds.includes(resume.id)
   );
-  const visibleSelectedResumes = selectedResumes.slice(0, 2);
-  const hiddenSelectedResumesCount = Math.max(
-    selectedResumes.length - visibleSelectedResumes.length,
-    0
-  );
+  const selectedResumeLimitReached =
+    activeSelectedResumeIds.length >= MAX_RESUME_ATTACHMENTS;
   const pendingJobsCount = jobs.length; // Pulls from our global MVP data
 
   const toggleResumeSelection = (resumeId) => {
-    const nextIds = activeSelectedResumeIds.includes(resumeId)
+    const isSelected = activeSelectedResumeIds.includes(resumeId);
+
+    if (!isSelected && selectedResumeLimitReached) return;
+
+    const nextIds = isSelected
       ? activeSelectedResumeIds.filter((id) => id !== resumeId)
       : [...activeSelectedResumeIds, resumeId];
     onSelectResume(nextIds);
@@ -1936,14 +1940,14 @@ function Dashboard({
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
               className="mb-2 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar"
             >
-              {visibleSelectedResumes.map((resume) => (
+              {selectedResumes.map((resume) => (
                 <motion.div
                   key={resume.id}
                   layout
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
+                  className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
                 >
-                  <FileText className="h-3.5 w-3.5 text-[#000100]" />
-                  <span className="max-w-[105px] truncate text-xs font-bold text-[#000100]">
+                  <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+                  <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
                     {resume.name.replace(/\.(pdf|docx?)$/i, "")}
                   </span>
                   <button
@@ -1952,23 +1956,13 @@ function Dashboard({
                       event.stopPropagation();
                       removeSelectedResume(resume.id);
                     }}
-                    className="ml-0.5 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
+                    className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
                     aria-label={`Remove ${resume.name}`}
                   >
                     <Plus className="h-3.5 w-3.5 rotate-45" />
                   </button>
                 </motion.div>
               ))}
-
-              {hiddenSelectedResumesCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setIsResumeModalOpen(true)}
-                  className="flex shrink-0 items-center rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-3 py-1.5 text-xs font-bold text-[#666666] shadow-sm transition active:bg-[#eaeceb]"
-                >
-                  +{hiddenSelectedResumesCount} more
-                </button>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1987,6 +1981,7 @@ function Dashboard({
             ref={fileInputRef}
             type="file"
             accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            multiple
             className="hidden"
             onChange={(e) => handleFiles(e.target.files)}
           />
@@ -2191,9 +2186,14 @@ function Dashboard({
             className="absolute bottom-0 left-0 right-0 z-[101] flex max-h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
           >
             <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
-              <h2 className="text-lg font-bold text-[#000100]">
-                Select Resumes
-              </h2>
+              <div>
+                <h2 className="text-lg font-bold text-[#000100]">
+                  Select Resumes
+                </h2>
+                <p className="mt-0.5 text-xs font-medium text-[#666666]">
+                  {activeSelectedResumeIds.length}/{MAX_RESUME_ATTACHMENTS} selected
+                </p>
+              </div>
               <button
                 onClick={() => setIsResumeModalOpen(false)}
                 className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
@@ -2219,7 +2219,7 @@ function Dashboard({
                       Upload New Resume
                     </h3>
                     <p className="mt-0.5 text-xs text-[#666666]">
-                      PDF, DOC up to 5MB
+                      PDF, DOC up to 5MB • Max 10 at once
                     </p>
                   </div>
                 </button>
@@ -2230,9 +2230,12 @@ function Dashboard({
                     <button
                       key={resume.id}
                       onClick={() => toggleResumeSelection(resume.id)}
+                      aria-disabled={!isSelected && selectedResumeLimitReached}
                       className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
                         isSelected
                           ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
+                          : selectedResumeLimitReached
+                          ? "border-[#d1d3d2] bg-[#ffffff] opacity-50"
                           : "border-[#d1d3d2] bg-[#ffffff] hover:bg-[#fafafa]"
                       }`}
                     >
@@ -2997,6 +3000,7 @@ function ResumesScreen({
             ref={fileInputRef}
             type="file"
             accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            multiple
             className="hidden"
             onChange={(e) => handleFiles(e.target.files)}
           />
@@ -3519,7 +3523,9 @@ export default function App() {
   }, []);
 
   const handleUploadResume = (files) => {
-    Array.from(files || []).forEach((file) => {
+    Array.from(files || [])
+      .slice(0, MAX_RESUME_UPLOAD_BATCH)
+      .forEach((file) => {
       const id = `${file.name}-${
         file.lastModified
       }-${Date.now()}-${Math.random().toString(16).slice(2)}`;
