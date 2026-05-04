@@ -1865,7 +1865,7 @@ function Dashboard({
   mini = false,
   noNav = false,
   resumes = [],
-  selectedResumeId = null,
+  selectedResumeIds = [],
   onSelectResume = () => {},
   isChatTransition = false,
   onStartChatTransition = () => {},
@@ -1883,10 +1883,31 @@ function Dashboard({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const selectedResume =
-    resumes.find((resume) => resume.id === selectedResumeId) || null;
-  const activeSelectedResumeId = selectedResumeId;
+  const activeSelectedResumeIds = Array.isArray(selectedResumeIds)
+    ? selectedResumeIds
+    : selectedResumeIds
+    ? [selectedResumeIds]
+    : [];
+  const selectedResumes = resumes.filter((resume) =>
+    activeSelectedResumeIds.includes(resume.id)
+  );
+  const visibleSelectedResumes = selectedResumes.slice(0, 2);
+  const hiddenSelectedResumesCount = Math.max(
+    selectedResumes.length - visibleSelectedResumes.length,
+    0
+  );
   const pendingJobsCount = jobs.length; // Pulls from our global MVP data
+
+  const toggleResumeSelection = (resumeId) => {
+    const nextIds = activeSelectedResumeIds.includes(resumeId)
+      ? activeSelectedResumeIds.filter((id) => id !== resumeId)
+      : [...activeSelectedResumeIds, resumeId];
+    onSelectResume(nextIds);
+  };
+
+  const removeSelectedResume = (resumeId) => {
+    onSelectResume(activeSelectedResumeIds.filter((id) => id !== resumeId));
+  };
 
   const floatingAiInput = (
     <motion.div
@@ -1899,56 +1920,99 @@ function Dashboard({
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className="absolute z-50"
     >
-      <div className="flex items-center gap-2 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
-        <button
-          onClick={() => setIsResumeModalOpen(true)}
-          disabled={isChatTransition}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
-          title="Select Resume"
-        >
-          <Plus className="h-5 w-5" />
-        </button>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-
-        <div className="flex flex-1 items-center gap-2 overflow-hidden">
-          {selectedResume && !isChatTransition && (
-            <div
-              onClick={() => setIsResumeModalOpen(true)}
-              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 transition active:bg-[#eaeceb]"
+      <motion.div
+        layout
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]"
+      >
+        <AnimatePresence initial={false}>
+          {selectedResumes.length > 0 && !isChatTransition && (
+            <motion.div
+              key="selected-resume-attachments"
+              layout
+              initial={{ opacity: 0, height: 0, y: 8 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: 8 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-2 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar"
             >
-              <FileText className="h-3.5 w-3.5 text-[#000100]" />
-              <span className="max-w-[70px] truncate text-xs font-bold text-[#000100]">
-                {selectedResume.name.replace(/\.pdf$/i, "")}
-              </span>
-            </div>
-          )}
-          <input
-            type="text"
-            readOnly
-            onClick={onStartChatTransition}
-            placeholder={
-              selectedResume && !isChatTransition
-                ? "Set your agent goals..."
-                : "Ask Syncra anything..."
-            }
-            className="w-full min-w-0 cursor-pointer bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999]"
-          />
-        </div>
+              {visibleSelectedResumes.map((resume) => (
+                <motion.div
+                  key={resume.id}
+                  layout
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
+                >
+                  <FileText className="h-3.5 w-3.5 text-[#000100]" />
+                  <span className="max-w-[105px] truncate text-xs font-bold text-[#000100]">
+                    {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      removeSelectedResume(resume.id);
+                    }}
+                    className="ml-0.5 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
+                    aria-label={`Remove ${resume.name}`}
+                  >
+                    <Plus className="h-3.5 w-3.5 rotate-45" />
+                  </button>
+                </motion.div>
+              ))}
 
-        <button
-          onClick={onStartChatTransition}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95"
-        >
-          <Send className="h-4 w-4" />
-        </button>
-      </div>
+              {hiddenSelectedResumesCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIsResumeModalOpen(true)}
+                  className="flex shrink-0 items-center rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-3 py-1.5 text-xs font-bold text-[#666666] shadow-sm transition active:bg-[#eaeceb]"
+                >
+                  +{hiddenSelectedResumesCount} more
+                </button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsResumeModalOpen(true)}
+            disabled={isChatTransition}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
+            title="Select Resume"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+
+          <div className="flex flex-1 items-center gap-2 overflow-hidden">
+            <input
+              type="text"
+              readOnly
+              onClick={onStartChatTransition}
+              placeholder={
+                selectedResumes.length > 0 && !isChatTransition
+                  ? "Set your agent goals..."
+                  : "Ask Syncra anything..."
+              }
+              className="w-full min-w-0 cursor-pointer bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999]"
+            />
+          </div>
+
+          <button
+            onClick={onStartChatTransition}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
+      </motion.div>
     </motion.div>
   );
 
@@ -2128,7 +2192,7 @@ function Dashboard({
           >
             <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
               <h2 className="text-lg font-bold text-[#000100]">
-                Select Resume
+                Select Resumes
               </h2>
               <button
                 onClick={() => setIsResumeModalOpen(false)}
@@ -2161,14 +2225,11 @@ function Dashboard({
                 </button>
 
                 {resumes.map((resume) => {
-                  const isSelected = activeSelectedResumeId === resume.id;
+                  const isSelected = activeSelectedResumeIds.includes(resume.id);
                   return (
                     <button
                       key={resume.id}
-                      onClick={() => {
-                        onSelectResume(isSelected ? null : resume.id);
-                        setIsResumeModalOpen(false);
-                      }}
+                      onClick={() => toggleResumeSelection(resume.id)}
                       className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
                         isSelected
                           ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
@@ -3417,8 +3478,8 @@ export default function App() {
   const [screen, setScreen] = useState("osHome");
   const [selectedJob, setSelectedJob] = useState(jobs[0]);
   const [selectedResume, setSelectedResume] = useState(null);
-  const [dashboardSelectedResumeId, setDashboardSelectedResumeId] =
-    useState(null);
+  const [dashboardSelectedResumeIds, setDashboardSelectedResumeIds] =
+    useState([]);
   const [resumePreviewBackTarget, setResumePreviewBackTarget] =
     useState("resumes");
   const [viewMode, setViewMode] = useState("mobile");
@@ -3536,7 +3597,7 @@ export default function App() {
       return prev.filter((resume) => resume.id !== resumeId);
     });
     setSelectedResume((prev) => (prev?.id === resumeId ? null : prev));
-    setDashboardSelectedResumeId((prev) => (prev === resumeId ? null : prev));
+    setDashboardSelectedResumeIds((prev) => prev.filter((id) => id !== resumeId));
   };
 
   const handleOpenResume = (resume, backTarget = "resumes") => {
@@ -3644,8 +3705,8 @@ export default function App() {
             go={go}
             noNav
             resumes={resumes}
-            selectedResumeId={dashboardSelectedResumeId}
-            onSelectResume={setDashboardSelectedResumeId}
+            selectedResumeIds={dashboardSelectedResumeIds}
+            onSelectResume={setDashboardSelectedResumeIds}
             isChatTransition={isChatTransition}
             onStartChatTransition={() => {
               setIsChatTransition(true);
@@ -3713,7 +3774,7 @@ export default function App() {
     screen,
     selectedJob,
     selectedResume,
-    dashboardSelectedResumeId,
+    dashboardSelectedResumeIds,
     resumePreviewBackTarget,
     chatMode,
     chatBackTarget,
