@@ -1770,30 +1770,6 @@ function AIChatbot({
             </div>
           )}
 
-          {attachedResumes.length > 0 && (
-            <div className="mb-2 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
-              {attachedResumes.map((resume) => (
-                <div
-                  key={resume.id}
-                  className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
-                >
-                  <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                  <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                    {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachedResume(resume.id)}
-                    className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
-                    aria-label={`Remove ${resume.name}`}
-                  >
-                    <Plus className="h-3.5 w-3.5 rotate-45" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
           {quickReplies.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 15, height: 0 }}
@@ -1815,38 +1791,79 @@ function AIChatbot({
             </motion.div>
           )}
 
-          <div className="flex items-end gap-2">
-            <div className="flex flex-1 items-center gap-2 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
-              <button
-                onClick={() => setIsAttachModalOpen(true)}
-                disabled={isTyping}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-              <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder={
-                    isTyping
-                      ? "Syncra is executing plan..."
-                      : "Ask Syncra anything..."
-                  }
+          <div className="flex w-full min-w-0 items-end gap-2 overflow-hidden">
+            <motion.div
+              layout
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="flex w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
+            >
+              <AnimatePresence initial={false}>
+                {attachedResumes.length > 0 && (
+                  <motion.div
+                    key="chat-selected-resume-attachments"
+                    layout
+                    initial={{ opacity: 0, height: 0, y: 8 }}
+                    animate={{ opacity: 1, height: "auto", y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: 8 }}
+                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                    className="mb-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1 no-scrollbar"
+                  >
+                    {attachedResumes.map((resume) => (
+                      <motion.div
+                        key={resume.id}
+                        layout
+                        className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
+                      >
+                        <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+                        <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
+                          {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachedResume(resume.id)}
+                          className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
+                          aria-label={`Remove ${resume.name}`}
+                        >
+                          <Plus className="h-3.5 w-3.5 rotate-45" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex w-full min-w-0 items-center gap-2">
+                <button
+                  onClick={() => setIsAttachModalOpen(true)}
                   disabled={isTyping}
-                  className="w-full min-w-0 bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999] disabled:cursor-not-allowed"
-                />
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+                <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    placeholder={
+                      isTyping
+                        ? "Syncra is executing plan..."
+                        : "Ask Syncra anything..."
+                    }
+                    disabled={isTyping}
+                    className="w-full min-w-0 bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999] disabled:cursor-not-allowed"
+                  />
+                </div>
+                <button
+                  onClick={() => handleSend()}
+                  disabled={isTyping || !inputText.trim()}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95 disabled:opacity-40"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => handleSend()}
-                disabled={isTyping || !inputText.trim()}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#000100] text-white transition active:scale-95 disabled:opacity-40"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
+            </motion.div>
           </div>
         </div>
 
