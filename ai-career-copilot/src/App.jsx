@@ -5,7 +5,6 @@ import {
   Upload,
   Mail,
   Lock,
-  Home,
   User,
   Briefcase,
   Infinity as InfinityIcon,
@@ -18,18 +17,13 @@ import {
   Bookmark,
   Send,
   Settings,
-  HelpCircle,
   LogOut,
-  MapPin,
   ShieldCheck,
   Wand2,
-  BarChart3,
-  ClipboardList,
   ChevronRight,
   ChevronLeft,
   Star,
   PenLine,
-  Filter,
   Clock,
   Palette,
   Wifi,
@@ -37,7 +31,6 @@ import {
   Signal,
   Trash2,
   AlertCircle,
-  ThumbsDown,
   Zap,
   Activity,
   RotateCcw,
@@ -94,30 +87,6 @@ const jobs = [
     skills: ["Python", "D3.js", "Data Viz"],
     missing: [],
     why: "Your hidden strength in mathematical visualization puts you in the top 1% of applicants for this specialized role.",
-  },
-];
-
-const applications = [
-  {
-    company: "Linear",
-    role: "Junior UX Designer",
-    date: "Apr 28",
-    resume: "UX Resume v2",
-    status: "Applied",
-  },
-  {
-    company: "Stripe",
-    role: "Frontend Intern",
-    date: "Apr 27",
-    resume: "Frontend Resume v1",
-    status: "Interviewing",
-  },
-  {
-    company: "Notion",
-    role: "Product Design Intern",
-    date: "Apr 25",
-    resume: "Design Resume v3",
-    status: "Saved",
   },
 ];
 
@@ -317,16 +286,6 @@ const SecondaryButton = ({ children, onClick, className = "" }) => (
   <button
     onClick={onClick}
     className={`flex w-full items-center justify-center gap-2 rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-5 py-4 text-sm font-bold text-[#000100] transition active:bg-[#eaeceb] ${className}`}
-  >
-    {children}
-  </button>
-);
-
-const TopNavButton = ({ children, onClick, className = "" }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`inline-flex items-center justify-center gap-1.5 rounded-full bg-[#000100] px-4 py-2 text-sm font-bold text-white transition active:opacity-80 ${className}`}
   >
     {children}
   </button>
@@ -1467,12 +1426,8 @@ function AgentTerminal({ onComplete }) {
 // --- AI CHATBOT SCREEN ---
 function AIChatbot({
   go,
-  chatMode = "setPreferences",
   fromDashboard = false,
   backTarget = null,
-  hideBottomNav = false,
-  onStartBackgroundResume = () => {},
-  agentResumeNotice = null,
   resumes = [],
   onUploadResume = () => {},
   uploadQueue = [],
@@ -2048,7 +2003,6 @@ function Dashboard({
   isChatTransition = false,
   onStartChatTransition = () => {},
   onUploadResume = () => {},
-  uploadQueue = [],
   userName = "User",
 }) {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
@@ -3598,9 +3552,8 @@ function AgentResumeNotification({ job, onClick }) {
 }
 
 export default function App() {
-  const [userName, setUserName] = useState("Daryn");
+  const [userName] = useState("Daryn");
   const [screen, setScreen] = useState("osHome");
-  const [showSplash, setShowSplash] = useState(false);
   const [selectedJob, setSelectedJob] = useState(jobs[0]);
   const [selectedResume, setSelectedResume] = useState(null);
   const [dashboardSelectedResumeId, setDashboardSelectedResumeId] =
@@ -3611,7 +3564,7 @@ export default function App() {
   const [chatMode, setChatMode] = useState("setPreferences");
   const [chatBackTarget, setChatBackTarget] = useState("dashboard");
   const [appliedJobs, setAppliedJobs] = useState([]);
-  const [savedJobs, setSavedJobs] = useState([]);
+  const [savedJobs] = useState([]);
   const [hasReachedDashboard, setHasReachedDashboard] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("all");
   const [resumes, setResumes] = useState([]);
@@ -3753,14 +3706,6 @@ export default function App() {
     setScreen("resumes");
   };
 
-  const handleSaveJob = (jobId) => {
-    setSavedJobs((prev) =>
-      prev.includes(jobId)
-        ? prev.filter((id) => id !== jobId)
-        : [...prev, jobId]
-    );
-  };
-
   const handleApplyJob = (jobId) => {
     setAppliedJobs((prev) => (prev.includes(jobId) ? prev : [...prev, jobId]));
   };
@@ -3853,7 +3798,6 @@ export default function App() {
               }, 350);
             }}
             onUploadResume={handleUploadResume}
-            uploadQueue={uploadQueue}
             userName={userName}
           />
         );
