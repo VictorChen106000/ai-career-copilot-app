@@ -1837,7 +1837,7 @@ function AIChatbot({
             <motion.div
               layout
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="flex w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]"
+              className="flex w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-[28px] border-[1.5px] border-[#000100] bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
             >
               <AnimatePresence initial={false}>
                 {attachedResumes.length > 0 && (
@@ -2057,7 +2057,7 @@ function Dashboard({
       <motion.div
         layout
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-3xl border border-white/40 bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]"
+        className="rounded-[28px] border-[1.5px] border-[#000100] bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
       >
         <AnimatePresence initial={false}>
           {selectedResumes.length > 0 && !isChatTransition && (
