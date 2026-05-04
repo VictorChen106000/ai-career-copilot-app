@@ -31,7 +31,6 @@ import {
   Trash2,
   AlertCircle,
   Zap,
-  Activity,
   RotateCcw,
 } from "lucide-react";
 
@@ -594,6 +593,53 @@ const Header = ({ title, subtitle, icon }) => (
       </div>
     </div>
   </div>
+);
+
+const AgentPulseIcon = () => (
+  <svg
+    viewBox="0 0 48 32"
+    className="relative h-7 w-7 overflow-visible drop-shadow-[0_0_6px_rgba(160,254,8,0.45)]"
+    aria-hidden="true"
+  >
+    <defs>
+      <clipPath id="agent-live-pulse-clip">
+        <rect x="0" y="0" width="0" height="32">
+          <animate
+            attributeName="x"
+            values="0;0;0;16;32;48"
+            keyTimes="0;0.1;0.48;0.62;0.9;1"
+            dur="2s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="width"
+            values="0;16;48;32;16;0"
+            keyTimes="0;0.1;0.48;0.62;0.9;1"
+            dur="2s"
+            repeatCount="indefinite"
+          />
+        </rect>
+      </clipPath>
+    </defs>
+    <path
+      d="M2 17 H13 L15.5 11 L18 17 H22 L24 21 L28 6 L32 26 L35 17 H39 L42 15 L46 17"
+      fill="none"
+      stroke="#a0fe08"
+      strokeOpacity="0.22"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M2 17 H13 L15.5 11 L18 17 H22 L24 21 L28 6 L32 26 L35 17 H39 L42 15 L46 17"
+      fill="none"
+      stroke="#a0fe08"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      clipPath="url(#agent-live-pulse-clip)"
+    />
+  </svg>
 );
 
 // --- OSHOME SCREEN ---
@@ -2145,9 +2191,8 @@ function Dashboard({
           </div>
 
           <div className="flex items-center gap-3 rounded-2xl bg-[#000100] p-3 shadow-lg shadow-[#a0fe08]/10">
-            <div className="relative grid h-8 w-8 place-items-center">
-              <div className="absolute inset-0 rounded-full bg-[#a0fe08]/20 animate-ping" />
-              <Activity className="relative h-4 w-4 text-[#a0fe08]" />
+            <div className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-[#a0fe08]/5">
+              <AgentPulseIcon />
             </div>
             <div className="min-w-0 flex-1">
               <span className="block text-[9px] font-black uppercase tracking-widest text-[#a0fe08]/60">
