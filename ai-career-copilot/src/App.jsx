@@ -598,7 +598,7 @@ const Header = ({ title, subtitle, icon }) => (
 const AgentPulseIcon = () => (
   <svg
     viewBox="0 0 48 32"
-    className="relative h-7 w-7 overflow-visible drop-shadow-[0_0_6px_rgba(160,254,8,0.45)]"
+    className="relative z-10 h-7 w-7 overflow-visible drop-shadow-[0_0_6px_rgba(160,254,8,0.45)]"
     aria-hidden="true"
   >
     <defs>
@@ -2182,7 +2182,8 @@ function Dashboard({
           </div>
 
           <div className="flex items-center gap-3 rounded-2xl bg-[#000100] p-3 shadow-lg shadow-[#a0fe08]/10">
-            <div className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-[#a0fe08]/5">
+            <div className="relative grid h-8 w-8 place-items-center rounded-full bg-[#a0fe08]/5">
+              <div className="absolute inset-0 rounded-full bg-[#a0fe08]/20 animate-ping" />
               <AgentPulseIcon />
             </div>
             <div className="min-w-0 flex-1">
