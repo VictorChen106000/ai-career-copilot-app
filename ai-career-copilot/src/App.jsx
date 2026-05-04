@@ -13,7 +13,7 @@ import {
   Plus,
   Sparkles,
   CheckCircle2,
-  Bookmark,
+  // Bookmark,
   Send,
   Settings,
   LogOut,
@@ -3160,8 +3160,8 @@ function ResumePreviewScreen({
 function Profile({
   go,
   noNav = false,
-  appliedCount = 0,
-  savedCount = 0,
+  // appliedCount = 0,
+  // savedCount = 0,
   jobsCount = 0,
   resumesCount = 0,
   userName = "User",
@@ -3264,18 +3264,6 @@ function Profile({
               icon: Search,
               label: "Discovered Roles",
               count: jobsCount,
-            },
-            {
-              onClick: () => go("jobs", null, null, "saved"),
-              icon: Bookmark,
-              label: "Saved to Queue",
-              count: savedCount,
-            },
-            {
-              onClick: () => go("jobs", null, null, "applied"),
-              icon: CheckCircle2,
-              label: "Auto-Applied",
-              count: appliedCount,
             },
           ].map((row, i, arr) => (
             <div key={row.label}>
