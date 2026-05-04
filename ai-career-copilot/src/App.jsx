@@ -1901,16 +1901,10 @@ function Dashboard({
     >
       <div className="flex items-center gap-2 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] focus-within:border-[#000100] focus-within:ring-1 focus-within:ring-[#000100]">
         <button
-          onClick={() => {
-            if (resumes.length === 0) {
-              fileInputRef.current?.click();
-              return;
-            }
-            setIsResumeModalOpen(true);
-          }}
+          onClick={() => setIsResumeModalOpen(true)}
           disabled={isChatTransition}
           className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eaeceb] text-[#000100] transition active:opacity-70 disabled:opacity-50"
-          title={resumes.length === 0 ? "Upload Resume" : "Select Resume"}
+          title="Select Resume"
         >
           <Plus className="h-5 w-5" />
         </button>
