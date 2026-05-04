@@ -625,15 +625,6 @@ const AgentPulseIcon = () => (
       d="M2 17 H13 L15.5 11 L18 17 H22 L24 21 L28 6 L32 26 L35 17 H39 L42 15 L46 17"
       fill="none"
       stroke="#a0fe08"
-      strokeOpacity="0.22"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M2 17 H13 L15.5 11 L18 17 H22 L24 21 L28 6 L32 26 L35 17 H39 L42 15 L46 17"
-      fill="none"
-      stroke="#a0fe08"
       strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
