@@ -651,7 +651,7 @@ function OSHome({ go }) {
 
         <div className="mt-8 grid grid-cols-4 gap-x-4 gap-y-8">
           <button
-            onClick={() => go("login")}
+            onClick={() => launchApp("login")}
             className="flex flex-col items-center gap-1.5 transition active:opacity-60"
           >
             <div className="grid h-[62px] w-[62px] place-items-center rounded-[18px] bg-[#000100] shadow-lg">
@@ -694,51 +694,53 @@ function SplashScreen({ go, target = "login" }) {
   }, [go, target]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#eaeceb] px-6 text-[#000100]">
-      <div className="flex flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.86, y: 18 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-7 grid place-items-center"
-        >
+    <PhoneShell>
+      <div className="flex h-full w-full items-center justify-center bg-[#eaeceb] px-6 text-[#000100]">
+        <div className="flex flex-col items-center text-center">
           <motion.div
-            className="absolute h-64 w-64 rounded-full bg-[#a0fe08]/25 blur-3xl sm:h-80 sm:w-80"
-            animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.65, 0.35] }}
-            transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.img
-            src={LOGO_IMG_URL}
-            alt="Syncra AI logo"
-            className="relative z-10 h-60 w-60 object-contain drop-shadow-[0_18px_35px_rgba(0,1,0,0.18)] sm:h-72 sm:w-72"
-            animate={{ y: [0, -6, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = syncraLogoPng;
-            }}
-          />
-        </motion.div>
+            initial={{ opacity: 0, scale: 0.86, y: 18 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="relative mb-7 grid place-items-center"
+          >
+            <motion.div
+              className="absolute h-64 w-64 rounded-full bg-[#a0fe08]/25 blur-3xl sm:h-80 sm:w-80"
+              animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.65, 0.35] }}
+              transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.img
+              src={LOGO_IMG_URL}
+              alt="Syncra AI logo"
+              className="relative z-10 h-60 w-60 object-contain drop-shadow-[0_18px_35px_rgba(0,1,0,0.18)] sm:h-72 sm:w-72"
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = syncraLogoPng;
+              }}
+            />
+          </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.5 }}
-          className="text-sm font-bold tracking-[0.28em] text-[#000100]"
-        >
-          SYNCING YOUR CAREER PATH
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.5 }}
+            className="text-sm font-bold tracking-[0.28em] text-[#000100]"
+          >
+            SYNCING YOUR CAREER PATH
+          </motion.p>
 
-        <div className="mt-5 h-2 w-52 overflow-hidden rounded-full bg-[#d1d3d2]">
-          <motion.div
-            className="h-full rounded-full bg-[#a0fe08]"
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 2.1, ease: "easeInOut" }}
-          />
+          <div className="mt-5 h-2 w-52 overflow-hidden rounded-full bg-[#d1d3d2]">
+            <motion.div
+              className="h-full rounded-full bg-[#a0fe08]"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 2.1, ease: "easeInOut" }}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </PhoneShell>
   );
 }
 
