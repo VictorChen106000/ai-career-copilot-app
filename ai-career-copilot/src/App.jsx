@@ -7,7 +7,6 @@ import {
   Lock,
   User,
   Briefcase,
-  Infinity as InfinityIcon,
   FileText,
   Search,
   Bell,
@@ -650,7 +649,7 @@ function OSHome({ go }) {
 
         <div className="mt-8 grid grid-cols-4 gap-x-4 gap-y-8">
           <button
-            onClick={() => launchApp("landing")}
+            onClick={() => go("login")}
             className="flex flex-col items-center gap-1.5 transition active:opacity-60"
           >
             <div className="grid h-[62px] w-[62px] place-items-center rounded-[18px] bg-[#000100] shadow-lg">
@@ -686,7 +685,7 @@ function OSHome({ go }) {
 }
 
 // --- SPLASH SCREEN ---
-function SplashScreen({ go, target = "landing" }) {
+function SplashScreen({ go, target = "login" }) {
   useEffect(() => {
     const timer = setTimeout(() => go(target), 2300);
     return () => clearTimeout(timer);
@@ -736,138 +735,6 @@ function SplashScreen({ go, target = "landing" }) {
             transition={{ duration: 2.1, ease: "easeInOut" }}
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-// --- LOGIN LOADING SCREEN ---
-function LoginLoadingScreen({ go }) {
-  useEffect(() => {
-    const loginTimer = setTimeout(() => go("login"), 2300);
-    return () => clearTimeout(loginTimer);
-  }, [go]);
-
-  return (
-    <div className="flex h-full w-full items-center justify-center bg-[#eaeceb] px-8 text-[#000100]">
-      <div className="flex w-full flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.86, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mb-7 grid place-items-center"
-        >
-          <motion.div
-            className="absolute h-56 w-56 rounded-full bg-[#a0fe08]/25 blur-3xl"
-            animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.65, 0.35] }}
-            transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.img
-            src={LOGO_IMG_URL}
-            alt="Syncra AI logo"
-            className="relative z-10 h-52 w-52 object-contain drop-shadow-[0_18px_35px_rgba(0,1,0,0.18)]"
-            animate={{ y: [0, -6, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = syncraLogoPng;
-            }}
-          />
-        </motion.div>
-
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.5 }}
-          className="text-xs font-bold tracking-[0.24em] text-[#000100]"
-        >
-          SYNCING YOUR CAREER PATH
-        </motion.p>
-
-        <div className="mt-5 h-2 w-52 overflow-hidden rounded-full bg-[#d1d3d2]">
-          <motion.div
-            className="h-full rounded-full bg-[#a0fe08]"
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 2.1, ease: "easeInOut" }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- LANDING SCREEN ---
-function Landing({ go }) {
-  return (
-    <div className="grid min-h-screen gap-10 bg-[#eaeceb] px-6 py-8 text-[#000100] lg:grid-cols-[1.05fr_.95fr] lg:px-16">
-      <div className="flex flex-col justify-center">
-        <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-[#d1d3d2] bg-[#ffffff] px-4 py-2 text-sm font-bold text-[#000100]">
-          <div className="grid h-6 w-6 place-items-center rounded-full bg-[#000100]">
-            <InfinityIcon className="h-3.5 w-3.5 text-white" />
-          </div>{" "}
-          AI Agentic Resume Assistant
-        </div>
-        <h1 className="max-w-3xl text-5xl font-black tracking-tight text-[#000100] md:text-7xl">
-          Let AI handle your job hunting journey.
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-[#666666]">
-          Build an ATS-friendly resume, discover roles that match your goals,
-          tailor every application, and approve auto-apply actions before
-          anything is submitted.
-        </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <button
-            onClick={() => go("loginLoading")}
-            className="rounded-xl bg-[#000100] px-7 py-4 font-bold text-white transition active:opacity-80"
-          >
-            Get Started
-          </button>
-          <button
-            onClick={() => go("loginLoading")}
-            className="rounded-xl border border-[#d1d3d2] bg-[#ffffff] px-7 py-4 font-bold text-[#000100]"
-          >
-            I already have an account
-          </button>
-        </div>
-        <div className="mt-10 grid max-w-4xl gap-4 md:grid-cols-3">
-          {[
-            [
-              FileText,
-              "AI Resume Builder",
-              "Turn your story into a polished resume.",
-            ],
-            [
-              Search,
-              "Smart Job Matching",
-              "Rank roles by fit, goals, and missing skills.",
-            ],
-            [
-              Send,
-              "Auto Apply Assistant",
-              "Prepare applications after your approval.",
-            ],
-          ].map(([Icon, title, copy], idx) => (
-            <Card key={`card-${idx}`}>
-              <div className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-[#000100] text-white">
-                <Icon className="h-5 w-5" />
-              </div>
-              <h3 className="font-bold text-[#000100]">{title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#666666]">{copy}</p>
-            </Card>
-          ))}
-        </div>
-      </div>
-      <div className="flex items-center justify-center">
-        <PhoneShell forceMobile>
-          <Dashboard
-            go={go}
-            mini
-            userName="Daryn"
-            resumesCount={0}
-            jobsCount={3}
-          />
-        </PhoneShell>
       </div>
     </div>
   );
@@ -3576,7 +3443,7 @@ export default function App() {
   });
   const [agentResumeNotice, setAgentResumeNotice] = useState(null);
   const [isChatTransition, setIsChatTransition] = useState(false);
-  const [splashNext, setSplashNext] = useState("landing");
+  const [splashNext, setSplashNext] = useState("login");
 
   const uploadTimers = useRef([]);
   const agentResumeTimer = useRef(null);
@@ -3725,7 +3592,7 @@ export default function App() {
 
     if (job) setSelectedJob(job);
     if (next === "aiChatbot" && screen !== "aiChatbot") {
-      setChatBackTarget(screen === "landing" ? "dashboard" : screen);
+      setChatBackTarget(screen);
     }
     if (mode) {
       setChatMode(mode);
@@ -3751,10 +3618,6 @@ export default function App() {
         return <OSHome go={go} />;
       case "splash":
         return <SplashScreen go={go} target={splashNext} />;
-      case "landing":
-        return <Landing go={go} />;
-      case "loginLoading":
-        return <LoginLoadingScreen go={go} />;
       case "login":
         return <Login go={go} />;
       case "signup":
@@ -3850,7 +3713,7 @@ export default function App() {
           />
         );
       default:
-        return <Landing go={go} />;
+        return <Login go={go} />;
     }
   }, [
     screen,
@@ -3873,10 +3736,8 @@ export default function App() {
   ]);
 
   const insideAppTransition =
-    screen !== "landing" &&
     screen !== "osHome" &&
     screen !== "splash" &&
-    screen !== "loginLoading" &&
     screen !== "login" &&
     screen !== "signup" &&
     screen !== "onboarding" &&
