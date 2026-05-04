@@ -1868,6 +1868,7 @@ function Dashboard({
   mini = false,
   noNav = false,
   resumes = [],
+  uploadQueue = [],
   selectedResumeIds = [],
   onSelectResume = () => {},
   isChatTransition = false,
@@ -2220,6 +2221,10 @@ function Dashboard({
                     </p>
                   </div>
                 </button>
+
+                {uploadQueue.map((item) => (
+                  <ResumeUploadCard key={item.id} item={item} uploading />
+                ))}
 
                 {resumes.map((resume) => {
                   const isSelected = activeSelectedResumeIds.includes(resume.id);
@@ -3708,6 +3713,7 @@ export default function App() {
             go={go}
             noNav
             resumes={resumes}
+            uploadQueue={uploadQueue}
             selectedResumeIds={dashboardSelectedResumeIds}
             onSelectResume={setDashboardSelectedResumeIds}
             isChatTransition={isChatTransition}
