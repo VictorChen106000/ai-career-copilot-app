@@ -1169,6 +1169,164 @@ function ResumeUploadCard({ item, uploading = false, onOpen, onDelete }) {
   );
 }
 
+
+function SelectResumesBottomSheet({
+  isOpen,
+  onClose,
+  resumes = [],
+  uploadQueue = [],
+  selectedResumeIds = [],
+  onSelectResume = () => {},
+  onUploadResume = () => {},
+  maxSelections = MAX_RESUME_ATTACHMENTS,
+}) {
+  const fileInputRef = useRef(null);
+
+  const activeSelectedResumeIds = Array.isArray(selectedResumeIds)
+    ? selectedResumeIds
+    : selectedResumeIds
+    ? [selectedResumeIds]
+    : [];
+  const selectedResumeLimitReached =
+    activeSelectedResumeIds.length >= maxSelections;
+
+  const handleFiles = (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    onUploadResume(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const toggleResumeSelection = (resumeId) => {
+    const isSelected = activeSelectedResumeIds.includes(resumeId);
+
+    if (!isSelected && selectedResumeLimitReached) return;
+
+    const nextIds = isSelected
+      ? activeSelectedResumeIds.filter((id) => id !== resumeId)
+      : [...activeSelectedResumeIds, resumeId];
+    onSelectResume(nextIds);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
+        />
+      )}
+      {isOpen && (
+        <motion.div
+          key="modal"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 26, stiffness: 320 }}
+          className="absolute bottom-0 left-0 right-0 z-[101] flex max-h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
+            <div>
+              <h2 className="text-lg font-bold text-[#000100]">
+                Select Resumes
+              </h2>
+              <p className="mt-0.5 text-xs font-medium text-[#666666]">
+                {activeSelectedResumeIds.length}/{maxSelections} selected
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
+            >
+              <Plus className="h-5 w-5 rotate-45" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
+            <div className="space-y-3 pb-8">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full items-center gap-4 rounded-2xl border border-dashed border-[#000100]/30 bg-[#ffffff] p-4 text-left transition-all hover:bg-[#fafafa]"
+              >
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
+                  <Upload className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-bold text-[#000100]">
+                    Upload New Resume
+                  </h3>
+                  <p className="mt-0.5 text-xs text-[#666666]">
+                    PDF, DOC up to 5MB • Max 10 at once
+                  </p>
+                </div>
+              </button>
+
+              {uploadQueue.map((item) => (
+                <ResumeUploadCard key={item.id} item={item} uploading />
+              ))}
+
+              {resumes.map((resume) => {
+                const isSelected = activeSelectedResumeIds.includes(resume.id);
+                return (
+                  <button
+                    key={resume.id}
+                    type="button"
+                    onClick={() => toggleResumeSelection(resume.id)}
+                    aria-disabled={!isSelected && selectedResumeLimitReached}
+                    className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
+                      isSelected
+                        ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
+                        : selectedResumeLimitReached
+                        ? "border-[#d1d3d2] bg-[#ffffff] opacity-50"
+                        : "border-[#d1d3d2] bg-[#ffffff] hover:bg-[#fafafa]"
+                    }`}
+                  >
+                    <div
+                      className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
+                        isSelected
+                          ? "bg-[#000100] text-white"
+                          : "bg-[#eaeceb] text-[#000100]"
+                      }`}
+                    >
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-bold text-[#000100]">
+                        {resume.name}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-[#666666]">
+                        Uploaded {formatUploadDate(resume.uploadedAt)}
+                      </p>
+                    </div>
+                    {isSelected && (
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-[#a0fe08]" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // --- TERMINAL DEMO LOGIC ---
 const demoSteps = [
   {
@@ -1311,11 +1469,10 @@ function AIChatbot({
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
-  const [attachedContext, setAttachedContext] = useState(null);
+  const [attachedResumeIds, setAttachedResumeIds] = useState([]);
 
   const messagesEndRef = useRef(null);
   const messagesScrollRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -1329,13 +1486,6 @@ function AIChatbot({
     });
   }, [messages, isTyping]);
 
-  const handleFiles = (fileList) => {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-    onUploadResume(files);
-    setIsAttachModalOpen(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
 
   const handleSend = (textOverride) => {
     const prompt =
@@ -1383,6 +1533,14 @@ function AIChatbot({
     "Find internships",
   ];
 
+  const attachedResumes = resumes.filter((resume) =>
+    attachedResumeIds.includes(resume.id)
+  );
+
+  const removeAttachedResume = (resumeId) => {
+    setAttachedResumeIds((prev) => prev.filter((id) => id !== resumeId));
+  };
+
   const renderMessageText = (text) => (
     <>
       {String(text)
@@ -1398,7 +1556,7 @@ function AIChatbot({
 
   return (
     <PhoneShell>
-      <div className="flex h-full min-h-0 flex-1 flex-col bg-[#eaeceb] pb-6">
+      <div className="relative flex h-full min-h-0 flex-1 flex-col bg-[#eaeceb] pb-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1612,20 +1770,27 @@ function AIChatbot({
             </div>
           )}
 
-          {attachedContext && (
-            <div className="mb-2 px-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#000100] bg-[#ffffff] px-3 py-1.5 text-xs font-bold text-[#000100] shadow-sm">
-                <FileText className="h-3.5 w-3.5" />
-                <span className="max-w-[150px] truncate">
-                  {attachedContext.name}
-                </span>
-                <button
-                  onClick={() => setAttachedContext(null)}
-                  className="ml-1 rounded-full p-0.5 transition hover:bg-[#eaeceb]"
+          {attachedResumes.length > 0 && (
+            <div className="mb-2 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
+              {attachedResumes.map((resume) => (
+                <div
+                  key={resume.id}
+                  className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
                 >
-                  <Plus className="h-3.5 w-3.5 rotate-45" />
-                </button>
-              </div>
+                  <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+                  <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
+                    {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachedResume(resume.id)}
+                    className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
+                    aria-label={`Remove ${resume.name}`}
+                  >
+                    <Plus className="h-3.5 w-3.5 rotate-45" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -1659,14 +1824,6 @@ function AIChatbot({
               >
                 <Plus className="h-5 w-5" />
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                multiple
-                className="hidden"
-                onChange={(e) => handleFiles(e.target.files)}
-              />
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
                 <input
                   type="text"
@@ -1691,83 +1848,17 @@ function AIChatbot({
               </button>
             </div>
           </div>
-
-          <AnimatePresence>
-            {isAttachModalOpen && (
-              <motion.div
-                key="backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsAttachModalOpen(false)}
-                className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
-              />
-            )}
-            {isAttachModalOpen && (
-              <motion.div
-                key="modal"
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 26, stiffness: 320 }}
-                className="absolute bottom-0 left-0 right-0 z-[101] flex flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-8"
-              >
-                <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
-                  <h2 className="text-lg font-bold text-[#000100]">
-                    Add Attachment
-                  </h2>
-                  <button
-                    onClick={() => setIsAttachModalOpen(false)}
-                    className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
-                  >
-                    <Plus className="h-5 w-5 rotate-45" />
-                  </button>
-                </div>
-
-                <div className="p-6 flex flex-col gap-4">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-4 rounded-2xl bg-[#ffffff] border border-[#d1d3d2] p-4 transition active:bg-[#fafafa]"
-                  >
-                    <div className="grid h-12 w-12 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
-                      <Upload className="h-5 w-5" />
-                    </div>
-                    <div className="text-left flex-1">
-                      <h3 className="text-sm font-bold text-[#000100]">
-                        Upload Resume
-                      </h3>
-                      <p className="text-xs text-[#666666] mt-0.5">
-                        PDF, DOC up to 5MB
-                      </p>
-                    </div>
-                  </button>
-
-                  {resumes.length > 0 && (
-                    <button
-                      onClick={() => {
-                        setAttachedContext(resumes[0]);
-                        setIsAttachModalOpen(false);
-                      }}
-                      className="flex items-center gap-4 rounded-2xl bg-[#ffffff] border border-[#d1d3d2] p-4 transition active:bg-[#fafafa]"
-                    >
-                      <div className="grid h-12 w-12 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="text-left flex-1">
-                        <h3 className="text-sm font-bold text-[#000100]">
-                          Use Existing Resume
-                        </h3>
-                        <p className="text-xs text-[#666666] mt-0.5">
-                          {resumes[0].name}
-                        </p>
-                      </div>
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
+
+        <SelectResumesBottomSheet
+          isOpen={isAttachModalOpen}
+          onClose={() => setIsAttachModalOpen(false)}
+          resumes={resumes}
+          uploadQueue={uploadQueue}
+          selectedResumeIds={attachedResumeIds}
+          onSelectResume={setAttachedResumeIds}
+          onUploadResume={onUploadResume}
+        />
       </div>
     </PhoneShell>
   );
@@ -1878,14 +1969,6 @@ function Dashboard({
 }) {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [activeTask] = useState("Scraping LinkedIn for Senior UX roles...");
-  const fileInputRef = useRef(null);
-
-  const handleFiles = (fileList) => {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-    onUploadResume(files);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
 
   const activeSelectedResumeIds = Array.isArray(selectedResumeIds)
     ? selectedResumeIds
@@ -1895,20 +1978,7 @@ function Dashboard({
   const selectedResumes = resumes.filter((resume) =>
     activeSelectedResumeIds.includes(resume.id)
   );
-  const selectedResumeLimitReached =
-    activeSelectedResumeIds.length >= MAX_RESUME_ATTACHMENTS;
   const pendingJobsCount = jobs.length; // Pulls from our global MVP data
-
-  const toggleResumeSelection = (resumeId) => {
-    const isSelected = activeSelectedResumeIds.includes(resumeId);
-
-    if (!isSelected && selectedResumeLimitReached) return;
-
-    const nextIds = isSelected
-      ? activeSelectedResumeIds.filter((id) => id !== resumeId)
-      : [...activeSelectedResumeIds, resumeId];
-    onSelectResume(nextIds);
-  };
 
   const removeSelectedResume = (resumeId) => {
     onSelectResume(activeSelectedResumeIds.filter((id) => id !== resumeId));
@@ -1978,14 +2048,6 @@ function Dashboard({
             <Plus className="h-5 w-5" />
           </button>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
 
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <input
@@ -2166,109 +2228,15 @@ function Dashboard({
       </motion.div>
 
       {/* Resume Selection Bottom Sheet Modal */}
-      <AnimatePresence>
-        {isResumeModalOpen && (
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsResumeModalOpen(false)}
-            className="absolute inset-0 z-[100] bg-[#000100]/40 backdrop-blur-[2px]"
-          />
-        )}
-        {isResumeModalOpen && (
-          <motion.div
-            key="modal"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 26, stiffness: 320 }}
-            className="absolute bottom-0 left-0 right-0 z-[101] flex max-h-[75%] flex-col rounded-t-[2rem] bg-[#eaeceb] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
-          >
-            <div className="flex shrink-0 items-center justify-between border-b border-[#d1d3d2] px-6 py-5">
-              <div>
-                <h2 className="text-lg font-bold text-[#000100]">
-                  Select Resumes
-                </h2>
-                <p className="mt-0.5 text-xs font-medium text-[#666666]">
-                  {activeSelectedResumeIds.length}/{MAX_RESUME_ATTACHMENTS} selected
-                </p>
-              </div>
-              <button
-                onClick={() => setIsResumeModalOpen(false)}
-                className="grid h-8 w-8 place-items-center rounded-full bg-[#d1d3d2] text-[#000100] transition active:opacity-70"
-              >
-                <Plus className="h-5 w-5 rotate-45" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
-              <div className="space-y-3 pb-8">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex w-full items-center gap-4 rounded-2xl border border-dashed border-[#000100]/30 bg-[#ffffff] p-4 text-left transition-all hover:bg-[#fafafa]"
-                >
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#eaeceb] text-[#000100]">
-                    <Upload className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-sm font-bold text-[#000100]">
-                      Upload New Resume
-                    </h3>
-                    <p className="mt-0.5 text-xs text-[#666666]">
-                      PDF, DOC up to 5MB • Max 10 at once
-                    </p>
-                  </div>
-                </button>
-
-                {uploadQueue.map((item) => (
-                  <ResumeUploadCard key={item.id} item={item} uploading />
-                ))}
-
-                {resumes.map((resume) => {
-                  const isSelected = activeSelectedResumeIds.includes(resume.id);
-                  return (
-                    <button
-                      key={resume.id}
-                      onClick={() => toggleResumeSelection(resume.id)}
-                      aria-disabled={!isSelected && selectedResumeLimitReached}
-                      className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all ${
-                        isSelected
-                          ? "border-[#000100] bg-[#ffffff] ring-1 ring-[#000100]"
-                          : selectedResumeLimitReached
-                          ? "border-[#d1d3d2] bg-[#ffffff] opacity-50"
-                          : "border-[#d1d3d2] bg-[#ffffff] hover:bg-[#fafafa]"
-                      }`}
-                    >
-                      <div
-                        className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
-                          isSelected
-                            ? "bg-[#000100] text-white"
-                            : "bg-[#eaeceb] text-[#000100]"
-                        }`}
-                      >
-                        <FileText className="h-6 w-6" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-sm font-bold text-[#000100]">
-                          {resume.name}
-                        </h3>
-                        <p className="mt-0.5 text-xs text-[#666666]">
-                          Uploaded {formatUploadDate(resume.uploadedAt)}
-                        </p>
-                      </div>
-                      {isSelected && (
-                        <CheckCircle2 className="h-5 w-5 shrink-0 text-[#a0fe08]" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SelectResumesBottomSheet
+        isOpen={isResumeModalOpen}
+        onClose={() => setIsResumeModalOpen(false)}
+        resumes={resumes}
+        uploadQueue={uploadQueue}
+        selectedResumeIds={activeSelectedResumeIds}
+        onSelectResume={onSelectResume}
+        onUploadResume={onUploadResume}
+      />
     </Screen>
   );
 }
