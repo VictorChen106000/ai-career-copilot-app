@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState, useRef, useEffect } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -99,6 +99,33 @@ const jobs = [
     skills: ["Python", "D3.js", "Data Viz"],
     missing: [],
     why: "Your hidden strength in mathematical visualization puts you in the top 1% of applicants for this specialized role.",
+  },
+];
+
+const mockNotifications = [
+  {
+    id: 1,
+    title: "Application Viewed",
+    desc: "Linear hiring team viewed your tailored resume.",
+    time: "10m ago",
+    read: false,
+    icon: Search,
+  },
+  {
+    id: 2,
+    title: "Agent Action",
+    desc: "Auto-tailored your resume for Binance.",
+    time: "1h ago",
+    read: false,
+    icon: Wand2,
+  },
+  {
+    id: 3,
+    title: "New Match",
+    desc: "Found a 95% match at TechFlow.",
+    time: "2h ago",
+    read: true,
+    icon: Briefcase,
   },
 ];
 
@@ -691,6 +718,84 @@ const AgentPulseIcon = () => (
   </svg>
 );
 
+function NotificationBell({ notifications = mockNotifications }) {
+  const [showNotifs, setShowNotifs] = useState(false);
+
+  return (
+    <div className="relative mb-1">
+      <button
+        onClick={() => setShowNotifs((prev) => !prev)}
+        className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100] transition active:scale-95"
+      >
+        <Bell className="h-5 w-5" />
+        <span className="absolute right-2.5 top-2 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#ff5f56]" />
+      </button>
+      <AnimatePresence>
+        {showNotifs && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNotifs(false)}
+              className="fixed inset-0 z-40 bg-transparent"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-3xl border border-[#d1d3d2] bg-white shadow-[0_16px_40px_rgba(0,0,0,0.15)]"
+            >
+              <div className="border-b border-[#d1d3d2] bg-[#f4f5f4] px-4 py-3">
+                <h3 className="text-sm font-bold text-[#000100]">
+                  Notifications
+                </h3>
+              </div>
+              <div className="flex max-h-[300px] flex-col overflow-y-auto no-scrollbar">
+                {notifications.map((notif) => {
+                  const Icon = notif.icon;
+                  return (
+                    <div
+                      key={notif.id}
+                      className={`flex items-start gap-3 border-b border-[#eaeceb] p-4 transition hover:bg-[#fafafa] ${
+                        notif.read ? "opacity-60 bg-white" : "bg-[#fbfcfa]"
+                      }`}
+                    >
+                      <div
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                          notif.read
+                            ? "bg-[#eaeceb] text-[#666666]"
+                            : "bg-[#a0fe08] text-[#000100]"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-[13px] font-bold text-[#000100] truncate">
+                            {notif.title}
+                          </h4>
+                          <span className="text-[10px] font-bold text-[#999999]">
+                            {notif.time}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-[11.5px] text-[#666666] leading-relaxed">
+                          {notif.desc}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // --- OSHOME SCREEN ---
 function OSHome({ go }) {
   const [showOutreach, setShowOutreach] = useState(false);
@@ -706,7 +811,7 @@ function OSHome({ go }) {
   }, []);
 
   const launchApp = (target) => {
-    go("splash", null, null, null, target);
+    go("splash", null, null, target);
   };
 
   return (
@@ -1485,6 +1590,54 @@ function SelectResumesBottomSheet({
   );
 }
 
+function ResumeAttachmentChips({
+  resumes = [],
+  backTarget = "resumes",
+  onOpenResume = () => {},
+  onRemoveResume = () => {},
+}) {
+  if (!resumes.length) return null;
+
+  return (
+    <motion.div
+      key={`selected-resume-attachments-${backTarget}`}
+      layout
+      initial={{ opacity: 0, height: 0, y: 8 }}
+      animate={{ opacity: 1, height: "auto", y: 0 }}
+      exit={{ opacity: 0, height: 0, y: 8 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+      className="mb-2 flex w-full min-w-0 max-w-full flex-col overflow-hidden px-1 pb-1"
+    >
+      <div className="flex w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar">
+        {resumes.map((resume) => (
+          <motion.div
+            key={resume.id}
+            layout
+            onClick={() => onOpenResume(resume, backTarget)}
+            className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#a0fe08] bg-[#a0fe08]/20 px-2.5 py-1.5 shadow-sm cursor-pointer hover:bg-[#a0fe08]/30 transition-colors"
+          >
+            <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+            <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
+              {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+            </span>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemoveResume(resume.id);
+              }}
+              className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#000100]/60 transition hover:bg-[#000100]/10 hover:text-[#000100]"
+              aria-label={`Remove ${resume.name}`}
+            >
+              <Plus className="h-3.5 w-3.5 rotate-45" />
+            </button>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 // --- TERMINAL DEMO LOGIC ---
 const demoSteps = [
   {
@@ -1978,44 +2131,12 @@ function AIChatbot({
               className="flex w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-[28px] border-[1.5px] border-transparent bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition-colors duration-200 focus-within:border-[#000100]"
             >
               <AnimatePresence initial={false}>
-                {attachedResumes.length > 0 && (
-                  <motion.div
-                    key="chat-selected-resume-attachments"
-                    layout
-                    initial={{ opacity: 0, height: 0, y: 8 }}
-                    animate={{ opacity: 1, height: "auto", y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: 8 }}
-                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                    className="mb-2 flex w-full min-w-0 max-w-full flex-col overflow-hidden px-1 pb-1"
-                  >
-                    <div className="flex w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar">
-                      {attachedResumes.map((resume) => (
-                        <motion.div
-                          key={resume.id}
-                          layout
-                          onClick={() => onOpenResume(resume, "aiChatbot")}
-                          className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#a0fe08] bg-[#a0fe08]/20 px-2.5 py-1.5 shadow-sm cursor-pointer hover:bg-[#a0fe08]/30 transition-colors"
-                        >
-                          <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                          <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                            {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              removeAttachedResume(resume.id);
-                            }}
-                            className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#000100]/60 transition hover:bg-[#000100]/10 hover:text-[#000100]"
-                            aria-label={`Remove ${resume.name}`}
-                          >
-                            <Plus className="h-3.5 w-3.5 rotate-45" />
-                          </button>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
+                <ResumeAttachmentChips
+                  resumes={attachedResumes}
+                  backTarget="aiChatbot"
+                  onOpenResume={onOpenResume}
+                  onRemoveResume={removeAttachedResume}
+                />
               </AnimatePresence>
 
               <div className="flex w-full min-w-0 items-center gap-2">
@@ -2172,34 +2293,7 @@ function Dashboard({
   userName = "User",
 }) {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
-  const [activeTask] = useState("Scraping LinkedIn for Senior UX roles...");
-  const [showNotifs, setShowNotifs] = useState(false);
-  const notifications = [
-    {
-      id: 1,
-      title: "Application Viewed",
-      desc: "Linear hiring team viewed your tailored resume.",
-      time: "10m ago",
-      read: false,
-      icon: Search,
-    },
-    {
-      id: 2,
-      title: "Agent Action",
-      desc: "Auto-tailored your resume for Binance.",
-      time: "1h ago",
-      read: false,
-      icon: Wand2,
-    },
-    {
-      id: 3,
-      title: "New Match",
-      desc: "Found a 95% match at TechFlow.",
-      time: "2h ago",
-      read: true,
-      icon: Briefcase,
-    },
-  ];
+  const activeTask = "Scraping LinkedIn for Senior UX roles...";
 
   const activeSelectedResumeIds = Array.isArray(selectedResumeIds)
     ? selectedResumeIds
@@ -2232,43 +2326,13 @@ function Dashboard({
         className="rounded-[28px] border-[1.5px] border-transparent bg-white/70 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl transition-colors duration-200 focus-within:border-[#000100]"
       >
         <AnimatePresence initial={false}>
-          {selectedResumes.length > 0 && !isChatTransition && (
-            <motion.div
-              key="selected-resume-attachments"
-              layout
-              initial={{ opacity: 0, height: 0, y: 8 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: 8 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-2 flex w-full min-w-0 max-w-full flex-col overflow-hidden px-1 pb-1"
-            >
-              <div className="flex w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar">
-                {selectedResumes.map((resume) => (
-                  <motion.div
-                    key={resume.id}
-                    layout
-                    onClick={() => onOpenResume(resume, "dashboard")}
-                    className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#a0fe08] bg-[#a0fe08]/20 px-2.5 py-1.5 shadow-sm cursor-pointer hover:bg-[#a0fe08]/30 transition-colors"
-                  >
-                    <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                    <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                      {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        removeSelectedResume(resume.id);
-                      }}
-                      className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#000100]/60 transition hover:bg-[#000100]/10 hover:text-[#000100]"
-                      aria-label={`Remove ${resume.name}`}
-                    >
-                      <Plus className="h-3.5 w-3.5 rotate-45" />
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+          {!isChatTransition && (
+            <ResumeAttachmentChips
+              resumes={selectedResumes}
+              backTarget="dashboard"
+              onOpenResume={onOpenResume}
+              onRemoveResume={removeSelectedResume}
+            />
           )}
         </AnimatePresence>
 
@@ -2349,79 +2413,7 @@ function Dashboard({
               </div>
             </div>
             <div className="flex gap-2">
-              <div className="relative">
-                <button
-                  onClick={() => setShowNotifs(!showNotifs)}
-                  className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100] transition active:scale-95"
-                >
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute right-2.5 top-2 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#ff5f56]" />
-                </button>
-                <AnimatePresence>
-                  {showNotifs && (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setShowNotifs(false)}
-                        className="fixed inset-0 z-40 bg-transparent"
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-3xl border border-[#d1d3d2] bg-white shadow-[0_16px_40px_rgba(0,0,0,0.15)]"
-                      >
-                        <div className="border-b border-[#d1d3d2] bg-[#f4f5f4] px-4 py-3">
-                          <h3 className="text-sm font-bold text-[#000100]">
-                            Notifications
-                          </h3>
-                        </div>
-                        <div className="flex max-h-[300px] flex-col overflow-y-auto no-scrollbar">
-                          {notifications.map((notif) => {
-                            const Icon = notif.icon;
-                            return (
-                              <div
-                                key={notif.id}
-                                className={`flex items-start gap-3 border-b border-[#eaeceb] p-4 transition hover:bg-[#fafafa] ${
-                                  notif.read
-                                    ? "opacity-60 bg-white"
-                                    : "bg-[#fbfcfa]"
-                                }`}
-                              >
-                                <div
-                                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
-                                    notif.read
-                                      ? "bg-[#eaeceb] text-[#666666]"
-                                      : "bg-[#a0fe08] text-[#000100]"
-                                  }`}
-                                >
-                                  <Icon className="h-4 w-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="text-[13px] font-bold text-[#000100] truncate">
-                                      {notif.title}
-                                    </h4>
-                                    <span className="text-[10px] font-bold text-[#999999]">
-                                      {notif.time}
-                                    </span>
-                                  </div>
-                                  <p className="mt-0.5 text-[11.5px] text-[#666666] leading-relaxed">
-                                    {notif.desc}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
+              <NotificationBell />
             </div>
           </div>
 
@@ -3458,34 +3450,6 @@ function Profile({
   tailoredResumesCount = 0,
   userName = "User",
 }) {
-  const [showNotifs, setShowNotifs] = useState(false);
-  const notifications = [
-    {
-      id: 1,
-      title: "Application Viewed",
-      desc: "Linear hiring team viewed your tailored resume.",
-      time: "10m ago",
-      read: false,
-      icon: Search,
-    },
-    {
-      id: 2,
-      title: "Agent Action",
-      desc: "Auto-tailored your resume for Binance.",
-      time: "1h ago",
-      read: false,
-      icon: Wand2,
-    },
-    {
-      id: 3,
-      title: "New Match",
-      desc: "Found a 95% match at TechFlow.",
-      time: "2h ago",
-      read: true,
-      icon: Briefcase,
-    },
-  ];
-
   const [integrations, setIntegrations] = useState([
     {
       id: "gmail",
@@ -3534,79 +3498,7 @@ function Profile({
             </h1>
           </div>
 
-          <div className="relative mb-1">
-            <button
-              onClick={() => setShowNotifs(!showNotifs)}
-              className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100] transition active:scale-95"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-2.5 top-2 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#ff5f56]" />
-            </button>
-            <AnimatePresence>
-              {showNotifs && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowNotifs(false)}
-                    className="fixed inset-0 z-40 bg-transparent"
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-3xl border border-[#d1d3d2] bg-white shadow-[0_16px_40px_rgba(0,0,0,0.15)]"
-                  >
-                    <div className="border-b border-[#d1d3d2] bg-[#f4f5f4] px-4 py-3">
-                      <h3 className="text-sm font-bold text-[#000100]">
-                        Notifications
-                      </h3>
-                    </div>
-                    <div className="flex max-h-[300px] flex-col overflow-y-auto no-scrollbar">
-                      {notifications.map((notif) => {
-                        const Icon = notif.icon;
-                        return (
-                          <div
-                            key={notif.id}
-                            className={`flex items-start gap-3 border-b border-[#eaeceb] p-4 transition hover:bg-[#fafafa] ${
-                              notif.read
-                                ? "opacity-60 bg-white"
-                                : "bg-[#fbfcfa]"
-                            }`}
-                          >
-                            <div
-                              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
-                                notif.read
-                                  ? "bg-[#eaeceb] text-[#666666]"
-                                  : "bg-[#a0fe08] text-[#000100]"
-                              }`}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between">
-                                <h4 className="text-[13px] font-bold text-[#000100] truncate">
-                                  {notif.title}
-                                </h4>
-                                <span className="text-[10px] font-bold text-[#999999]">
-                                  {notif.time}
-                                </span>
-                              </div>
-                              <p className="mt-0.5 text-[11.5px] text-[#666666] leading-relaxed">
-                                {notif.desc}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
+          <NotificationBell />
         </div>
 
         <div className="mb-6 overflow-hidden rounded-[24px] border border-[#d1d3d2] bg-[#ffffff] shadow-sm">
@@ -3651,7 +3543,7 @@ function Profile({
               count: resumesCount + tailoredResumesCount,
             },
             {
-              onClick: () => go("jobs", null, null, "all"),
+              onClick: () => go("jobs"),
               icon: Search,
               label: "Discovered Roles",
               count: jobsCount,
@@ -3898,10 +3790,8 @@ export default function App() {
   const [viewMode, setViewMode] = useState("mobile");
   const [chatMode, setChatMode] = useState("setPreferences");
   const [chatBackTarget, setChatBackTarget] = useState("dashboard");
-  const [appliedJobs, setAppliedJobs] = useState([]);
-  const [savedJobs] = useState([]);
+  const [, setAppliedJobs] = useState([]);
   const [hasReachedDashboard, setHasReachedDashboard] = useState(false);
-  const [dashboardFilter, setDashboardFilter] = useState("all");
   const [resumes, setResumes] = useState(() => {
     // Generate a default "base" resume representing the uploaded public file
     const blob = createSimplePdfBlob("Daryn_resume.pdf", [
@@ -3938,7 +3828,6 @@ export default function App() {
   const agentResumeTimer = useRef(null);
   const resumesRef = useRef([]);
   const tailoredResumesRef = useRef([]);
-
 
   useEffect(() => {
     resumesRef.current = resumes;
@@ -4018,6 +3907,9 @@ export default function App() {
 
           if (progress >= 100) {
             clearInterval(timer);
+            uploadTimers.current = uploadTimers.current.filter(
+              (activeTimer) => activeTimer !== timer
+            );
             setTimeout(() => {
               const resume = {
                 id,
@@ -4093,7 +3985,7 @@ export default function App() {
     setAppliedJobs((prev) => (prev.includes(jobId) ? prev : [...prev, jobId]));
   };
 
-  const go = (next, job, mode, filterParam, splashTargetStr) => {
+  const go = (next, job, mode, splashTargetStr) => {
     const shouldKeepWindowScroll =
       next === "aiChatbot" &&
       (mode === "chatOpen" || mode === "createResume" || mode === "onboarding");
@@ -4107,14 +3999,17 @@ export default function App() {
         : 0;
 
     if (job) setSelectedJob(job);
-    if (next === "aiChatbot" && screen !== "aiChatbot") {
+    if (
+      next === "aiChatbot" &&
+      screen !== "aiChatbot" &&
+      screen !== "resumePreview"
+    ) {
       setChatBackTarget(screen);
     }
     if (mode) {
       setChatMode(mode);
       setAgentResumeNotice(null);
     }
-    if (filterParam) setDashboardFilter(filterParam);
     if (next === "dashboard") setHasReachedDashboard(true);
     if (splashTargetStr) setSplashNext(splashTargetStr);
 
@@ -4128,7 +4023,7 @@ export default function App() {
     }
   };
 
-  const component = useMemo(() => {
+  const renderComponent = () => {
     switch (screen) {
       case "osHome":
         return <OSHome go={go} />;
@@ -4147,14 +4042,9 @@ export default function App() {
           <AIChatbot
             key={`${chatMode}-${agentResumeNotice?.timestamp || "normal"}`}
             go={go}
-            chatMode={chatMode}
             fromDashboard={hasReachedDashboard}
             backTarget={chatBackTarget}
-            hideBottomNav={
-              chatMode === "createResume" && chatBackTarget === "login"
-            }
             onStartBackgroundResume={handleStartBackgroundResume}
-            agentResumeNotice={agentResumeNotice}
             resumes={resumes}
             onUploadResume={handleUploadResume}
             uploadQueue={uploadQueue}
@@ -4219,7 +4109,7 @@ export default function App() {
           <ResumePreviewScreen
             go={go}
             resume={selectedResume}
-            backTarget="resumes"
+            backTarget={resumePreviewBackTarget}
             onDeleteResume={(id) => {
               if (tailoredResumes.find((r) => r.id === id)) {
                 handleDeleteTailoredResume(id);
@@ -4234,8 +4124,6 @@ export default function App() {
           <Profile
             go={go}
             noNav
-            appliedCount={appliedJobs.length}
-            savedCount={savedJobs.length}
             jobsCount={jobs.length}
             resumesCount={resumes.length}
             tailoredResumesCount={tailoredResumes.length}
@@ -4245,26 +4133,9 @@ export default function App() {
       default:
         return <Login go={go} />;
     }
-  }, [
-    screen,
-    selectedJob,
-    selectedResume,
-    dashboardSelectedResumeIds,
-    resumePreviewBackTarget,
-    chatMode,
-    chatBackTarget,
-    agentResumeNotice,
-    appliedJobs,
-    savedJobs,
-    hasReachedDashboard,
-    dashboardFilter,
-    resumes,
-    tailoredResumes,
-    uploadQueue,
-    isChatTransition,
-    splashNext,
-    userName,
-  ]);
+  };
+
+  const component = renderComponent();
 
   const insideAppTransition =
     screen !== "osHome" &&
