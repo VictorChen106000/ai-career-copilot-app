@@ -42,6 +42,21 @@ const LOGIN_BG_IMG_URL = "/login-bg.jpg";
 // --- AGENTIC JOB DATA (The Approval Queue) ---
 const jobs = [
   {
+    id: 0,
+    title: "Senior Product Designer",
+    company: "Binance",
+    location: "Remote",
+    salary: "$140K–$170K",
+    category: "ready",
+    match: 94,
+    agentAction: "Proactive Intercept",
+    agentJustification:
+      "Binance posted this 15 mins ago. I recognized the 94% match and instantly drafted your application before your morning coffee.",
+    skills: ["UX Design", "Figma", "Web3"],
+    missing: [],
+    why: "Your experience in high-security interfaces perfectly matches Binance's new mobile product team requirements.",
+  },
+  {
     id: 1,
     title: "React Developer",
     company: "TechFlow",
@@ -231,7 +246,8 @@ const buildMockTailoredResumes = () => {
   return Array.from({ length: 5 }, (_, index) => {
     const number = index + 1;
     const blob = createSimplePdfBlob(`Tailored Resume #${number}`, [
-      `Candidate: ${number % 2 === 0 ? "Chris Anderson" : "Daryn"}`,
+      `Candidate: Daryn`,
+      `Base: Daryn_resume.pdf`,
       `Version: Tailored Resume #${number}`,
       `Prepared by Syncra AI`,
       "",
@@ -572,7 +588,7 @@ const UserIcon = ({ active }) => (
 function BottomNav({ go = () => {}, activeTab = "home" }) {
   const items = [
     { id: "home", target: "dashboard", label: "Home", CustomIcon: HomeIcon },
-    { id: "jobs", target: "jobs", label: "Jobs", CustomIcon: BriefcaseIcon },
+    { id: "jobs", target: "jobs", label: "Agent", CustomIcon: BriefcaseIcon },
     {
       id: "profile",
       target: "profile",
@@ -679,11 +695,16 @@ const AgentPulseIcon = () => (
 
 // --- OSHOME SCREEN ---
 function OSHome({ go }) {
-  const [showNotif, setShowNotif] = useState(false);
+  const [showOutreach, setShowOutreach] = useState(false);
+  const [showMorning, setShowMorning] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowNotif(true), 1500);
-    return () => clearTimeout(timer);
+    const timer1 = setTimeout(() => setShowOutreach(true), 1500);
+    const timer2 = setTimeout(() => setShowMorning(true), 4000);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, []);
 
   const launchApp = (target) => {
@@ -693,42 +714,94 @@ function OSHome({ go }) {
   return (
     <PhoneShell theme="dark">
       <div className="relative flex h-full flex-col bg-gradient-to-br from-[#0f172a] via-[#3b0764] to-[#000000] px-5 pb-4 pt-16">
-        <AnimatePresence>
-          {showNotif && (
-            <motion.button
-              key="os-notif"
-              initial={{ y: -100, opacity: 0, scale: 0.95 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: -100, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 28 }}
-              onClick={() => launchApp("morningBrief")}
-              className="absolute left-3 right-3 top-14 z-50 flex flex-col gap-2 rounded-[24px] bg-[#ffffff]/90 p-4 text-left shadow-[0_16px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl transition-transform active:scale-[0.98]"
-            >
-              <div className="flex w-full items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-5 w-5 place-items-center rounded-md bg-[#000100]">
-                    <Star className="h-3 w-3 text-[#a0fe08]" />
+        <div className="absolute left-3 right-3 top-14 z-50 flex flex-col gap-3">
+          <AnimatePresence>
+            {showMorning && (
+              <motion.button
+                layout
+                key="os-notif-morning"
+                initial={{ y: -100, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -100, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                onClick={() => launchApp("morningBrief")}
+                className="flex w-full flex-col gap-2 rounded-[24px] bg-[#ffffff]/90 p-4 text-left shadow-[0_16px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl transition-transform active:scale-[0.98]"
+              >
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="grid h-5 w-5 place-items-center rounded-md bg-[#000100]">
+                      <Star className="h-3 w-3 text-[#a0fe08]" />
+                    </div>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#000100]/60">
+                      Syncra
+                    </span>
                   </div>
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#000100]/60">
-                    Syncra
+                  <span className="text-[11px] font-medium text-[#000100]/40">
+                    now
                   </span>
                 </div>
-                <span className="text-[11px] font-medium text-[#000100]/40">
-                  now
-                </span>
-              </div>
-              <div>
-                <h4 className="text-[15px] font-bold text-[#000100]">
-                  Agent Update: New Drafts
-                </h4>
-                <p className="mt-0.5 text-[13.5px] leading-[1.3] text-[#000100]/80">
-                  I reviewed 142 new roles overnight and prepared 2 application
-                  drafts for TechFlow and Linear. Tap to review.
-                </p>
-              </div>
-            </motion.button>
-          )}
-        </AnimatePresence>
+                <div>
+                  <h4 className="text-[15px] font-bold text-[#000100]">
+                    Daily Morning Brief
+                  </h4>
+                  <p className="mt-0.5 text-[13.5px] leading-[1.3] text-[#000100]/80">
+                    Binance just posted a new role. You are a 94% match. Tap to
+                    see the drafted application.
+                  </p>
+                </div>
+              </motion.button>
+            )}
+            {showOutreach && (
+              <motion.div
+                layout
+                key="os-notif-outreach"
+                initial={{ y: -100, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -100, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                className="flex flex-col gap-3 rounded-[24px] bg-[#ffffff]/90 p-4 text-left shadow-[0_16px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl"
+              >
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="grid h-5 w-5 place-items-center rounded-md bg-[#000100]">
+                      <Star className="h-3 w-3 text-[#a0fe08]" />
+                    </div>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#000100]/60">
+                      Syncra
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-medium text-[#000100]/40">
+                    {showMorning ? "1m ago" : "now"}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-[15px] font-bold text-[#000100]">
+                    Outreach Draft Ready
+                  </h4>
+                  <p className="mt-0.5 text-[13.5px] leading-[1.3] text-[#000100]/80">
+                    I found a UX Designer role at Linear and drafted a tailored
+                    cold email using your resume. Ready to send?
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <button
+                    onClick={() => launchApp("submitted")}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-[14px] bg-[#000100] py-2.5 text-[13px] font-bold text-white shadow-sm transition active:scale-95"
+                  >
+                    <Send className="h-3.5 w-3.5 text-[#a0fe08]" /> Accept &
+                    Send
+                  </button>
+                  <button
+                    onClick={() => launchApp("aiChatbot")}
+                    className="flex-1 rounded-[14px] bg-[#eaeceb] py-2.5 text-[13px] font-bold text-[#000100] transition active:scale-95"
+                  >
+                    Review in App
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className="mt-8 grid grid-cols-4 gap-x-4 gap-y-8">
           {[...Array(12)].map((_, i) =>
@@ -773,55 +846,56 @@ function OSHome({ go }) {
 // --- SPLASH SCREEN ---
 function SplashScreen({ go, target = "login" }) {
   useEffect(() => {
-    const timer = setTimeout(() => go(target), 2300);
+    const timer = setTimeout(() => go(target), 2450);
     return () => clearTimeout(timer);
   }, [go, target]);
 
   return (
     <PhoneShell>
-      <div className="flex h-full w-full items-center justify-center bg-[#eaeceb] px-6 text-[#000100]">
-        <div className="flex flex-col items-center text-center">
+      <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[#eaeceb] px-6 text-[#000100]">
+        {/* Ambient Background Glow */}
+        <motion.div
+          className="absolute h-64 w-64 rounded-full bg-[#a0fe08]/30 blur-[80px]"
+          animate={{
+            scale: [0.5, 1.2, 1.2, 0],
+            opacity: [0, 1, 1, 0],
+          }}
+          transition={{
+            duration: 2.5,
+            times: [0, 0.3, 0.8, 1],
+            ease: ["easeOut", "linear", "easeIn"],
+          }}
+        />
+
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Expanding Icon Container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.86, y: 18 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative mb-7 grid place-items-center"
+            animate={{
+              scale: [0, 1, 1, 80],
+              borderRadius: ["40%", "25%", "25%", "0%"],
+            }}
+            transition={{
+              duration: 2.5,
+              times: [0, 0.3, 0.8, 1],
+              ease: ["backOut", "linear", "circIn"],
+            }}
+            className="grid h-24 w-24 origin-center place-items-center bg-[#000100] shadow-2xl"
           >
             <motion.div
-              className="absolute h-64 w-64 rounded-full bg-[#a0fe08]/25 blur-3xl sm:h-80 sm:w-80"
-              animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.65, 0.35] }}
-              transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.img
-              src={LOGO_IMG_URL}
-              alt="Syncra AI logo"
-              className="relative z-10 h-60 w-60 object-contain drop-shadow-[0_18px_35px_rgba(0,1,0,0.18)] sm:h-72 sm:w-72"
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = syncraLogoPng;
+              animate={{
+                rotate: [-90, 0, 0, 90],
+                scale: [0, 1, 1, 0],
+                opacity: [0, 1, 1, 0],
               }}
-            />
+              transition={{
+                duration: 2.5,
+                times: [0, 0.3, 0.8, 1],
+                ease: ["backOut", "linear", "easeIn"],
+              }}
+            >
+              <Star className="h-12 w-12 text-[#a0fe08]" fill="currentColor" />
+            </motion.div>
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.5 }}
-            className="text-sm font-bold tracking-[0.28em] text-[#000100]"
-          >
-            SYNCING YOUR CAREER PATH
-          </motion.p>
-
-          <div className="mt-5 h-2 w-52 overflow-hidden rounded-full bg-[#d1d3d2]">
-            <motion.div
-              className="h-full rounded-full bg-[#a0fe08]"
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 2.1, ease: "easeInOut" }}
-            />
-          </div>
         </div>
       </div>
     </PhoneShell>
@@ -1146,9 +1220,10 @@ function MorningBrief({ go, userName }) {
             {userName}.
           </h2>
 
-          <div className="mt-12">
-            <p className="text-[17px] font-medium text-white/60">
-              While you were away, I scanned
+          <div className="mt-10">
+            <p className="text-[20px] font-medium leading-relaxed text-white/90">
+              <span className="text-[#a0fe08] font-bold">Binance</span> just
+              posted a new role.
             </p>
 
             <motion.div
@@ -1160,14 +1235,14 @@ function MorningBrief({ go, userName }) {
                 type: "spring",
                 bounce: 0.4,
               }}
-              className="my-1 text-[100px] leading-[1.05] font-black text-[#a0fe08] tracking-tighter"
+              className="my-3 text-[72px] leading-[1.05] font-black text-[#a0fe08] tracking-tighter"
             >
-              142
+              94%
             </motion.div>
 
             <p className="text-[17px] font-medium leading-relaxed text-white/60 max-w-[280px]">
-              new roles. <span className="text-white">3</span> require your
-              input today. I've prepared your tailored resumes.
+              match with your profile. I've already drafted your application
+              before your morning coffee.
             </p>
           </div>
         </motion.div>
@@ -1179,7 +1254,7 @@ function MorningBrief({ go, userName }) {
           className="absolute bottom-10 right-8 z-10"
         >
           <button
-            onClick={() => go("dashboard")}
+            onClick={() => go("jobs")}
             className="grid h-16 w-16 place-items-center rounded-full bg-[#a0fe08] text-[#000100] shadow-[0_8px_30px_rgba(160,254,8,0.25)] transition active:scale-90 hover:scale-105"
           >
             <ChevronRight className="h-7 w-7 ml-0.5" strokeWidth={3} />
@@ -1254,7 +1329,6 @@ function ResumeUploadCard({ item, uploading = false, onOpen, onDelete }) {
     </div>
   );
 }
-
 
 function SelectResumesBottomSheet({
   isOpen,
@@ -1427,21 +1501,22 @@ const demoSteps = [
     type: "tool",
   },
   {
-    action: "Tool Call: AnalyzeResumeMatch(job='Linear', resume=user_profile)",
+    action: "Tool Call: AnalyzeResumeMatch(job='Linear', resume=Daryn_resume)",
     delay: 2000,
-    result: "Score: 65% (Missing 'Design Systems').",
+    result: "Score: 65%. Missing exact keyword 'Design Systems'.",
     type: "tool",
   },
   {
     action:
-      "Agent Decision: Match score too low for cold email. Invoking Tailor Tool first.",
+      "Agent Decision: Match score too low. Invoking Tailor Tool to re-contextualize existing experience.",
     delay: 2500,
     type: "alert",
   },
   {
-    action: "Tool Call: TailorResume(missing_keywords=['Design Systems'])",
-    delay: 2200,
-    result: "Resume rewritten. New Score: 92%.",
+    action: "Tool Call: SemanticTailor(target='Design Systems')",
+    delay: 2800,
+    result:
+      "Found 'Built reusable React UI components'. Rephrasing bullet point to highlight Design System architecture. New Score: 92%.",
     type: "tool",
   },
   {
@@ -1544,6 +1619,9 @@ function AIChatbot({
   resumes = [],
   onUploadResume = () => {},
   uploadQueue = [],
+  attachedResumeIds = [],
+  setAttachedResumeIds = () => {},
+  onOpenResume = () => {},
 }) {
   const [messages, setMessages] = useState([
     {
@@ -1555,7 +1633,6 @@ function AIChatbot({
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
-  const [attachedResumeIds, setAttachedResumeIds] = useState([]);
 
   const messagesEndRef = useRef(null);
   const messagesScrollRef = useRef(null);
@@ -1572,7 +1649,6 @@ function AIChatbot({
     });
   }, [messages, isTyping]);
 
-
   const handleSend = (textOverride) => {
     const prompt =
       typeof textOverride === "string" ? textOverride : inputText.trim();
@@ -1581,7 +1657,12 @@ function AIChatbot({
     setInputText("");
     setMessages((prev) => [
       ...prev,
-      { from: "user", type: "text", text: prompt },
+      {
+        from: "user",
+        type: "text",
+        text: prompt,
+        attachments: attachedResumes.map((r) => ({ id: r.id, name: r.name })),
+      },
     ]);
     setIsTyping(true);
 
@@ -1786,6 +1867,21 @@ function AIChatbot({
                           }`
                     }`}
                   >
+                    {!isAI && msg.attachments && msg.attachments.length > 0 && (
+                      <div className="mb-2.5 flex flex-wrap gap-1.5 border-b border-white/20 pb-2.5">
+                        {msg.attachments.map((att) => (
+                          <div
+                            key={att.id}
+                            className="flex items-center gap-1.5 rounded-lg bg-white/20 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm"
+                          >
+                            <FileText className="h-3.5 w-3.5 text-[#a0fe08]" />
+                            <span className="truncate max-w-[140px]">
+                              {att.name.replace(/\.(pdf|docx?)$/i, "")}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {renderMessageText(msg.text)}
                   </div>
                 </motion.div>
@@ -1892,28 +1988,34 @@ function AIChatbot({
                     animate={{ opacity: 1, height: "auto", y: 0 }}
                     exit={{ opacity: 0, height: 0, y: 8 }}
                     transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                    className="mb-2 flex w-full min-w-0 max-w-full gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1 no-scrollbar"
+                    className="mb-2 flex w-full min-w-0 max-w-full flex-col overflow-hidden px-1 pb-1"
                   >
-                    {attachedResumes.map((resume) => (
-                      <motion.div
-                        key={resume.id}
-                        layout
-                        className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
-                      >
-                        <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                        <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                          {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachedResume(resume.id)}
-                          className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
-                          aria-label={`Remove ${resume.name}`}
+                    <div className="flex w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar">
+                      {attachedResumes.map((resume) => (
+                        <motion.div
+                          key={resume.id}
+                          layout
+                          onClick={() => onOpenResume(resume, "aiChatbot")}
+                          className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#a0fe08] bg-[#a0fe08]/20 px-2.5 py-1.5 shadow-sm cursor-pointer hover:bg-[#a0fe08]/30 transition-colors"
                         >
-                          <Plus className="h-3.5 w-3.5 rotate-45" />
-                        </button>
-                      </motion.div>
-                    ))}
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+                          <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
+                            {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              removeAttachedResume(resume.id);
+                            }}
+                            className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#000100]/60 transition hover:bg-[#000100]/10 hover:text-[#000100]"
+                            aria-label={`Remove ${resume.name}`}
+                          >
+                            <Plus className="h-3.5 w-3.5 rotate-45" />
+                          </button>
+                        </motion.div>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -2068,10 +2170,38 @@ function Dashboard({
   isChatTransition = false,
   onStartChatTransition = () => {},
   onUploadResume = () => {},
+  onOpenResume = () => {},
   userName = "User",
 }) {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [activeTask] = useState("Scraping LinkedIn for Senior UX roles...");
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifications = [
+    {
+      id: 1,
+      title: "Application Viewed",
+      desc: "Linear hiring team viewed your tailored resume.",
+      time: "10m ago",
+      read: false,
+      icon: Search,
+    },
+    {
+      id: 2,
+      title: "Agent Action",
+      desc: "Auto-tailored your resume for Binance.",
+      time: "1h ago",
+      read: false,
+      icon: Wand2,
+    },
+    {
+      id: 3,
+      title: "New Match",
+      desc: "Found a 95% match at TechFlow.",
+      time: "2h ago",
+      read: true,
+      icon: Briefcase,
+    },
+  ];
 
   const activeSelectedResumeIds = Array.isArray(selectedResumeIds)
     ? selectedResumeIds
@@ -2112,31 +2242,34 @@ function Dashboard({
               animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: 8 }}
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-2 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar"
+              className="mb-2 flex w-full min-w-0 max-w-full flex-col overflow-hidden px-1 pb-1"
             >
-              {selectedResumes.map((resume) => (
-                <motion.div
-                  key={resume.id}
-                  layout
-                  className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#d1d3d2] bg-[#fafafa] px-2.5 py-1.5 shadow-sm"
-                >
-                  <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
-                  <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
-                    {resume.name.replace(/\.(pdf|docx?)$/i, "")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      removeSelectedResume(resume.id);
-                    }}
-                    className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#666666] transition hover:bg-[#eaeceb] hover:text-[#000100]"
-                    aria-label={`Remove ${resume.name}`}
+              <div className="flex w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar">
+                {selectedResumes.map((resume) => (
+                  <motion.div
+                    key={resume.id}
+                    layout
+                    onClick={() => onOpenResume(resume, "dashboard")}
+                    className="flex max-w-[170px] shrink-0 items-center gap-1.5 rounded-xl border border-[#a0fe08] bg-[#a0fe08]/20 px-2.5 py-1.5 shadow-sm cursor-pointer hover:bg-[#a0fe08]/30 transition-colors"
                   >
-                    <Plus className="h-3.5 w-3.5 rotate-45" />
-                  </button>
-                </motion.div>
-              ))}
+                    <FileText className="h-3.5 w-3.5 shrink-0 text-[#000100]" />
+                    <span className="min-w-0 truncate text-xs font-bold text-[#000100]">
+                      {resume.name.replace(/\.(pdf|docx?)$/i, "")}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        removeSelectedResume(resume.id);
+                      }}
+                      className="ml-0.5 shrink-0 rounded-full p-0.5 text-[#000100]/60 transition hover:bg-[#000100]/10 hover:text-[#000100]"
+                      aria-label={`Remove ${resume.name}`}
+                    >
+                      <Plus className="h-3.5 w-3.5 rotate-45" />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -2151,7 +2284,6 @@ function Dashboard({
             <Plus className="h-5 w-5" />
           </button>
 
-
           <div className="flex flex-1 items-center gap-2 overflow-hidden">
             <input
               type="text"
@@ -2159,7 +2291,7 @@ function Dashboard({
               onClick={onStartChatTransition}
               placeholder={
                 selectedResumes.length > 0 && !isChatTransition
-                  ? "Set your agent goals..."
+                  ? "Ask agent about this context..."
                   : "Ask Syncra anything..."
               }
               className="w-full min-w-0 cursor-pointer bg-transparent px-1 text-sm font-medium text-[#000100] outline-none placeholder:text-[#999999]"
@@ -2219,9 +2351,79 @@ function Dashboard({
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100]">
-                <Bell className="h-5 w-5" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifs(!showNotifs)}
+                  className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100] transition active:scale-95"
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute right-2.5 top-2 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#ff5f56]" />
+                </button>
+                <AnimatePresence>
+                  {showNotifs && (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowNotifs(false)}
+                        className="fixed inset-0 z-40 bg-transparent"
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-3xl border border-[#d1d3d2] bg-white shadow-[0_16px_40px_rgba(0,0,0,0.15)]"
+                      >
+                        <div className="border-b border-[#d1d3d2] bg-[#f4f5f4] px-4 py-3">
+                          <h3 className="text-sm font-bold text-[#000100]">
+                            Notifications
+                          </h3>
+                        </div>
+                        <div className="flex max-h-[300px] flex-col overflow-y-auto no-scrollbar">
+                          {notifications.map((notif) => {
+                            const Icon = notif.icon;
+                            return (
+                              <div
+                                key={notif.id}
+                                className={`flex items-start gap-3 border-b border-[#eaeceb] p-4 transition hover:bg-[#fafafa] ${
+                                  notif.read
+                                    ? "opacity-60 bg-white"
+                                    : "bg-[#fbfcfa]"
+                                }`}
+                              >
+                                <div
+                                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                                    notif.read
+                                      ? "bg-[#eaeceb] text-[#666666]"
+                                      : "bg-[#a0fe08] text-[#000100]"
+                                  }`}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-[13px] font-bold text-[#000100] truncate">
+                                      {notif.title}
+                                    </h4>
+                                    <span className="text-[10px] font-bold text-[#999999]">
+                                      {notif.time}
+                                    </span>
+                                  </div>
+                                  <p className="mt-0.5 text-[11.5px] text-[#666666] leading-relaxed">
+                                    {notif.desc}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
@@ -2255,12 +2457,12 @@ function Dashboard({
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex -space-x-3">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(4)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-9 w-9 rounded-full border-2 border-white bg-[#000100] grid place-items-center text-[10px] font-bold text-white shadow-sm"
+                    className="h-9 w-9 rounded-full border-2 border-white bg-[#a0fe08] grid place-items-center text-[11px] font-bold text-[#000100] shadow-sm"
                   >
-                    {["T", "L", "V"][i]}
+                    {["B", "T", "L", "V"][i]}
                   </div>
                 ))}
               </div>
@@ -2290,41 +2492,6 @@ function Dashboard({
           </div>
           <AgentActivityFeed />
         </div>
-
-        {/* 4. AI Profile Card (Simplified) */}
-        <Card className="mb-6 border-none shadow-sm">
-          <h3 className="text-xs font-black uppercase tracking-widest text-[#999999] mb-4">
-            AI Target Profile
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-[9px] font-bold text-[#999999] uppercase">
-                Role
-              </p>
-              <p className="text-[13px] font-bold text-[#000100]">
-                Senior Product Designer
-              </p>
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-[#999999] uppercase">
-                Location
-              </p>
-              <p className="text-[13px] font-bold text-[#000100]">
-                New York (Remote)
-              </p>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#eaeceb] flex flex-wrap gap-1.5">
-            {["Figma", "Design Systems", "Prototyping"].map((s) => (
-              <span
-                key={s}
-                className="bg-[#f4f5f4] text-[#666666] text-[10px] font-bold px-2 py-1 rounded-md"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </Card>
 
         {/* Dashboard Bottom Input Spacer */}
         <div className="h-20" />
@@ -2396,23 +2563,23 @@ function JobsScreen({ go }) {
   return (
     <Screen nav activeTab="jobs" go={go} className="relative bg-[#eaeceb]">
       {/* Fixed Agent Header */}
-      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-6 flex flex-col justify-end bg-[#eaeceb] px-6 pb-4 pt-12 border-b border-[#d1d3d2]/50">
-        <h1 className="text-[28px] font-black tracking-tight text-[#000100] leading-none mb-1.5">
+      <div className="sticky top-0 z-40 -mx-6 -mt-8 mb-6 flex flex-col justify-end bg-[#eaeceb] px-6 pb-3 pt-12 border-b border-[#d1d3d2]/50">
+        <h1 className="text-[26px] font-bold tracking-tight text-[#000100] leading-none mb-2">
           Agent Pipeline
         </h1>
-        <p className="text-sm font-medium text-[#666666] mb-5 h-[40px]">
+        <p className="text-[13px] font-medium text-[#666666] mb-5 h-[38px] leading-relaxed">
           {activeTab === "queue"
             ? "I processed 142 roles. Here are 3 that need your attention."
             : "Review my completed tasks and timeline history."}
         </p>
 
         {/* Sleek Tab Switcher */}
-        <div className="flex items-center gap-2 rounded-xl bg-[#d1d3d2]/40 p-1">
+        <div className="flex items-center gap-1 rounded-[16px] bg-[#d1d3d2]/40 p-1 mb-1 shadow-inner">
           <button
             onClick={() => setActiveTab("queue")}
-            className={`flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-[12px] py-2.5 text-[13.5px] font-bold transition-all duration-300 ${
               activeTab === "queue"
-                ? "bg-[#ffffff] text-[#000100] shadow-sm"
+                ? "bg-[#ffffff] text-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
                 : "text-[#666666] hover:text-[#000100]"
             }`}
           >
@@ -2420,13 +2587,13 @@ function JobsScreen({ go }) {
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-[12px] py-2.5 text-[13.5px] font-bold transition-all duration-300 ${
               activeTab === "history"
-                ? "bg-[#ffffff] text-[#000100] shadow-sm"
+                ? "bg-[#ffffff] text-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
                 : "text-[#666666] hover:text-[#000100]"
             }`}
           >
-            History & Updates
+            History
           </button>
         </div>
       </div>
@@ -2515,7 +2682,7 @@ function JobsScreen({ go }) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.1 }}
                       key={job.id}
-                      className="mb-6 rounded-[24px] bg-[#fffbeb] shadow-[0_8px_30px_rgba(251,191,36,0.12)] border border-[#fde68a] overflow-hidden"
+                      className="mb-6 rounded-[24px] bg-[#ffffff] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#d1d3d2]/60 overflow-hidden"
                     >
                       <div className="p-5 pb-4">
                         <div className="flex items-center gap-2 mb-4">
@@ -2525,23 +2692,29 @@ function JobsScreen({ go }) {
                           </div>
                         </div>
                         <div className="flex items-start gap-4">
-                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#fde68a] text-lg font-bold text-[#d97706]">
+                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#000100] text-lg font-bold text-[#a0fe08]">
                             {job.company[0]}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-base font-bold text-[#92400e]">
+                            <h3 className="truncate text-base font-bold text-[#000100]">
                               {job.title}
                             </h3>
-                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#b45309]">
+                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#666666]">
                               {job.company} • {job.location}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#fef3c7]">
-                        <p className="text-[13px] text-[#92400e] leading-[1.6]">
-                          <b className="text-[#b45309]">
+                      <div className="bg-[#f4f5f4] p-4 mx-5 mb-5 rounded-2xl">
+                        <div className="flex gap-2 items-center mb-1.5">
+                          <AlertCircle className="w-4 h-4 text-[#d97706]" />
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#d97706]">
+                            {job.agentAction}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-[#666666] leading-[1.6]">
+                          <b className="text-[#d97706]">
                             Missing: A/B Testing.
                           </b>{" "}
                           {job.agentJustification}
@@ -2551,11 +2724,11 @@ function JobsScreen({ go }) {
                       <div className="px-5 pb-5 flex gap-3">
                         <button
                           onClick={() => go("aiChatbot", job, "chatOpen")}
-                          className="flex-1 bg-[#d97706] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2"
+                          className="flex-1 bg-[#000100] text-white rounded-xl py-3.5 text-sm font-bold shadow-md transition active:scale-[0.98] flex items-center justify-center gap-2"
                         >
-                          Reply in Chat <Send className="w-4 h-4" />
+                          Reply in Chat <Send className="w-4 h-4 text-white" />
                         </button>
-                        <button className="px-5 bg-white/50 border border-[#fde68a] text-[#b45309] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                        <button className="px-5 bg-[#eaeceb] text-[#666666] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
                           Skip
                         </button>
                       </div>
@@ -2573,7 +2746,7 @@ function JobsScreen({ go }) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.2 }}
                       key={job.id}
-                      className="mb-6 rounded-[24px] bg-[#faf5ff] shadow-[0_8px_30px_rgba(168,85,247,0.08)] border border-[#e9d5ff] overflow-hidden"
+                      className="mb-6 rounded-[24px] bg-[#ffffff] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#d1d3d2]/60 overflow-hidden"
                     >
                       <div className="p-5 pb-4">
                         <div className="flex items-center gap-2 mb-4">
@@ -2583,22 +2756,28 @@ function JobsScreen({ go }) {
                           </div>
                         </div>
                         <div className="flex items-start gap-4">
-                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white border border-[#e9d5ff] text-lg font-bold text-[#7e22ce]">
+                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#000100] text-lg font-bold text-[#a0fe08]">
                             {job.company[0]}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-base font-bold text-[#6b21a8]">
+                            <h3 className="truncate text-base font-bold text-[#000100]">
                               {job.title}
                             </h3>
-                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#9333ea]">
+                            <p className="mt-0.5 truncate text-[13px] font-medium text-[#666666]">
                               {job.company} • {job.salary}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-white/60 p-4 mx-5 mb-5 rounded-2xl border border-[#f3e8ff]">
-                        <p className="text-[13px] text-[#7e22ce] leading-[1.6]">
+                      <div className="bg-[#f4f5f4] p-4 mx-5 mb-5 rounded-2xl">
+                        <div className="flex gap-2 items-center mb-1.5">
+                          <Star className="w-4 h-4 text-[#9333ea]" />
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#9333ea]">
+                            {job.agentAction}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-[#666666] leading-[1.6]">
                           {job.agentJustification}
                         </p>
                       </div>
@@ -2606,11 +2785,11 @@ function JobsScreen({ go }) {
                       <div className="px-5 pb-5 flex gap-3">
                         <button
                           onClick={() => go("tailor", job)}
-                          className="flex-1 bg-[#9333ea] text-white rounded-xl py-3.5 text-sm font-bold shadow-sm transition active:scale-[0.98]"
+                          className="flex-1 bg-[#000100] text-white rounded-xl py-3.5 text-sm font-bold shadow-md transition active:scale-[0.98] flex items-center justify-center gap-2"
                         >
-                          Generate Draft
+                          Generate Draft <Star className="w-4 h-4 text-white" />
                         </button>
-                        <button className="px-5 bg-white/50 border border-[#e9d5ff] text-[#9333ea] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
+                        <button className="px-5 bg-[#eaeceb] text-[#666666] rounded-xl py-3.5 text-sm font-bold transition active:scale-[0.98]">
                           Ignore
                         </button>
                       </div>
@@ -3004,7 +3183,7 @@ function Submitted({ go, selectedJob, onApply = () => {} }) {
               {/* UNDO UI ADDED */}
               <button
                 onClick={() => go("dashboard")}
-                className="flex w-full items-center justify-center gap-2 py-3 text-sm font-bold text-[#666666] transition hover:text-red-500"
+                className="flex w-full items-center justify-center gap-2 py-3 text-sm font-bold text-[#666666] transition hover:text-red-50 hover:text-red-500"
               >
                 <RotateCcw className="h-4 w-4" /> Undo Submission
               </button>
@@ -3016,17 +3195,19 @@ function Submitted({ go, selectedJob, onApply = () => {} }) {
   );
 }
 
-
-// --- RESUMES SCREEN ---
-function ResumesScreen({
+// --- RESUME LISTS SCREEN (Combined Uploads & Tailored) ---
+function ResumeListsScreen({
   go,
   resumes = [],
+  tailoredResumes = [],
   uploadQueue = [],
   onUploadResume = () => {},
   onOpenResume = () => {},
   onDeleteResume = () => {},
+  onDeleteTailoredResume = () => {},
 }) {
   const fileInputRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("uploads");
 
   const handleFiles = (fileList) => {
     const files = Array.from(fileList || []);
@@ -3043,125 +3224,140 @@ function ResumesScreen({
   return (
     <PhoneShell>
       <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end gap-3 bg-[#eaeceb] px-6 pb-5 border-b border-[#d1d3d2]/50">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex flex-col justify-end bg-[#eaeceb] px-6 pb-3 pt-12 border-b border-[#d1d3d2]/50">
+          <div className="flex items-center gap-2 mb-3">
             <BackButton onClick={() => go("profile")} />
+            <h1 className="text-[24px] font-bold tracking-tight text-[#000100] leading-none">
+              Resume Lists
+            </h1>
           </div>
-          <div className="flex flex-col justify-end pb-0.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#666666] leading-none mb-1.5">
-              Career Pipeline
-            </p>
-            <h2 className="text-xl font-bold tracking-tight text-[#000100] leading-none">
-              Resumes & Docs
-            </h2>
+
+          {/* Sleek Tab Switcher */}
+          <div className="flex items-center gap-1 rounded-[16px] bg-[#d1d3d2]/40 p-1 mb-1 shadow-inner mt-2">
+            <button
+              onClick={() => setActiveTab("uploads")}
+              className={`flex-1 rounded-[12px] py-2.5 text-[13.5px] font-bold transition-all duration-300 ${
+                activeTab === "uploads"
+                  ? "bg-[#ffffff] text-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                  : "text-[#666666] hover:text-[#000100]"
+              }`}
+            >
+              My Uploads
+            </button>
+            <button
+              onClick={() => setActiveTab("tailored")}
+              className={`flex-1 rounded-[12px] py-2.5 text-[13.5px] font-bold transition-all duration-300 ${
+                activeTab === "tailored"
+                  ? "bg-[#ffffff] text-[#000100] shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                  : "text-[#666666] hover:text-[#000100]"
+              }`}
+            >
+              AI Tailored
+            </button>
           </div>
         </div>
 
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => fileInputRef.current?.click()}
-          onKeyDown={(e) =>
-            (e.key === "Enter" || e.key === " ") &&
-            fileInputRef.current?.click()
-          }
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-          className="mb-4 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#000100]/30 bg-[#ffffff] text-[#000100] transition hover:bg-[#eaeceb]"
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
-          <Upload className="mb-2 h-7 w-7" />
-          <span className="text-sm font-bold">
-            Tap to upload or drag & drop
-          </span>
-          <span className="mt-1 text-xs text-[#666666]">PDF up to 5MB</span>
-        </div>
-
-        <div className="space-y-3">
-          {uploadQueue.map((item) => (
-            <ResumeUploadCard key={item.id} item={item} uploading />
-          ))}
-          {resumes.map((resume) => (
-            <ResumeUploadCard
-              key={resume.id}
-              item={resume}
-              onOpen={() => onOpenResume(resume, "resumes")}
-              onDelete={() => onDeleteResume(resume.id)}
-            />
-          ))}
-          {uploadQueue.length === 0 && resumes.length === 0 && (
-            <Card className="text-center shadow-sm">
-              <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
-                <FileText className="h-7 w-7" />
+        <AnimatePresence mode="wait">
+          {activeTab === "uploads" && (
+            <motion.div
+              key="uploads"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) =>
+                  (e.key === "Enter" || e.key === " ") &&
+                  fileInputRef.current?.click()
+                }
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                className="mb-4 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#000100]/30 bg-[#ffffff] text-[#000100] transition hover:bg-[#eaeceb]"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+                <Upload className="mb-2 h-7 w-7" />
+                <span className="text-sm font-bold">
+                  Tap to upload or drag & drop
+                </span>
+                <span className="mt-1 text-xs text-[#666666]">
+                  PDF up to 5MB
+                </span>
               </div>
-              <h3 className="font-bold text-[#000100]">No resumes yet</h3>
-              <p className="mt-2 text-sm leading-6 text-[#666666]">
-                Upload a resume to use it for AI matching, tailoring, and
-                applications.
-              </p>
-            </Card>
-          )}
-        </div>
-      </Screen>
-    </PhoneShell>
-  );
-}
 
-// --- TAILORED RESUMES SCREEN ---
-function TailoredResumesScreen({
-  go,
-  tailoredResumes = [],
-  onOpenResume = () => {},
-  onDeleteResume = () => {},
-}) {
-  return (
-    <PhoneShell>
-      <Screen>
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-5 flex h-[100px] items-end gap-3 bg-[#eaeceb] px-6 pb-5 border-b border-[#d1d3d2]/50">
-          <div className="flex items-center gap-2 mb-1">
-            <BackButton onClick={() => go("profile")} />
-          </div>
-          <div className="flex flex-col justify-end pb-0.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#666666] leading-none mb-1.5">
-              Career Pipeline
-            </p>
-            <h2 className="text-xl font-bold tracking-tight text-[#000100] leading-none">
-              Tailored Resumes
-            </h2>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {tailoredResumes.map((resume) => (
-            <ResumeUploadCard
-              key={resume.id}
-              item={resume}
-              onOpen={() => onOpenResume(resume, "tailoredResumes")}
-              onDelete={() => onDeleteResume(resume.id)}
-            />
-          ))}
-
-          {tailoredResumes.length === 0 && (
-            <Card className="text-center shadow-sm">
-              <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
-                <FileText className="h-7 w-7" />
+              <div className="space-y-3">
+                {uploadQueue.map((item) => (
+                  <ResumeUploadCard key={item.id} item={item} uploading />
+                ))}
+                {resumes.map((resume) => (
+                  <ResumeUploadCard
+                    key={resume.id}
+                    item={resume}
+                    onOpen={() => onOpenResume(resume, "resumes")}
+                    onDelete={() => onDeleteResume(resume.id)}
+                  />
+                ))}
+                {uploadQueue.length === 0 && resumes.length === 0 && (
+                  <Card className="text-center shadow-sm">
+                    <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
+                      <FileText className="h-7 w-7" />
+                    </div>
+                    <h3 className="font-bold text-[#000100]">No resumes yet</h3>
+                    <p className="mt-2 text-sm leading-6 text-[#666666]">
+                      Upload a resume to use it for AI matching, tailoring, and
+                      applications.
+                    </p>
+                  </Card>
+                )}
               </div>
-              <h3 className="font-bold text-[#000100]">
-                No tailored resumes yet
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-[#666666]">
-                Tailored resumes generated by Syncra AI will appear here.
-              </p>
-            </Card>
+            </motion.div>
           )}
-        </div>
+
+          {activeTab === "tailored" && (
+            <motion.div
+              key="tailored"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="space-y-3">
+                {tailoredResumes.map((resume) => (
+                  <ResumeUploadCard
+                    key={resume.id}
+                    item={resume}
+                    onOpen={() => onOpenResume(resume, "resumes")}
+                    onDelete={() => onDeleteTailoredResume(resume.id)}
+                  />
+                ))}
+
+                {tailoredResumes.length === 0 && (
+                  <Card className="text-center shadow-sm">
+                    <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#000100] text-white">
+                      <FileText className="h-7 w-7" />
+                    </div>
+                    <h3 className="font-bold text-[#000100]">
+                      No tailored resumes yet
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-[#666666]">
+                      Tailored resumes generated by Syncra AI will appear here.
+                    </p>
+                  </Card>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Screen>
     </PhoneShell>
   );
@@ -3264,6 +3460,34 @@ function Profile({
   tailoredResumesCount = 0,
   userName = "User",
 }) {
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifications = [
+    {
+      id: 1,
+      title: "Application Viewed",
+      desc: "Linear hiring team viewed your tailored resume.",
+      time: "10m ago",
+      read: false,
+      icon: Search,
+    },
+    {
+      id: 2,
+      title: "Agent Action",
+      desc: "Auto-tailored your resume for Binance.",
+      time: "1h ago",
+      read: false,
+      icon: Wand2,
+    },
+    {
+      id: 3,
+      title: "New Match",
+      desc: "Found a 95% match at TechFlow.",
+      time: "2h ago",
+      read: true,
+      icon: Briefcase,
+    },
+  ];
+
   const [integrations, setIntegrations] = useState([
     {
       id: "gmail",
@@ -3305,11 +3529,85 @@ function Profile({
   return (
     <PhoneShell>
       <Screen nav={!noNav} floatingNav={noNav} go={go} activeTab="profile">
-        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex h-[104px] items-end gap-2 bg-[#eaeceb] px-6 pb-4 border-b border-[#d1d3d2]/50">
+        <div className="sticky top-0 z-50 -mx-6 -mt-8 mb-6 flex h-[104px] items-end justify-between bg-[#eaeceb] px-6 pb-4 border-b border-[#d1d3d2]/50">
           <div className="flex h-[52px] items-center">
             <h1 className="text-[26px] font-bold tracking-tight text-[#000100]">
-              AI Control Center
+              Settings
             </h1>
+          </div>
+
+          <div className="relative mb-1">
+            <button
+              onClick={() => setShowNotifs(!showNotifs)}
+              className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#d1d3d2] text-[#000100] transition active:scale-95"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-2.5 top-2 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#ff5f56]" />
+            </button>
+            <AnimatePresence>
+              {showNotifs && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowNotifs(false)}
+                    className="fixed inset-0 z-40 bg-transparent"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-3xl border border-[#d1d3d2] bg-white shadow-[0_16px_40px_rgba(0,0,0,0.15)]"
+                  >
+                    <div className="border-b border-[#d1d3d2] bg-[#f4f5f4] px-4 py-3">
+                      <h3 className="text-sm font-bold text-[#000100]">
+                        Notifications
+                      </h3>
+                    </div>
+                    <div className="flex max-h-[300px] flex-col overflow-y-auto no-scrollbar">
+                      {notifications.map((notif) => {
+                        const Icon = notif.icon;
+                        return (
+                          <div
+                            key={notif.id}
+                            className={`flex items-start gap-3 border-b border-[#eaeceb] p-4 transition hover:bg-[#fafafa] ${
+                              notif.read
+                                ? "opacity-60 bg-white"
+                                : "bg-[#fbfcfa]"
+                            }`}
+                          >
+                            <div
+                              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                                notif.read
+                                  ? "bg-[#eaeceb] text-[#666666]"
+                                  : "bg-[#a0fe08] text-[#000100]"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-[13px] font-bold text-[#000100] truncate">
+                                  {notif.title}
+                                </h4>
+                                <span className="text-[10px] font-bold text-[#999999]">
+                                  {notif.time}
+                                </span>
+                              </div>
+                              <p className="mt-0.5 text-[11.5px] text-[#666666] leading-relaxed">
+                                {notif.desc}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -3340,9 +3638,6 @@ function Profile({
                 </p>
               </div>
             </div>
-            <button className="grid h-10 w-10 place-items-center rounded-full bg-[#eaeceb] text-[#000100] transition active:scale-95">
-              <Settings className="h-5 w-5" />
-            </button>
           </div>
         </div>
 
@@ -3354,14 +3649,8 @@ function Profile({
             {
               onClick: () => go("resumes"),
               icon: FileText,
-              label: "Resumes & Docs",
-              count: resumesCount,
-            },
-            {
-              onClick: () => go("tailoredResumes"),
-              icon: Wand2,
-              label: "Tailored Resumes",
-              count: tailoredResumesCount,
+              label: "Resume Lists",
+              count: resumesCount + tailoredResumesCount,
             },
             {
               onClick: () => go("jobs", null, null, "all"),
@@ -3603,8 +3892,9 @@ export default function App() {
   const [screen, setScreen] = useState("osHome");
   const [selectedJob, setSelectedJob] = useState(jobs[0]);
   const [selectedResume, setSelectedResume] = useState(null);
-  const [dashboardSelectedResumeIds, setDashboardSelectedResumeIds] =
-    useState([]);
+  const [dashboardSelectedResumeIds, setDashboardSelectedResumeIds] = useState(
+    []
+  );
   const [resumePreviewBackTarget, setResumePreviewBackTarget] =
     useState("resumes");
   const [viewMode, setViewMode] = useState("mobile");
@@ -3614,7 +3904,25 @@ export default function App() {
   const [savedJobs] = useState([]);
   const [hasReachedDashboard, setHasReachedDashboard] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState("all");
-  const [resumes, setResumes] = useState([]);
+  const [resumes, setResumes] = useState(() => {
+    // Generate a default "base" resume representing the uploaded public file
+    const blob = createSimplePdfBlob("Daryn_resume.pdf", [
+      "Daryn",
+      "UX Designer",
+      "Syncra Agent User",
+    ]);
+    return [
+      {
+        id: "base-resume-1",
+        name: "Daryn_resume.pdf",
+        size: blob.size,
+        type: "application/pdf",
+        uploadedAt: new Date().toISOString(),
+        url: URL.createObjectURL(blob),
+        source: "Manual Upload",
+      },
+    ];
+  });
   const [tailoredResumes, setTailoredResumes] = useState(() =>
     buildMockTailoredResumes()
   );
@@ -3632,6 +3940,18 @@ export default function App() {
   const agentResumeTimer = useRef(null);
   const resumesRef = useRef([]);
   const tailoredResumesRef = useRef([]);
+
+  // Auto-select latest resume globally across Dashboard and Chat
+  const prevResumesLengthForSelection = useRef(0);
+  useEffect(() => {
+    if (resumes.length > prevResumesLengthForSelection.current) {
+      const newResume = resumes[0];
+      if (newResume && !dashboardSelectedResumeIds.includes(newResume.id)) {
+        setDashboardSelectedResumeIds((prev) => [...prev, newResume.id]);
+      }
+    }
+    prevResumesLengthForSelection.current = resumes.length;
+  }, [resumes, dashboardSelectedResumeIds]);
 
   useEffect(() => {
     resumesRef.current = resumes;
@@ -3658,72 +3978,76 @@ export default function App() {
     Array.from(files || [])
       .slice(0, MAX_RESUME_UPLOAD_BATCH)
       .forEach((file) => {
-      const id = `${file.name}-${
-        file.lastModified
-      }-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      const baseItem = {
-        id,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        progress: 0,
-        status: "uploading",
-        uploadedAt: new Date().toISOString(),
-      };
+        const id = `${file.name}-${
+          file.lastModified
+        }-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const baseItem = {
+          id,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          progress: 0,
+          status: "uploading",
+          uploadedAt: new Date().toISOString(),
+        };
 
-      if (!isResumeFile(file) || file.size > 5 * 1024 * 1024) {
-        setUploadQueue((prev) => [
-          {
-            ...baseItem,
-            status: "error",
-            progress: 0,
-            error: "Please upload a PDF, DOC, or DOCX file under 5MB.",
-          },
-          ...prev,
-        ]);
-        setTimeout(
-          () => setUploadQueue((prev) => prev.filter((item) => item.id !== id)),
-          3500
-        );
-        return;
-      }
-
-      setUploadQueue((prev) => [{ ...baseItem, progress: 8 }, ...prev]);
-
-      let progress = 8;
-      const timer = setInterval(() => {
-        progress = Math.min(100, progress + Math.floor(Math.random() * 16) + 8);
-        setUploadQueue((prev) =>
-          prev.map((item) =>
-            item.id === id
-              ? {
-                  ...item,
-                  progress,
-                  status: progress >= 100 ? "done" : "uploading",
-                }
-              : item
-          )
-        );
-
-        if (progress >= 100) {
-          clearInterval(timer);
-          setTimeout(() => {
-            const resume = {
-              id,
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              uploadedAt: new Date().toISOString(),
-              url: URL.createObjectURL(file),
-            };
-            setUploadQueue((prev) => prev.filter((item) => item.id !== id));
-            setResumes((prev) => [resume, ...prev]);
-          }, 800);
+        if (!isResumeFile(file) || file.size > 5 * 1024 * 1024) {
+          setUploadQueue((prev) => [
+            {
+              ...baseItem,
+              status: "error",
+              progress: 0,
+              error: "Please upload a PDF, DOC, or DOCX file under 5MB.",
+            },
+            ...prev,
+          ]);
+          setTimeout(
+            () =>
+              setUploadQueue((prev) => prev.filter((item) => item.id !== id)),
+            3500
+          );
+          return;
         }
-      }, 260);
 
-      uploadTimers.current.push(timer);
-    });
+        setUploadQueue((prev) => [{ ...baseItem, progress: 8 }, ...prev]);
+
+        let progress = 8;
+        const timer = setInterval(() => {
+          progress = Math.min(
+            100,
+            progress + Math.floor(Math.random() * 16) + 8
+          );
+          setUploadQueue((prev) =>
+            prev.map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    progress,
+                    status: progress >= 100 ? "done" : "uploading",
+                  }
+                : item
+            )
+          );
+
+          if (progress >= 100) {
+            clearInterval(timer);
+            setTimeout(() => {
+              const resume = {
+                id,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                uploadedAt: new Date().toISOString(),
+                url: URL.createObjectURL(file),
+              };
+              setUploadQueue((prev) => prev.filter((item) => item.id !== id));
+              setResumes((prev) => [resume, ...prev]);
+            }, 800);
+          }
+        }, 260);
+
+        uploadTimers.current.push(timer);
+      });
   };
 
   const handleDeleteResume = (resumeId) => {
@@ -3733,7 +4057,9 @@ export default function App() {
       return prev.filter((resume) => resume.id !== resumeId);
     });
     setSelectedResume((prev) => (prev?.id === resumeId ? null : prev));
-    setDashboardSelectedResumeIds((prev) => prev.filter((id) => id !== resumeId));
+    setDashboardSelectedResumeIds((prev) =>
+      prev.filter((id) => id !== resumeId)
+    );
   };
 
   const handleOpenResume = (resume, backTarget = "resumes") => {
@@ -3842,6 +4168,9 @@ export default function App() {
             resumes={resumes}
             onUploadResume={handleUploadResume}
             uploadQueue={uploadQueue}
+            attachedResumeIds={dashboardSelectedResumeIds}
+            setAttachedResumeIds={setDashboardSelectedResumeIds}
+            onOpenResume={handleOpenResume}
           />
         );
       case "dashboard":
@@ -3863,6 +4192,7 @@ export default function App() {
             }}
             onUploadResume={handleUploadResume}
             userName={userName}
+            onOpenResume={handleOpenResume}
           />
         );
       case "jobs":
@@ -3883,22 +4213,15 @@ export default function App() {
         );
       case "resumes":
         return (
-          <ResumesScreen
+          <ResumeListsScreen
             go={go}
             resumes={resumes}
+            tailoredResumes={tailoredResumes}
             uploadQueue={uploadQueue}
             onUploadResume={handleUploadResume}
             onOpenResume={handleOpenResume}
             onDeleteResume={handleDeleteResume}
-          />
-        );
-      case "tailoredResumes":
-        return (
-          <TailoredResumesScreen
-            go={go}
-            tailoredResumes={tailoredResumes}
-            onOpenResume={handleOpenResume}
-            onDeleteResume={handleDeleteTailoredResume}
+            onDeleteTailoredResume={handleDeleteTailoredResume}
           />
         );
       case "resumePreview":
@@ -3906,12 +4229,14 @@ export default function App() {
           <ResumePreviewScreen
             go={go}
             resume={selectedResume}
-            backTarget={resumePreviewBackTarget}
-            onDeleteResume={
-              resumePreviewBackTarget === "tailoredResumes"
-                ? handleDeleteTailoredResume
-                : handleDeleteResume
-            }
+            backTarget="resumes"
+            onDeleteResume={(id) => {
+              if (tailoredResumes.find((r) => r.id === id)) {
+                handleDeleteTailoredResume(id);
+              } else {
+                handleDeleteResume(id);
+              }
+            }}
           />
         );
       case "profile":
